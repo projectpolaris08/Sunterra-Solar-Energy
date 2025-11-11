@@ -1,0 +1,228 @@
+import { Target, Eye, Award, Users, Zap, Shield, TrendingUp, Heart } from 'lucide-react';
+import Card from '../components/Card';
+import Button from '../components/Button';
+import SEO from '../components/SEO';
+
+interface AboutProps {
+  onNavigate: (page: string) => void;
+}
+
+export default function About({ onNavigate }: AboutProps) {
+  const values = [
+    {
+      icon: Shield,
+      title: 'Reliability',
+      description: 'We deliver consistent, high-quality solar solutions that stand the test of time'
+    },
+    {
+      icon: Award,
+      title: 'Excellence',
+      description: 'We pursue the highest standards in every installation and service we provide'
+    },
+    {
+      icon: Heart,
+      title: 'Integrity',
+      description: 'We build trust through transparency, honesty, and ethical business practices'
+    },
+    {
+      icon: Users,
+      title: 'Customer Focus',
+      description: 'Your satisfaction and energy goals are at the heart of everything we do'
+    }
+  ];
+
+  const team = [
+    {
+      role: 'Expert Engineers',
+      description: 'Licensed and certified solar installation professionals',
+      icon: Zap
+    },
+    {
+      role: 'Project Managers',
+      description: 'Dedicated coordinators ensuring smooth installations',
+      icon: TrendingUp
+    },
+    {
+      role: 'Support Team',
+      description: 'Always available for maintenance and assistance',
+      icon: Users
+    }
+  ];
+
+  return (
+    <>
+      <SEO
+        title="About Us - Leading Solar Energy Company"
+        description="Learn about Sunterra Solar Energy Philippines. With over 10 years of experience, we're the trusted choice for solar panel installation across the Philippines. Our mission is to make clean energy accessible to all."
+        keywords="about Sunterra Solar, solar company Philippines, solar energy mission, professional solar installer"
+      />
+
+      <section className="pt-32 pb-20 bg-gradient-to-br from-blue-50 via-white to-amber-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+              About Sunterra Solar Energy
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-600 leading-relaxed">
+              Pioneering sustainable energy solutions across the Philippines since 2013
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto items-center">
+            <div>
+              <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl h-96 flex items-center justify-center shadow-2xl">
+                <Award className="w-32 h-32 text-white opacity-50" />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <h2 className="text-3xl font-bold text-gray-900">Our Story</h2>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                Founded in 2013, Sunterra Solar Energy began with a simple vision: to make clean,
+                affordable solar energy accessible to every Filipino home and business.
+              </p>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                Over the past decade, we've grown from a small team of passionate engineers to
+                become one of the Philippines' most trusted solar installation companies. We've
+                installed over 500 solar systems, helping families and businesses reduce their
+                carbon footprint while saving significantly on energy costs.
+              </p>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                Today, we continue to lead the industry with innovative solutions, exceptional
+                service, and an unwavering commitment to quality and sustainability.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 max-w-6xl mx-auto">
+            <Card className="bg-gradient-to-br from-blue-50 to-white border-2 border-blue-100">
+              <div className="flex items-center mb-6">
+                <div className="bg-blue-600 p-3 rounded-xl mr-4">
+                  <Target className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900">Our Mission</h2>
+              </div>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                To empower Filipino homes and businesses with reliable, sustainable solar energy
+                solutions that reduce electricity costs, promote energy independence, and contribute
+                to a cleaner environment for future generations.
+              </p>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-amber-50 to-white border-2 border-amber-100">
+              <div className="flex items-center mb-6">
+                <div className="bg-amber-600 p-3 rounded-xl mr-4">
+                  <Eye className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900">Our Vision</h2>
+              </div>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                To be the Philippines' leading solar energy provider, recognized for innovation,
+                quality, and customer satisfaction. We envision a future where every Filipino
+                household and business harnesses the power of the sun for a sustainable tomorrow.
+              </p>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Our Core Values
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              The principles that guide every decision we make and every project we complete
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            {values.map((value, index) => (
+              <Card key={index}>
+                <div className="flex flex-col items-center text-center">
+                  <div className="bg-gradient-to-br from-blue-100 to-blue-50 p-4 rounded-2xl mb-4">
+                    <value.icon className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{value.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{value.description}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Our Expert Team
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Dedicated professionals committed to your solar energy success
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
+            {team.map((member, index) => (
+              <Card key={index}>
+                <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-6 -mx-6 -mt-6 mb-6 flex items-center justify-center h-40">
+                  <member.icon className="w-16 h-16 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">{member.role}</h3>
+                <p className="text-gray-600 leading-relaxed">{member.description}</p>
+              </Card>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            {[
+              { number: '500+', label: 'Projects Completed' },
+              { number: '50MW+', label: 'Total Installed Capacity' },
+              { number: '98%', label: 'Customer Satisfaction' },
+              { number: '24/7', label: 'Support Available' }
+            ].map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">{stat.number}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-gradient-to-br from-blue-600 to-blue-700">
+        <div className="container mx-auto px-4">
+          <Card className="max-w-4xl mx-auto text-center bg-white">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Join the Solar Revolution
+            </h2>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Be part of the growing community of Filipinos choosing clean, sustainable energy
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button
+                size="lg"
+                onClick={() => onNavigate('contact')}
+              >
+                Get Started Today
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => onNavigate('services')}
+              >
+                Explore Solutions
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </section>
+    </>
+  );
+}

@@ -1,0 +1,399 @@
+import {
+  Sun,
+  Zap,
+  Shield,
+  TrendingUp,
+  Award,
+  Users,
+  ArrowRight,
+  CheckCircle,
+  Star,
+} from "lucide-react";
+import Button from "../components/Button";
+import Card from "../components/Card";
+import SEO from "../components/SEO";
+import HeroImage from "../assets/images/HeroImage.jpg";
+
+interface HomeProps {
+  onNavigate: (page: string) => void;
+}
+
+export default function Home({ onNavigate }: HomeProps) {
+  const features = [
+    {
+      icon: Shield,
+      title: "Trusted Expertise",
+      description:
+        "Over 3 years of experience in solar installation across the Philippines",
+    },
+    {
+      icon: Award,
+      title: "Premium Quality",
+      description:
+        "Top-tier solar panels with 12-year warranty and proven performance",
+    },
+    {
+      icon: TrendingUp,
+      title: "Maximum Savings",
+      description:
+        "Reduce electricity bills by up to 80% with our efficient solar systems",
+    },
+    {
+      icon: Users,
+      title: "Full Support",
+      description: "Comprehensive after-sales support and maintenance services",
+    },
+  ];
+
+  const services = [
+    {
+      title: "Grid-Tie Solar",
+      description:
+        "Connect to the grid and sell excess energy back. Perfect for urban homes and businesses.",
+      icon: Zap,
+      color: "from-blue-500 to-blue-600",
+    },
+    {
+      title: "Hybrid Solar",
+      description:
+        "Best of both worlds with battery backup and grid connection for uninterrupted power.",
+      icon: Sun,
+      color: "from-amber-500 to-amber-600",
+    },
+    {
+      title: "Off-Grid Solar",
+      description:
+        "Complete energy independence for remote locations and properties.",
+      icon: Shield,
+      color: "from-green-500 to-green-600",
+    },
+  ];
+
+  const testimonials = [
+    {
+      name: "Maria Santos",
+      location: "Quezon City",
+      text: "Sunterra Solar transformed our home! Our electricity bill dropped by 85%. The installation was professional and hassle-free.",
+      rating: 5,
+    },
+    {
+      name: "Juan dela Cruz",
+      location: "Makati",
+      text: "Excellent service from consultation to installation. The team was knowledgeable and the system works perfectly.",
+      rating: 5,
+    },
+    {
+      name: "Carlos Reyes",
+      location: "Cebu City",
+      text: "Best investment we made for our business. The ROI is impressive and the system requires minimal maintenance.",
+      rating: 5,
+    },
+  ];
+
+  const stats = [
+    { number: "118+", label: "Installations" },
+    { number: "3+", label: "Years Experience" },
+    { number: "1.2MW+", label: "Total Capacity" },
+    { number: "98%", label: "Satisfaction Rate" },
+  ];
+
+  return (
+    <>
+      <SEO
+        title="Professional Solar Panel Installation"
+        description="Sunterra Solar Energy is the leading solar installation company in the Philippines. Expert installation of grid-tie, hybrid, and off-grid solar systems. Get a free site assessment today."
+        keywords="solar installation Philippines, solar panel installer, Sunterra Solar Energy, grid-tie solar, hybrid solar, off-grid solar, solar energy Philippines, solar power Manila"
+        canonicalUrl="https://sunterrasolar.ph"
+      />
+
+      <section
+        className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        style={{
+          backgroundImage: `url(${HeroImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        {/* Overlay for better text readability - neutral dark overlay */}
+        <div className="absolute inset-0 bg-black/30"></div>
+
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-amber-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-700"></div>
+          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="container mx-auto px-4 py-32 relative z-10 overflow-visible">
+          <div className="max-w-4xl mx-auto text-center overflow-visible">
+            <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-md">
+              <Sun className="w-5 h-5 text-amber-500" />
+              <span className="text-sm font-medium text-gray-700">
+                Powering the Future of the Philippines
+              </span>
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-relaxed overflow-visible drop-shadow-lg">
+              Your Road to Energy Independence
+              <span className="block mt-2 bg-gradient-to-r from-blue-300 via-blue-400 to-amber-300 bg-clip-text text-transparent pb-3">
+                Begins with Sunterra
+              </span>
+            </h1>
+
+            <p className="text-xl md:text-2xl text-white/95 mb-10 leading-relaxed max-w-3xl mx-auto drop-shadow-md">
+              Imagine a life where your home runs on your own sunlight. No fear
+              of the next billing cycle, just steady, dependable energy.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+              <Button
+                size="lg"
+                onClick={() => onNavigate("contact")}
+                className="w-full sm:w-auto"
+              >
+                Get Free Site Assessment
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => onNavigate("services")}
+                className="w-full sm:w-auto"
+              >
+                Explore Services
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {stats.map((stat, index) => (
+                <div
+                  key={index}
+                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg"
+                >
+                  <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
+                    {stat.number}
+                  </div>
+                  <div className="text-sm text-gray-600">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Why Choose Sunterra Solar?
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              We combine expertise, quality, and exceptional service to deliver
+              the best solar solutions in the Philippines
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <Card key={index}>
+                <div className="flex flex-col items-center text-center">
+                  <div className="bg-gradient-to-br from-blue-100 to-blue-50 p-4 rounded-2xl mb-4">
+                    <feature.icon className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Our Solar Solutions
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Tailored solar systems designed for Philippine homes and
+              businesses
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
+            {services.map((service, index) => (
+              <Card
+                key={index}
+                className="overflow-hidden h-full flex flex-col"
+              >
+                <div
+                  className={`bg-gradient-to-br ${service.color} p-6 -mx-6 -mt-6 mb-6`}
+                >
+                  <service.icon className="w-12 h-12 text-white mb-4" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                  {service.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  {service.description}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigate("services")}
+                  className="w-full mt-auto"
+                >
+                  Learn More
+                </Button>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => onNavigate("services")}
+            >
+              View All Services
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Featured Installations
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Trusted by hundreds of Filipino families and businesses
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
+            {[
+              {
+                title: "Residential Villa",
+                location: "Alabang",
+                capacity: "12kW",
+              },
+              {
+                title: "Commercial Complex",
+                location: "BGC",
+                capacity: "150kW",
+              },
+              { title: "Farmhouse", location: "Batangas", capacity: "8kW" },
+            ].map((project, index) => (
+              <Card key={index} className="overflow-hidden">
+                <div className="h-48 bg-gradient-to-br from-blue-400 to-blue-600 -mx-6 -mt-6 mb-6 flex items-center justify-center">
+                  <Sun className="w-20 h-20 text-white opacity-50" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  {project.title}
+                </h3>
+                <p className="text-gray-600 mb-2">{project.location}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-blue-600">
+                    {project.capacity} System
+                  </span>
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => onNavigate("projects")}
+            >
+              View All Projects
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-gradient-to-br from-blue-600 to-blue-700">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              What Our Clients Say
+            </h2>
+            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+              Real experiences from satisfied customers across the Philippines
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="bg-white">
+                <div className="flex mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className="w-5 h-5 fill-amber-400 text-amber-400"
+                    />
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-6 leading-relaxed italic">
+                  "{testimonial.text}"
+                </p>
+                <div className="border-t pt-4">
+                  <p className="font-semibold text-gray-900">
+                    {testimonial.name}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {testimonial.location}
+                  </p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-gradient-to-br from-amber-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <Card className="max-w-4xl mx-auto text-center bg-gradient-to-br from-white to-blue-50 border-2 border-blue-100">
+            <Sun className="w-16 h-16 text-amber-500 mx-auto mb-6" />
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Ready to Go Solar?
+            </h2>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Get a free site assessment and discover how much you can save with
+              solar energy. Our experts will design a custom solution for your
+              needs.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button
+                size="lg"
+                onClick={() => onNavigate("contact")}
+                className="w-full sm:w-auto"
+              >
+                Schedule Free Assessment
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => onNavigate("faq")}
+                className="w-full sm:w-auto"
+              >
+                View FAQ
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </section>
+    </>
+  );
+}
