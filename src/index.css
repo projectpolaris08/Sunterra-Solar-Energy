@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Test dark mode - remove after confirming it works */
+html.dark {
+  color-scheme: dark;
+}

@@ -142,13 +142,13 @@ export default function Services({ onNavigate }: ServicesProps) {
         keywords="grid-tie solar Philippines, hybrid solar system, off-grid solar, commercial solar installation, solar panel services, net metering Philippines"
       />
 
-      <section className="pt-32 pb-20 bg-gradient-to-br from-blue-50 via-white to-amber-50">
+      <section className="pt-32 pb-20 bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
               Solar Solutions for Every Need
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 leading-relaxed">
+            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed">
               From residential homes to large commercial properties, we deliver
               customized solar energy systems that maximize savings and
               sustainability
@@ -158,29 +158,45 @@ export default function Services({ onNavigate }: ServicesProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             <Card className="text-center">
               <Home className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">Residential</h3>
-              <p className="text-sm text-gray-600">Perfect for homes</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                Residential
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Perfect for homes
+              </p>
             </Card>
             <Card className="text-center">
               <Building2 className="w-12 h-12 text-amber-600 mx-auto mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">Commercial</h3>
-              <p className="text-sm text-gray-600">Business solutions</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                Commercial
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Business solutions
+              </p>
             </Card>
             <Card className="text-center">
               <Factory className="w-12 h-12 text-green-600 mx-auto mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">Industrial</h3>
-              <p className="text-sm text-gray-600">Large-scale systems</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                Industrial
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Large-scale systems
+              </p>
             </Card>
             <Card className="text-center">
               <Shield className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">Off-Grid</h3>
-              <p className="text-sm text-gray-600">Remote locations</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                Off-Grid
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Remote locations
+              </p>
             </Card>
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="space-y-20 max-w-6xl mx-auto">
             {services.map((service, index) => (
@@ -245,36 +261,38 @@ export default function Services({ onNavigate }: ServicesProps) {
                   <div className="inline-block bg-blue-100 text-blue-600 text-sm font-semibold px-4 py-2 rounded-full mb-4">
                     {service.title}
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
                     {service.title}
                   </h2>
-                  <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+                  <p className="text-lg text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
                     {service.description}
                   </p>
 
                   <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-3 text-lg">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-lg">
                       Key Features:
                     </h3>
                     <ul className="space-y-2">
                       {service.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start">
                           <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                          <span className="text-gray-700">{feature}</span>
+                          <span className="text-gray-700 dark:text-gray-300">
+                            {feature}
+                          </span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
                   <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-3 text-lg">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-lg">
                       Best For:
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {service.bestFor.map((item, idx) => (
                         <span
                           key={idx}
-                          className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                          className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-sm"
                         >
                           {item}
                         </span>
@@ -296,13 +314,13 @@ export default function Services({ onNavigate }: ServicesProps) {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               Our Installation Process
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               A seamless journey from consultation to completion
             </p>
           </div>
@@ -314,10 +332,10 @@ export default function Services({ onNavigate }: ServicesProps) {
                   <div className="text-5xl font-bold text-blue-100 mb-4">
                     {item.step}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
                     {item.title}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                     {item.description}
                   </p>
                 </Card>
@@ -334,12 +352,12 @@ export default function Services({ onNavigate }: ServicesProps) {
 
       <section className="py-20 bg-gradient-to-br from-blue-600 to-blue-700">
         <div className="container mx-auto px-4">
-          <Card className="max-w-4xl mx-auto text-center bg-white">
-            <Sun className="w-16 h-16 text-amber-500 mx-auto mb-6" />
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <Card className="max-w-4xl mx-auto text-center">
+            <Sun className="w-16 h-16 text-amber-500 dark:text-amber-400 mx-auto mb-6" />
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Not Sure Which System is Right for You?
             </h2>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               Our solar experts will assess your needs and recommend the perfect
               solution
             </p>

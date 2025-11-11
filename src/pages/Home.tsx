@@ -41,7 +41,8 @@ export default function Home({ onNavigate }: HomeProps) {
     {
       icon: Users,
       title: "Full Support",
-      description: "Comprehensive after-sales support and maintenance services",
+      description:
+        "Comprehensive after-sales support with a mobile app that monitors your system 24/7",
     },
   ];
 
@@ -126,9 +127,9 @@ export default function Home({ onNavigate }: HomeProps) {
 
         <div className="container mx-auto px-4 py-32 relative z-10 overflow-visible">
           <div className="max-w-4xl mx-auto text-center overflow-visible">
-            <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-md">
-              <Sun className="w-5 h-5 text-amber-500" />
-              <span className="text-sm font-medium text-gray-700">
+            <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-md">
+              <Sun className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Powering the Future of the Philippines
               </span>
             </div>
@@ -168,12 +169,14 @@ export default function Home({ onNavigate }: HomeProps) {
               {stats.map((stat, index) => (
                 <div
                   key={index}
-                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg"
+                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg"
                 >
-                  <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
+                  <div className="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
                     {stat.number}
                   </div>
-                  <div className="text-sm text-gray-600">{stat.label}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -181,13 +184,13 @@ export default function Home({ onNavigate }: HomeProps) {
         </div>
       </section>
 
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               Why Choose Sunterra Solar?
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               We combine expertise, quality, and exceptional service to deliver
               the best solar solutions in the Philippines
             </p>
@@ -200,10 +203,10 @@ export default function Home({ onNavigate }: HomeProps) {
                   <div className="bg-gradient-to-br from-blue-100 to-blue-50 p-4 rounded-2xl mb-4">
                     <feature.icon className="w-8 h-8 text-blue-600" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
@@ -213,13 +216,13 @@ export default function Home({ onNavigate }: HomeProps) {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               Our Solar Solutions
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Tailored solar systems designed for Philippine homes and
               businesses
             </p>
@@ -236,10 +239,10 @@ export default function Home({ onNavigate }: HomeProps) {
                 >
                   <service.icon className="w-12 h-12 text-white mb-4" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                   {service.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed mb-6">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
                   {service.description}
                 </p>
                 <Button
@@ -267,13 +270,13 @@ export default function Home({ onNavigate }: HomeProps) {
         </div>
       </section>
 
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               Featured Installations
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Trusted by hundreds of Filipino families and businesses
             </p>
           </div>
@@ -296,12 +299,14 @@ export default function Home({ onNavigate }: HomeProps) {
                 <div className="h-48 bg-gradient-to-br from-blue-400 to-blue-600 -mx-6 -mt-6 mb-6 flex items-center justify-center">
                   <Sun className="w-20 h-20 text-white opacity-50" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                   {project.title}
                 </h3>
-                <p className="text-gray-600 mb-2">{project.location}</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-2">
+                  {project.location}
+                </p>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-blue-600">
+                  <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
                     {project.capacity} System
                   </span>
                   <CheckCircle className="w-5 h-5 text-green-500" />
@@ -344,14 +349,14 @@ export default function Home({ onNavigate }: HomeProps) {
                     />
                   ))}
                 </div>
-                <p className="text-gray-700 mb-6 leading-relaxed italic">
+                <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed italic">
                   "{testimonial.text}"
                 </p>
-                <div className="border-t pt-4">
-                  <p className="font-semibold text-gray-900">
+                <div className="border-t dark:border-gray-700 pt-4">
+                  <p className="font-semibold text-gray-900 dark:text-white">
                     {testimonial.name}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {testimonial.location}
                   </p>
                 </div>
@@ -361,14 +366,14 @@ export default function Home({ onNavigate }: HomeProps) {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-amber-50 to-blue-50">
+      <section className="py-20 bg-gradient-to-br from-amber-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4">
-          <Card className="max-w-4xl mx-auto text-center bg-gradient-to-br from-white to-blue-50 border-2 border-blue-100">
-            <Sun className="w-16 h-16 text-amber-500 mx-auto mb-6" />
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <Card className="max-w-4xl mx-auto text-center">
+            <Sun className="w-16 h-16 text-amber-500 dark:text-amber-400 mx-auto mb-6" />
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Ready to Go Solar?
             </h2>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               Get a free site assessment and discover how much you can save with
               solar energy. Our experts will design a custom solution for your
               needs.

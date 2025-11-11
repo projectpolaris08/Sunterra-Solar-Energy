@@ -1,4 +1,12 @@
-import { Sun, Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from 'lucide-react';
+import {
+  Sun,
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Instagram,
+  Linkedin,
+} from "lucide-react";
 
 interface FooterProps {
   onNavigate: (page: string) => void;
@@ -9,11 +17,11 @@ export default function Footer({ onNavigate }: FooterProps) {
 
   const handleNavClick = (path: string) => {
     onNavigate(path);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <footer className="bg-gradient-to-br from-gray-900 to-gray-800 text-gray-300">
+    <footer className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 text-gray-300 dark:text-gray-400">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
@@ -27,14 +35,15 @@ export default function Footer({ onNavigate }: FooterProps) {
               </div>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">
-              Leading solar installation company in the Philippines, providing reliable and sustainable energy solutions.
+              Leading solar installation company in the Philippines, providing
+              reliable and sustainable energy solutions.
             </p>
           </div>
 
           <div>
             <h4 className="font-semibold text-white mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              {['home', 'about', 'services', 'projects'].map((page) => (
+              {["home", "about", "services", "projects"].map((page) => (
                 <li key={page}>
                   <button
                     onClick={() => handleNavClick(page)}
@@ -50,10 +59,18 @@ export default function Footer({ onNavigate }: FooterProps) {
           <div>
             <h4 className="font-semibold text-white mb-4">Services</h4>
             <ul className="space-y-2 text-sm">
-              <li className="hover:text-amber-400 transition-colors cursor-pointer">Grid-Tie Solar Systems</li>
-              <li className="hover:text-amber-400 transition-colors cursor-pointer">Hybrid Solar Systems</li>
-              <li className="hover:text-amber-400 transition-colors cursor-pointer">Off-Grid Solar Systems</li>
-              <li className="hover:text-amber-400 transition-colors cursor-pointer">Commercial Solar</li>
+              <li className="hover:text-amber-400 transition-colors cursor-pointer">
+                Grid-Tie Solar Systems
+              </li>
+              <li className="hover:text-amber-400 transition-colors cursor-pointer">
+                Hybrid Solar Systems
+              </li>
+              <li className="hover:text-amber-400 transition-colors cursor-pointer">
+                Off-Grid Solar Systems
+              </li>
+              <li className="hover:text-amber-400 transition-colors cursor-pointer">
+                Commercial Solar
+              </li>
             </ul>
           </div>
 
@@ -90,13 +107,24 @@ export default function Footer({ onNavigate }: FooterProps) {
         <div className="border-t border-gray-700 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm text-gray-400">
-              © {currentYear} Sunterra Solar Energy Philippines. All rights reserved.
+              © {currentYear} Sunterra Solar Energy Philippines. All rights
+              reserved.
             </p>
             <div className="flex space-x-6 text-sm">
-              <button className="hover:text-amber-400 transition-colors">Privacy Policy</button>
-              <button className="hover:text-amber-400 transition-colors">Terms of Service</button>
+              <button className="hover:text-amber-400 transition-colors">
+                Privacy Policy
+              </button>
+              <button className="hover:text-amber-400 transition-colors">
+                Terms of Service
+              </button>
             </div>
           </div>
+        </div>
+
+        <div className="border-t border-gray-700 pt-6 mt-6">
+          <p className="text-center text-sm text-white italic">
+            To God be the Glory
+          </p>
         </div>
       </div>
 
@@ -104,18 +132,19 @@ export default function Footer({ onNavigate }: FooterProps) {
         {JSON.stringify({
           "@context": "https://schema.org",
           "@type": "LocalBusiness",
-          "name": "Sunterra Solar Energy Philippines",
-          "description": "Professional solar panel installation company in the Philippines specializing in grid-tie, hybrid, and off-grid solar systems",
-          "image": "https://sunterrasolar.ph/logo.png",
-          "address": {
+          name: "Sunterra Solar Energy Philippines",
+          description:
+            "Professional solar panel installation company in the Philippines specializing in grid-tie, hybrid, and off-grid solar systems",
+          image: "https://sunterrasolar.ph/logo.png",
+          address: {
             "@type": "PostalAddress",
-            "addressCountry": "PH",
-            "addressLocality": "San Jose del Monte, Bulacan"
+            addressCountry: "PH",
+            addressLocality: "San Jose del Monte, Bulacan",
           },
-          "telephone": "+63-960-692-1760",
-          "email": "info@sunterrasolar.ph",
-          "priceRange": "$$",
-          "openingHours": "Mo-Sa 08:00-18:00"
+          telephone: "+63-960-692-1760",
+          email: "info@sunterrasolar.ph",
+          priceRange: "$$",
+          openingHours: "Mo-Sa 08:00-18:00",
         })}
       </script>
     </footer>
