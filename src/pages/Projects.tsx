@@ -13,120 +13,87 @@ export default function Projects({ onNavigate }: ProjectsProps) {
   const projects = [
     {
       id: 1,
-      title: "Luxury Residential Villa",
-      location: "Alabang, Metro Manila",
-      systemType: "Grid-Tie Solar",
+      title: "Residential Hybrid Solar Installation",
+      location: "Cubao, Quezon City",
+      systemType: "Hybrid Solar",
       capacity: "12kW",
-      installDate: "March 2024",
+      installDate: "January 2025",
       description:
-        "Modern villa installation with premium solar panels. Reduced electricity costs by 85% while maintaining aesthetic appeal.",
+        "Premium hybrid installation for large homes. Modern design with high-efficiency panels and advanced battery storage. Reduced electricity costs by 85% while ensuring power reliability during outages.",
       color: "from-blue-400 to-blue-600",
       savings: "₱15,000/month",
       category: "Residential",
+      image: "/images/12kW-Hybrid.jpg",
     },
     {
       id: 2,
-      title: "Commercial Office Complex",
-      location: "BGC, Taguig City",
+      title: "Residential Hybrid Solar Installation",
+      location: "Lagro, Quezon City",
       systemType: "Hybrid Solar",
-      capacity: "150kW",
-      installDate: "January 2024",
+      capacity: "12kW",
+      installDate: "February 2025",
       description:
-        "Large-scale commercial installation with battery backup ensuring uninterrupted operations during peak hours.",
-      color: "from-amber-400 to-amber-600",
-      savings: "₱180,000/month",
-      category: "Commercial",
+        "Ideal hybrid system for medium to large-sized homes with higher energy consumption. Battery storage ensures uninterrupted power supply during outages. Provides excellent ROI and covers most household energy requirements.",
+      color: "from-cyan-400 to-cyan-600",
+      savings: "₱15,000/month",
+      category: "Residential",
+      image: "/images/12kW.jpg",
     },
     {
       id: 3,
-      title: "Mountain Farmhouse",
-      location: "Tagaytay, Cavite",
-      systemType: "Off-Grid Solar",
-      capacity: "8kW",
-      installDate: "December 2023",
+      title: "Residential Hybrid Solar Installation",
+      location: "Batasan, Quezon City",
+      systemType: "Hybrid Solar",
+      capacity: "12kW",
+      installDate: "March 2025",
       description:
-        "Complete off-grid solution for remote property. Full energy independence with battery storage system.",
-      color: "from-green-400 to-green-600",
-      savings: "100% energy independent",
-      category: "Off-Grid",
+        "Perfect hybrid system installation for residential property. Includes battery backup for power reliability during outages. Covers daily energy needs and significantly reduces monthly electricity bills with smart energy management.",
+      color: "from-amber-400 to-amber-600",
+      savings: "₱15,000/month",
+      category: "Residential",
+      image: "/images/12kW-Hybrid-Solar.jpg",
     },
     {
       id: 4,
-      title: "Manufacturing Facility",
-      location: "Calamba, Laguna",
-      systemType: "Grid-Tie Solar",
-      capacity: "300kW",
-      installDate: "November 2023",
+      title: "Residential Hybrid Solar Installation",
+      location: "Cabanatuan, Nueva Ecija",
+      systemType: "Hybrid Solar",
+      capacity: "16kW",
+      installDate: "April 2025",
       description:
-        "Industrial-scale installation reducing operational costs significantly. ROI achieved in 3.5 years.",
-      color: "from-purple-400 to-purple-600",
-      savings: "₱350,000/month",
-      category: "Commercial",
+        "Comprehensive hybrid system with battery backup for a large family home. Ensures power reliability during outages and maximizes energy independence. Perfect for properties requiring high energy capacity.",
+      color: "from-green-400 to-green-600",
+      savings: "₱20,000/month",
+      category: "Residential",
+      image: "/images/16kW.jpg",
     },
     {
       id: 5,
-      title: "Beachfront Resort",
-      location: "Boracay, Aklan",
+      title: "Residential Hybrid Solar Installation",
+      location: "Gen. Trias, Cavite",
       systemType: "Hybrid Solar",
-      capacity: "45kW",
-      installDate: "October 2023",
+      capacity: "8kW",
+      installDate: "May 2025",
       description:
-        "Resort installation combining solar with battery backup for reliable power in island location.",
-      color: "from-cyan-400 to-cyan-600",
-      savings: "₱55,000/month",
-      category: "Commercial",
+        "Ideal hybrid system for medium-sized homes with higher energy consumption. Battery storage ensures uninterrupted power supply during outages. Provides excellent ROI and covers most household energy requirements.",
+      color: "from-purple-400 to-purple-600",
+      savings: "₱11,000/month",
+      category: "Residential",
+      image: "/images/8kW-Hybrid-Solar.jpg",
     },
     {
       id: 6,
-      title: "Suburban Family Home",
-      location: "Quezon City",
-      systemType: "Grid-Tie Solar",
-      capacity: "6kW",
-      installDate: "September 2023",
-      description:
-        "Typical residential installation. Family of 5 now enjoys minimal electricity bills year-round.",
-      color: "from-blue-400 to-blue-600",
-      savings: "₱8,500/month",
-      category: "Residential",
-    },
-    {
-      id: 7,
-      title: "Shopping Center",
-      location: "Makati City",
-      systemType: "Grid-Tie Solar",
-      capacity: "200kW",
-      installDate: "August 2023",
-      description:
-        "Rooftop installation on major shopping center. Significant reduction in daytime energy costs.",
-      color: "from-amber-400 to-amber-600",
-      savings: "₱240,000/month",
-      category: "Commercial",
-    },
-    {
-      id: 8,
-      title: "Rural Farm Estate",
-      location: "Batangas Province",
-      systemType: "Off-Grid Solar",
-      capacity: "15kW",
-      installDate: "July 2023",
-      description:
-        "Large off-grid system for agricultural operations. Powers farm equipment and living quarters.",
-      color: "from-green-400 to-green-600",
-      savings: "100% energy independent",
-      category: "Off-Grid",
-    },
-    {
-      id: 9,
-      title: "Hotel & Conference Center",
-      location: "Cebu City",
+      title: "Residential Hybrid Solar Installation",
+      location: "Marilao, Bulacan",
       systemType: "Hybrid Solar",
-      capacity: "120kW",
-      installDate: "June 2023",
+      capacity: "8kW",
+      installDate: "June 2025",
       description:
-        "Hospitality sector installation with backup power. Ensures guest comfort during power interruptions.",
-      color: "from-purple-400 to-purple-600",
-      savings: "₱145,000/month",
-      category: "Commercial",
+        "Perfect hybrid system installation for residential property. Includes battery backup for power reliability during outages. Covers daily energy needs and significantly reduces monthly electricity bills with smart energy management.",
+      color: "from-emerald-400 to-emerald-600",
+      savings: "₱11,000/month",
+      category: "Residential",
+      image: "/images/8kW-Hybrid.jpg",
     },
   ];
 
@@ -135,14 +102,6 @@ export default function Projects({ onNavigate }: ProjectsProps) {
     {
       name: "Residential",
       count: projects.filter((p) => p.category === "Residential").length,
-    },
-    {
-      name: "Commercial",
-      count: projects.filter((p) => p.category === "Commercial").length,
-    },
-    {
-      name: "Off-Grid",
-      count: projects.filter((p) => p.category === "Off-Grid").length,
     },
   ];
 
@@ -191,14 +150,39 @@ export default function Projects({ onNavigate }: ProjectsProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {filteredProjects.map((project) => (
               <Card key={project.id} className="overflow-hidden">
-                <div
-                  className={`bg-gradient-to-br ${project.color} h-48 -mx-6 -mt-6 mb-6 flex flex-col items-center justify-center relative`}
-                >
-                  <Sun className="w-24 h-24 text-white opacity-50 absolute" />
-                  <div className="relative z-10 text-center text-white">
-                    <p className="text-sm font-medium mb-1">System Capacity</p>
-                    <p className="text-4xl font-bold">{project.capacity}</p>
-                  </div>
+                <div className="h-48 -mx-6 -mt-6 mb-6 flex flex-col items-center justify-center relative overflow-hidden">
+                  {project.image ? (
+                    <>
+                      <img
+                        src={project.image}
+                        alt={project.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <div className="relative z-10 text-center text-white">
+                          <p className="text-sm font-medium mb-1">
+                            System Capacity
+                          </p>
+                          <p className="text-4xl font-bold drop-shadow-lg">
+                            {project.capacity}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div
+                      className={`bg-gradient-to-br ${project.color} w-full h-full flex flex-col items-center justify-center relative`}
+                    >
+                      <Sun className="w-24 h-24 text-white opacity-50 absolute" />
+                      <div className="relative z-10 text-center text-white">
+                        <p className="text-sm font-medium mb-1">
+                          System Capacity
+                        </p>
+                        <p className="text-4xl font-bold">{project.capacity}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -259,22 +243,22 @@ export default function Projects({ onNavigate }: ProjectsProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
             {[
               {
-                number: "500+",
+                number: "6",
                 label: "Completed Projects",
                 color: "text-blue-600",
               },
               {
-                number: "50MW+",
+                number: "68kW",
                 label: "Total Capacity",
                 color: "text-amber-600",
               },
               {
-                number: "₱500M+",
-                label: "Total Savings",
+                number: "₱1.04M+",
+                label: "Annual Savings",
                 color: "text-green-600",
               },
               {
-                number: "25,000+",
+                number: "56+",
                 label: "Tons CO₂ Reduced",
                 color: "text-purple-600",
               },

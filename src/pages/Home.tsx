@@ -24,7 +24,7 @@ export default function Home({ onNavigate }: HomeProps) {
       icon: Shield,
       title: "Trusted Expertise",
       description:
-        "Over 3 years of experience in solar installation across the Philippines",
+        "Our team brings 2+ years of hands-on experience in solar installation across the Philippines",
     },
     {
       icon: Award,
@@ -72,29 +72,28 @@ export default function Home({ onNavigate }: HomeProps) {
 
   const testimonials = [
     {
-      name: "Maria Santos",
-      location: "Quezon City",
-      text: "Sunterra Solar transformed our home! Our electricity bill dropped by 85%. The installation was professional and hassle-free.",
+      name: "Sir Kyle",
+      location: "Cubao, Quezon City",
+      text: "Sunterra Solar transformed our home! Our electricity bill dropped by 85%. The installation was professional and hassle-free. The 12kW hybrid system is perfect for our family.",
       rating: 5,
     },
     {
-      name: "Juan dela Cruz",
-      location: "Makati",
-      text: "Excellent service from consultation to installation. The team was knowledgeable and the system works perfectly.",
+      name: "Doc Emman",
+      location: "Cabanatuan, Nueva Ecija",
+      text: "Excellent service from consultation to installation. The team was knowledgeable and the 16kW system works perfectly. We're now energy independent with battery backup.",
       rating: 5,
     },
     {
-      name: "Carlos Reyes",
-      location: "Cebu City",
-      text: "Best investment we made for our business. The ROI is impressive and the system requires minimal maintenance.",
+      name: "Sir Rommel",
+      location: "Marilao",
+      text: "Best investment we made for our home. The 8kW hybrid system provides excellent ROI and requires minimal maintenance. Highly recommend Sunterra Solar!",
       rating: 5,
     },
   ];
 
   const stats = [
-    { number: "118+", label: "Installations" },
-    { number: "3+", label: "Years Experience" },
-    { number: "1.2MW+", label: "Total Capacity" },
+    { number: "6", label: "Completed Projects" },
+    { number: "68kW", label: "Total Capacity" },
     { number: "98%", label: "Satisfaction Rate" },
   ];
 
@@ -165,7 +164,7 @@ export default function Home({ onNavigate }: HomeProps) {
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {stats.map((stat, index) => (
                 <div
                   key={index}
@@ -284,20 +283,45 @@ export default function Home({ onNavigate }: HomeProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-12">
             {[
               {
-                title: "Residential Villa",
-                location: "Alabang",
+                title: "Residential Hybrid Solar",
+                location: "Cubao, Quezon City",
                 capacity: "12kW",
+                image: "/images/12kW-Hybrid.jpg",
               },
               {
-                title: "Commercial Complex",
-                location: "BGC",
-                capacity: "150kW",
+                title: "Residential Hybrid Solar",
+                location: "Cabanatuan, Nueva Ecija",
+                capacity: "16kW",
+                image: "/images/16kW.jpg",
               },
-              { title: "Farmhouse", location: "Batangas", capacity: "8kW" },
+              {
+                title: "Residential Hybrid Solar",
+                location: "Marilao, Bulacan",
+                capacity: "8kW",
+                image: "/images/8kW-Hybrid.jpg",
+              },
             ].map((project, index) => (
               <Card key={index} className="overflow-hidden">
-                <div className="h-48 bg-gradient-to-br from-blue-400 to-blue-600 -mx-6 -mt-6 mb-6 flex items-center justify-center">
-                  <Sun className="w-20 h-20 text-white opacity-50" />
+                <div className="h-48 -mx-6 -mt-6 mb-6 relative overflow-hidden">
+                  {project.image ? (
+                    <>
+                      <img
+                        src={project.image}
+                        alt={project.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <p className="text-white text-2xl font-bold drop-shadow-lg">
+                          {project.capacity}
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                      <Sun className="w-20 h-20 text-white opacity-50" />
+                    </div>
+                  )}
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                   {project.title}
@@ -340,7 +364,7 @@ export default function Home({ onNavigate }: HomeProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="bg-white">
+              <Card key={index} className="bg-white h-full flex flex-col">
                 <div className="flex mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star
@@ -349,10 +373,10 @@ export default function Home({ onNavigate }: HomeProps) {
                     />
                   ))}
                 </div>
-                <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed italic">
+                <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed italic flex-grow">
                   "{testimonial.text}"
                 </p>
-                <div className="border-t dark:border-gray-700 pt-4">
+                <div className="border-t dark:border-gray-700 pt-4 mt-auto">
                   <p className="font-semibold text-gray-900 dark:text-white">
                     {testimonial.name}
                   </p>

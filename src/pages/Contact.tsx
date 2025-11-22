@@ -66,7 +66,7 @@ export default function Contact({ onNavigate }: ContactProps) {
     {
       icon: Mail,
       title: "Email",
-      detail: "info@sunterrasolar.ph",
+      detail: "info@sunterrasolarenergy.com",
       color: "from-amber-500 to-amber-600",
     },
     {
@@ -87,7 +87,7 @@ export default function Contact({ onNavigate }: ContactProps) {
     <>
       <SEO
         title="Contact Us - Free Solar Site Assessment"
-        description="Contact Sunterra Solar Energy Philippines for a free site assessment. Get expert advice on solar panel installation for your home or business. Call +63 917 123 4567 or email info@sunterrasolar.ph"
+        description="Contact Sunterra Solar Energy Philippines for a free site assessment. Get expert advice on solar panel installation for your home or business. Call +63 960 692 1760 or email info@sunterrasolarenergy.com"
         keywords="contact solar installer Philippines, free solar assessment, solar consultation Manila, Sunterra Solar contact"
       />
 
@@ -377,17 +377,34 @@ export default function Contact({ onNavigate }: ContactProps) {
 
           <div className="max-w-5xl mx-auto">
             <Card className="overflow-hidden">
-              <div className="h-96 bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400 flex items-center justify-center relative">
-                <MapPin className="w-32 h-32 text-white opacity-50 absolute" />
-                <div className="relative z-10 text-center text-white">
-                  <h3 className="text-3xl font-bold mb-2">
+              <div className="h-96 relative">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3850.5!2d121.0!3d14.8!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTTCsDQ4JzAwLjAiTiAxMjHCsDAwJzAwLjAiRQ!5e0!3m2!1sen!2sph!4v1234567890123!5m2!1sen!2sph"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="absolute inset-0"
+                  title="Sunterra Solar Energy Office Location"
+                ></iframe>
+                <div className="absolute bottom-4 left-4 right-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                     Sunterra Solar Energy
                   </h3>
-                  <p className="text-lg">Manila, Philippines</p>
-                  <p className="text-sm mt-4 max-w-md mx-auto">
-                    Schedule a visit to our office to see solar products and
-                    speak with our experts
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    San Jose del Monte, Bulacan, Philippines
                   </p>
+                  <a
+                    href="https://maps.app.goo.gl/xDhxzYJPqjCxVVV7A"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                  >
+                    <MapPin className="w-4 h-4 mr-1" />
+                    Open in Google Maps
+                  </a>
                 </div>
               </div>
             </Card>

@@ -87,7 +87,7 @@ export default function Footer({ onNavigate }: FooterProps) {
               </li>
               <li className="flex items-center space-x-2 text-sm">
                 <Mail className="w-4 h-4 flex-shrink-0 text-amber-400" />
-                <span>info@sunterrasolar.ph</span>
+                <span>info@sunterrasolarenergy.com</span>
               </li>
             </ul>
             <div className="flex space-x-3 mt-4">
@@ -142,7 +142,7 @@ export default function Footer({ onNavigate }: FooterProps) {
             addressLocality: "San Jose del Monte, Bulacan",
           },
           telephone: "+63-960-692-1760",
-          email: "info@sunterrasolar.ph",
+          email: "info@sunterrasolarenergy.com",
           priceRange: "$$",
           openingHours: "Mo-Sa 08:00-18:00",
         })}
