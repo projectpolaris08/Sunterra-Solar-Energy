@@ -78,14 +78,23 @@ export default function About({ onNavigate }: AboutProps) {
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed">
               Pioneering sustainable energy solutions across the Philippines
-              since 2013
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto items-center">
             <div>
-              <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl h-96 flex items-center justify-center shadow-2xl">
-                <Award className="w-32 h-32 text-white opacity-50" />
+              <div className="rounded-3xl h-96 overflow-hidden shadow-2xl bg-gray-900">
+                <video
+                  src="/videos/Sunterra.mp4"
+                  className="w-full h-full object-cover"
+                  controls
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                >
+                  Your browser does not support the video tag.
+                </video>
               </div>
             </div>
 
@@ -94,21 +103,20 @@ export default function About({ onNavigate }: AboutProps) {
                 Our Story
               </h2>
               <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                Founded in 2013, Sunterra Solar Energy began with a simple
+                Founded in 2025, Sunterra Solar Energy began with a simple
                 vision: to make clean, affordable solar energy accessible to
                 every Filipino home and business.
               </p>
               <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                Over the past decade, we've grown from a small team of
-                passionate engineers to become one of the Philippines' most
-                trusted solar installation companies. We've installed over 500
-                solar systems, helping families and businesses reduce their
-                carbon footprint while saving significantly on energy costs.
+                Our team brings years of combined experience in solar installation
+                and renewable energy solutions. We're committed to becoming one of
+                the Philippines' most trusted solar installation companies, helping
+                families and businesses reduce their carbon footprint while saving
+                significantly on energy costs.
               </p>
               <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                Today, we continue to lead the industry with innovative
-                solutions, exceptional service, and an unwavering commitment to
-                quality and sustainability.
+                Today, we lead with innovative solutions, exceptional service, and
+                an unwavering commitment to quality and sustainability.
               </p>
             </div>
           </div>
