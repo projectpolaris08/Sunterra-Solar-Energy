@@ -46,7 +46,7 @@ export default function About({ onNavigate }: AboutProps) {
 
   const team = [
     {
-      role: "Expert Engineers",
+      role: "Expert Solar Installers",
       description: "Licensed and certified solar installation professionals",
       icon: Zap,
     },
@@ -224,8 +224,8 @@ export default function About({ onNavigate }: AboutProps) {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             {[
-              { number: "500+", label: "Projects Completed" },
-              { number: "50MW+", label: "Total Installed Capacity" },
+              { number: "6", label: "Projects Completed" },
+              { number: "68kW", label: "Total Installed Capacity" },
               { number: "98%", label: "Customer Satisfaction" },
               { number: "24/7", label: "Support Available" },
             ].map((stat, index) => (
