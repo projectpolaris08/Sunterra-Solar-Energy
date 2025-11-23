@@ -2,31 +2,35 @@ import nodemailer from "nodemailer";
 
 // Vercel serverless function handler
 export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET,OPTIONS,PATCH,DELETE,POST,PUT"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
-  );
-
-  // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-  // Only allow POST requests
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      success: false,
-      message: "Method not allowed",
-    });
-  }
-
   try {
+    // Set content type for all responses first
+    res.setHeader("Content-Type", "application/json");
+
+    // Enable CORS
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET,OPTIONS,PATCH,DELETE,POST,PUT"
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+    );
+
+    // Handle preflight requests
+    if (req.method === "OPTIONS") {
+      return res.status(200).json({});
+    }
+
+    // Only allow POST requests
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        success: false,
+        message: "Method not allowed",
+      });
+    }
+
     const { name, email, phone, propertyType, systemType, message } = req.body;
 
     // Validate required fields
@@ -137,12 +141,21 @@ You can reply directly to this email to contact ${name} at ${email}.
       messageId: info.messageId,
     });
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Error in contact handler:", error);
+    // Always return JSON, even on error
+    // Make sure headers are set even in error case
+    if (!res.headersSent) {
+      res.setHeader("Content-Type", "application/json");
+    }
     return res.status(500).json({
       success: false,
       message:
         "Failed to send email. Please try again later or contact us directly.",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      error:
+        process.env.VERCEL_ENV === "development" ||
+        process.env.VERCEL_ENV === "preview"
+          ? error.message
+          : undefined,
     });
   }
 }
