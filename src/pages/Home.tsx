@@ -345,7 +345,7 @@ export default function Home({ onNavigate }: HomeProps) {
               Featured Installations
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Trusted by hundreds of Filipino families and businesses
+              Trusted by Filipino families and businesses
             </p>
           </div>
 
