@@ -38,10 +38,8 @@ export default function Contact({ onNavigate }: ContactProps) {
 
     try {
       // Determine the API URL based on environment
-      // For Vercel, use relative path; for local dev, use localhost
-      const apiUrl =
-        import.meta.env.VITE_API_URL ||
-        (import.meta.env.DEV ? "http://localhost:3001" : "");
+      // For Vercel/production, use relative path; for local dev, Vite proxy handles it
+      const apiUrl = import.meta.env.VITE_API_URL || "";
       const response = await fetch(`${apiUrl}/api/contact`, {
         method: "POST",
         headers: {

@@ -3,8 +3,6 @@ import {
   Zap,
   Shield,
   TrendingUp,
-  Award,
-  Users,
   ArrowRight,
   CheckCircle,
   Star,
