@@ -1,5 +1,4 @@
 import {
-  Sun,
   Mail,
   Phone,
   MapPin,
@@ -25,15 +24,20 @@ export default function Footer({ onNavigate }: FooterProps) {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-2 rounded-lg">
-                <Sun className="w-5 h-5 text-amber-400" />
-              </div>
-              <div>
+            <button
+              onClick={() => handleNavClick("home")}
+              className="flex items-center space-x-2 mb-4 group"
+            >
+              <img
+                src="/images/sunterra.svg"
+                alt="Sunterra Solar Energy Philippines"
+                className="h-10 w-auto group-hover:scale-110 transition-transform duration-300"
+              />
+              <div className="flex flex-col">
                 <h3 className="font-bold text-white text-lg">Sunterra Solar</h3>
                 <p className="text-xs text-gray-400">Energy Philippines</p>
               </div>
-            </div>
+            </button>
             <p className="text-sm text-gray-400 leading-relaxed">
               Leading solar installation company in the Philippines, providing
               reliable and sustainable energy solutions.
@@ -91,9 +95,14 @@ export default function Footer({ onNavigate }: FooterProps) {
               </li>
             </ul>
             <div className="flex space-x-3 mt-4">
-              <button className="p-2 bg-gray-800 rounded-lg hover:bg-blue-600 transition-colors">
+              <a
+                href="https://www.facebook.com/sunterrasolarenergy/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-gray-800 rounded-lg hover:bg-blue-600 transition-colors"
+              >
                 <Facebook className="w-4 h-4" />
-              </button>
+              </a>
               <button className="p-2 bg-gray-800 rounded-lg hover:bg-pink-600 transition-colors">
                 <Instagram className="w-4 h-4" />
               </button>

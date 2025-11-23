@@ -8,11 +8,14 @@ import {
   ArrowRight,
   CheckCircle,
   Star,
+  DollarSign,
+  Leaf,
+  Wrench,
 } from "lucide-react";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import SEO from "../components/SEO";
-import HeroImage from "../assets/images/HeroImage.jpg";
+import HeroImage from "../assets/images/solarpanels.jpg";
 
 interface HomeProps {
   onNavigate: (page: string) => void;
@@ -21,28 +24,58 @@ interface HomeProps {
 export default function Home({ onNavigate }: HomeProps) {
   const features = [
     {
-      icon: Shield,
-      title: "Trusted Expertise",
+      icon: Zap,
+      title: "High Efficiency",
       description:
-        "Our team brings 2+ years of hands-on experience in solar installation across the Philippines",
+        "Our premium solar panels convert up to 22% of sunlight into usable energy, maximizing your power generation.",
+      iconColor: "text-yellow-500 dark:text-yellow-400",
+      bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
+      borderColor: "border-yellow-400 dark:border-yellow-500",
     },
     {
-      icon: Award,
-      title: "Premium Quality",
+      icon: DollarSign,
+      title: "Lower Energy Bills",
       description:
-        "Top-tier solar panels with 12-year warranty and proven performance",
+        "Reduce your electricity costs by up to 70% with our efficient solar solutions and smart energy management.",
+      iconColor: "text-green-600 dark:text-green-400",
+      bgColor: "bg-green-50 dark:bg-green-900/20",
+      borderColor: "border-green-400 dark:border-green-500",
+    },
+    {
+      icon: Leaf,
+      title: "Eco-Friendly",
+      description:
+        "Reduce your carbon footprint and contribute to a cleaner environment with 100% renewable energy.",
+      iconColor: "text-green-600 dark:text-green-400",
+      bgColor: "bg-green-50 dark:bg-green-900/20",
+      borderColor: "border-green-400 dark:border-green-500",
+    },
+    {
+      icon: Shield,
+      title: "12-Year Solar Panel Warranty",
+      description:
+        "Industry-leading warranty coverage ensures your investment is protected for decades to come.",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+      borderColor: "border-blue-400 dark:border-blue-500",
     },
     {
       icon: TrendingUp,
-      title: "Maximum Savings",
+      title: "Increased Home Value",
       description:
-        "Reduce electricity bills by up to 80% with our efficient solar systems",
+        "Solar installations can increase your property value by an average of 4% according to recent studies.",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+      borderColor: "border-blue-400 dark:border-blue-500",
     },
     {
-      icon: Users,
-      title: "Full Support",
+      icon: Wrench,
+      title: "Professional Installation",
       description:
-        "Comprehensive after-sales support with a mobile app that monitors your system 24/7",
+        "Our certified technicians ensure seamless installation with minimal disruption to your daily routine.",
+      iconColor: "text-gray-600 dark:text-gray-400",
+      bgColor: "bg-gray-50 dark:bg-gray-900/20",
+      borderColor: "border-gray-400 dark:border-gray-500",
     },
   ];
 
@@ -74,7 +107,7 @@ export default function Home({ onNavigate }: HomeProps) {
     {
       name: "Sir Kyle",
       location: "Cubao, Quezon City",
-      text: "Sunterra Solar transformed our home! Our electricity bill dropped by 85%. The installation was professional and hassle-free. The 12kW hybrid system is perfect for our family.",
+      text: "Our electricity bill dropped by 85%. The installation was professional and hassle-free. The 12kW hybrid system is perfect for our family.",
       rating: 5,
     },
     {
@@ -94,7 +127,7 @@ export default function Home({ onNavigate }: HomeProps) {
   const stats = [
     { number: "6", label: "Completed Projects" },
     { number: "68kW", label: "Total Capacity" },
-    { number: "98%", label: "Satisfaction Rate" },
+    { number: "98%", label: "Efficiency Rate" },
   ];
 
   return (
@@ -106,15 +139,15 @@ export default function Home({ onNavigate }: HomeProps) {
         canonicalUrl="https://sunterrasolar.ph"
       />
 
-      <section
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
-        style={{
-          backgroundImage: `url(${HeroImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Animated background image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat animate-[kenBurns_20s_ease-in-out_infinite_alternate]"
+          style={{
+            backgroundImage: `url(${HeroImage})`,
+          }}
+        />
+
         {/* Overlay for better text readability - neutral dark overlay */}
         <div className="absolute inset-0 bg-black/30"></div>
 
@@ -126,39 +159,39 @@ export default function Home({ onNavigate }: HomeProps) {
 
         <div className="container mx-auto px-4 py-32 relative z-10 overflow-visible">
           <div className="max-w-4xl mx-auto text-center overflow-visible">
-            <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-md">
+            <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-md animate-[fadeInDown_0.8s_ease-out]">
               <Sun className="w-5 h-5 text-amber-500 dark:text-amber-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Powering the Future of the Philippines
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-relaxed overflow-visible drop-shadow-lg">
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-relaxed overflow-visible drop-shadow-lg animate-[fadeInUp_1s_ease-out_0.2s_both]">
               Your Road to Energy Independence
-              <span className="block mt-2 bg-gradient-to-r from-blue-300 via-blue-400 to-amber-300 bg-clip-text text-transparent pb-3">
+              <span className="block mt-2 bg-gradient-to-r from-blue-300 via-blue-400 to-amber-300 bg-clip-text text-transparent pb-3 animate-[fadeInUp_1s_ease-out_0.4s_both]">
                 Begins with Sunterra
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-white/95 mb-10 leading-relaxed max-w-3xl mx-auto drop-shadow-md">
+            <p className="text-xl md:text-2xl text-white/95 mb-10 leading-relaxed max-w-3xl mx-auto drop-shadow-md animate-[fadeInUp_1s_ease-out_0.6s_both]">
               Imagine a life where your home runs on your own sunlight. No fear
               of the next billing cycle, just steady, dependable energy.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-[fadeInUp_1s_ease-out_0.8s_both]">
               <Button
                 size="lg"
                 onClick={() => onNavigate("contact")}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto hover:scale-105 transition-transform duration-300"
               >
-                Get Free Site Assessment
+                Get Quote
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 onClick={() => onNavigate("services")}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto hover:scale-105 transition-transform duration-300"
               >
                 Explore Services
               </Button>
@@ -168,12 +201,15 @@ export default function Home({ onNavigate }: HomeProps) {
               {stats.map((stat, index) => (
                 <div
                   key={index}
-                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg"
+                  className="bg-white/20 dark:bg-gray-900/20 backdrop-blur-md border border-white/30 dark:border-white/10 rounded-2xl p-6 shadow-xl hover:scale-105 transition-all duration-300 hover:bg-white/30 dark:hover:bg-gray-900/30"
+                  style={{
+                    animation: `fadeInUp 1s ease-out ${1 + index * 0.2}s both`,
+                  }}
                 >
-                  <div className="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                  <div className="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2 drop-shadow-lg">
                     {stat.number}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                  <div className="text-sm text-gray-900 dark:text-white font-semibold drop-shadow-lg">
                     {stat.label}
                   </div>
                 </div>
@@ -181,6 +217,39 @@ export default function Home({ onNavigate }: HomeProps) {
             </div>
           </div>
         </div>
+
+        <style>{`
+          @keyframes kenBurns {
+            0% {
+              transform: scale(1) translate(0, 0);
+            }
+            100% {
+              transform: scale(1.1) translate(-2%, -2%);
+            }
+          }
+          
+          @keyframes fadeInDown {
+            from {
+              opacity: 0;
+              transform: translateY(-30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}</style>
       </section>
 
       <section className="py-20 bg-white dark:bg-gray-900">
@@ -195,17 +264,19 @@ export default function Home({ onNavigate }: HomeProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <Card key={index}>
-                <div className="flex flex-col items-center text-center">
-                  <div className="bg-gradient-to-br from-blue-100 to-blue-50 p-4 rounded-2xl mb-4">
-                    <feature.icon className="w-8 h-8 text-blue-600" />
+                <div className="flex flex-col">
+                  <div
+                    className={`${feature.bgColor} border ${feature.borderColor} p-3 rounded-lg w-fit mb-4`}
+                  >
+                    <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-left">
                     {feature.description}
                   </p>
                 </div>

@@ -28,12 +28,38 @@ export default function Contact({ onNavigate }: ContactProps) {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Determine the API URL based on environment
+      // For Vercel, use relative path; for local dev, use localhost
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        (import.meta.env.DEV ? "http://localhost:3001" : "");
+      const response = await fetch(`${apiUrl}/api/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message || "Failed to send message. Please try again."
+        );
+      }
+
+      // Success - show success message
+      setSubmitted(true);
       setFormData({
         name: "",
         email: "",
@@ -42,7 +68,21 @@ export default function Contact({ onNavigate }: ContactProps) {
         systemType: "",
         message: "",
       });
-    }, 3000);
+
+      // Reset after 5 seconds
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 5000);
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to send message. Please try again later."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (
@@ -193,9 +233,14 @@ export default function Contact({ onNavigate }: ContactProps) {
                   Connect With Us:
                 </p>
                 <div className="flex space-x-4">
-                  <button className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <a
+                    href="https://www.facebook.com/sunterrasolarenergy/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
                     <Facebook className="w-5 h-5" />
-                  </button>
+                  </a>
                   <button className="p-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors">
                     <Instagram className="w-5 h-5" />
                   </button>
@@ -347,9 +392,33 @@ export default function Contact({ onNavigate }: ContactProps) {
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full">
-                    Submit Request
-                    <Send className="ml-2 w-5 h-5" />
+                  {error && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                      <p className="text-sm text-red-600 dark:text-red-400">
+                        {error}
+                      </p>
+                    </div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="inline-block animate-spin mr-2">
+                          ⏳
+                        </span>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        Submit Request
+                        <Send className="ml-2 w-5 h-5" />
+                      </>
+                    )}
                   </Button>
 
                   <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
@@ -424,7 +493,6 @@ export default function Contact({ onNavigate }: ContactProps) {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
-                variant="secondary"
                 size="lg"
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               >

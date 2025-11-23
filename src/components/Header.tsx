@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
+import Button from "./Button";
 
 interface HeaderProps {
   currentPage: string;
@@ -88,6 +89,12 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
             ))}
           </nav>
 
+          <div className="hidden md:flex items-center space-x-4">
+            <Button size="md" onClick={() => handleNavClick("contact")}>
+              Get Quote
+            </Button>
+          </div>
+
           <div className="flex items-center space-x-4">
             <button
               type="button"
@@ -130,6 +137,15 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                 {item.name}
               </button>
             ))}
+            <div className="mt-4 px-4">
+              <Button
+                size="md"
+                onClick={() => handleNavClick("contact")}
+                className="w-full"
+              >
+                Get Quote
+              </Button>
+            </div>
           </nav>
         )}
       </div>
