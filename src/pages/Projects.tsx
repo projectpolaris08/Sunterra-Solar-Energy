@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { MapPin, Zap, Calendar, CheckCircle, Sun } from "lucide-react";
+import {
+  MapPin,
+  Zap,
+  Calendar,
+  CheckCircle,
+  Sun,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import SEO from "../components/SEO";
@@ -10,6 +19,8 @@ interface ProjectsProps {
 
 export default function Projects({ onNavigate }: ProjectsProps) {
   const [selectedCategory, setSelectedCategory] = useState("All Projects");
+  const [currentPage, setCurrentPage] = useState(1);
+  const projectsPerPage = 6;
   const projects = [
     {
       id: 1,
@@ -94,21 +105,76 @@ export default function Projects({ onNavigate }: ProjectsProps) {
       savings: "₱11,000/month",
       category: "Residential",
       image: "/images/8kW-Hybrid.jpg",
+      status: "completed",
     },
   ];
 
+  const upcomingProjects = [
+    {
+      id: 7,
+      title: "Residential Hybrid Solar Installation",
+      location: "TBD",
+      systemType: "Hybrid Solar",
+      capacity: "16kW",
+      installDate: "Estimated Installation Date Nov. 29, 2025",
+      description:
+        "Large-scale hybrid solar installation currently in progress. Includes battery storage for power reliability and energy independence. Expected to significantly reduce electricity costs.",
+      color: "from-indigo-400 to-indigo-600",
+      estimatedSavings: "₱20,000/month",
+      category: "Residential",
+      image: "/images/Batasan-project.jpg",
+      status: "upcoming",
+      progress: 30,
+      details: {
+        currentPhase: "Pre-wiring for the inverter",
+      },
+    },
+  ];
+
+  // Add status to existing projects and put upcoming projects first
+  const allProjects = [
+    ...upcomingProjects,
+    ...projects.map((p) => ({ ...p, status: "completed" })),
+  ];
+
   const categories = [
-    { name: "All Projects", count: projects.length },
+    { name: "All Projects", count: allProjects.length },
     {
       name: "Residential",
-      count: projects.filter((p) => p.category === "Residential").length,
+      count: allProjects.filter((p) => p.category === "Residential").length,
+    },
+    {
+      name: "Commercial",
+      count: allProjects.filter((p) => p.category === "Commercial").length,
+    },
+    {
+      name: "Industrial",
+      count: allProjects.filter((p) => p.category === "Industrial").length,
+    },
+    {
+      name: "Upcoming",
+      count: upcomingProjects.length,
     },
   ];
 
   const filteredProjects =
     selectedCategory === "All Projects"
-      ? projects
-      : projects.filter((project) => project.category === selectedCategory);
+      ? allProjects
+      : selectedCategory === "Upcoming"
+      ? upcomingProjects
+      : allProjects.filter((project) => project.category === selectedCategory);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+  const startIndex = (currentPage - 1) * projectsPerPage;
+  const endIndex = startIndex + projectsPerPage;
+  const currentProjects = filteredProjects.slice(startIndex, endIndex);
+
+  // Reset to page 1 when category changes
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setCurrentPage(1);
+  };
 
   return (
     <>
@@ -134,7 +200,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
             {categories.map((category) => (
               <button
                 key={category.name}
-                onClick={() => setSelectedCategory(category.name)}
+                onClick={() => handleCategoryChange(category.name)}
                 className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
                   selectedCategory === category.name
                     ? "bg-blue-600 text-white shadow-lg"
@@ -148,8 +214,12 @@ export default function Projects({ onNavigate }: ProjectsProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {filteredProjects.map((project) => (
-              <Card key={project.id} className="overflow-hidden">
+            {currentProjects.map((project) => (
+              <Card
+                key={project.id}
+                className="overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                onClick={() => onNavigate(`project-detail:${project.id}`)}
+              >
                 <div className="h-48 -mx-6 -mt-6 mb-6 flex flex-col items-center justify-center relative overflow-hidden">
                   {project.image ? (
                     <>
@@ -186,9 +256,23 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                 </div>
 
                 <div className="space-y-3">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {project.title}
-                  </h3>
+                  <div className="flex items-start justify-between">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                      {project.title}
+                    </h3>
+                    {project.status === "upcoming" && (
+                      <span className="flex items-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-semibold rounded-full">
+                        <Clock className="w-3 h-3" />
+                        Upcoming
+                      </span>
+                    )}
+                    {project.status === "completed" && (
+                      <span className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold rounded-full">
+                        <CheckCircle className="w-3 h-3" />
+                        Completed
+                      </span>
+                    )}
+                  </div>
 
                   <div className="flex items-start text-sm text-gray-600 dark:text-gray-300">
                     <MapPin className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5 text-blue-600" />
@@ -209,23 +293,106 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                     {project.description}
                   </p>
 
+                  {project.status === "upcoming" &&
+                    (project as any).progress && (
+                      <div className="pt-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Progress
+                          </span>
+                          <span className="text-sm font-semibold text-amber-600">
+                            {(project as any).progress}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                          <div
+                            className="bg-amber-500 h-2.5 rounded-full transition-all duration-300"
+                            style={{
+                              width: `${(project as any).progress}%`,
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+
                   <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          Monthly Savings
+                          {project.status === "upcoming"
+                            ? "Estimated Savings"
+                            : "Monthly Savings"}
                         </p>
-                        <p className="text-lg font-bold text-green-600">
-                          {project.savings}
+                        <p
+                          className={`text-lg font-bold ${
+                            project.status === "upcoming"
+                              ? "text-amber-600"
+                              : "text-green-600"
+                          }`}
+                        >
+                          {project.status === "upcoming"
+                            ? (project as any).estimatedSavings
+                            : (project as any).savings}
                         </p>
                       </div>
-                      <CheckCircle className="w-8 h-8 text-green-500" />
+                      {project.status === "upcoming" ? (
+                        <Clock className="w-8 h-8 text-amber-500" />
+                      ) : (
+                        <CheckCircle className="w-8 h-8 text-green-500" />
+                      )}
                     </div>
                   </div>
                 </div>
               </Card>
             ))}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-12">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  currentPage === 1
+                    ? "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-md"
+                }`}
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                      currentPage === page
+                        ? "bg-blue-600 text-white shadow-lg"
+                        : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-md"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  currentPage === totalPages
+                    ? "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-md"
+                }`}
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -248,19 +415,19 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                 color: "text-blue-600",
               },
               {
-                number: "68kW",
-                label: "Total Capacity",
+                number: "1",
+                label: "Upcoming Projects",
                 color: "text-amber-600",
+              },
+              {
+                number: "84kW",
+                label: "Total Capacity",
+                color: "text-purple-600",
               },
               {
                 number: "₱1.04M+",
                 label: "Annual Savings",
                 color: "text-green-600",
-              },
-              {
-                number: "56+",
-                label: "Tons CO₂ Reduced",
-                color: "text-purple-600",
               },
             ].map((stat, index) => (
               <Card key={index} className="text-center">
