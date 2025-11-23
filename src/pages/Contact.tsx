@@ -38,9 +38,11 @@ export default function Contact({ onNavigate }: ContactProps) {
 
     try {
       // Determine the API URL based on environment
-      // For Vercel/production, use relative path; for local dev, Vite proxy handles it
+      // Frontend on Hostinger, backend on Vercel
+      // Set VITE_API_URL to your Vercel deployment URL (e.g., https://your-project.vercel.app)
       const apiUrl = import.meta.env.VITE_API_URL || "";
-      const response = await fetch(`${apiUrl}/api/contact`, {
+      const endpoint = "/api/contact";
+      const response = await fetch(`${apiUrl}${endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
