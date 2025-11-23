@@ -1,9 +1,15 @@
 import nodemailer from "nodemailer";
 
+// Helper function to send JSON response
+function sendJson(res, statusCode, data) {
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = statusCode;
+  res.end(JSON.stringify(data));
+}
+
 // Vercel serverless function handler
 export default async function handler(req, res) {
-  // Immediately set headers to ensure JSON response
-  res.setHeader("Content-Type", "application/json");
+  // Set CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Methods",
@@ -14,28 +20,33 @@ export default async function handler(req, res) {
   // Log function invocation
   console.log("=== Contact function invoked ===");
   console.log("Method:", req.method);
-  console.log("Body:", JSON.stringify(req.body));
 
   try {
     // Handle preflight requests
     if (req.method === "OPTIONS") {
-      return res.status(200).json({});
+      res.statusCode = 200;
+      res.end();
+      return;
     }
 
     // Only allow POST requests
     if (req.method !== "POST") {
-      return res.status(405).json({
+      return sendJson(res, 405, {
         success: false,
         message: "Method not allowed",
       });
     }
 
+    // Vercel automatically parses JSON request bodies, so req.body should be available
+    const body = req.body || {};
+    console.log("Body:", JSON.stringify(body));
+
     const { name, email, phone, propertyType, systemType, message } =
-      req.body || {};
+      body || {};
 
     // Validate required fields
     if (!name || !email || !phone || !propertyType || !systemType) {
-      return res.status(400).json({
+      return sendJson(res, 400, {
         success: false,
         message: "Please fill in all required fields",
       });
@@ -51,7 +62,7 @@ export default async function handler(req, res) {
 
     if (!smtpPassword) {
       console.error("SMTP_PASSWORD is not set in environment variables");
-      return res.status(500).json({
+      return sendJson(res, 500, {
         success: false,
         message:
           "Email service is not configured. Please contact the administrator.",
@@ -138,7 +149,7 @@ You can reply directly to this email to contact ${name} at ${email}.
     const info = await transporter.sendMail(mailOptions);
     console.log("Email sent successfully:", info.messageId);
 
-    return res.status(200).json({
+    return sendJson(res, 200, {
       success: true,
       message:
         "Your message has been sent successfully. We'll contact you within 24 hours.",
@@ -148,7 +159,7 @@ You can reply directly to this email to contact ${name} at ${email}.
     console.error("Error in contact handler:", error);
     console.error("Error stack:", error.stack);
     // Always return JSON, even on error
-    return res.status(500).json({
+    return sendJson(res, 500, {
       success: false,
       message:
         "Failed to send email. Please try again later or contact us directly.",

@@ -49,11 +49,28 @@ export default function Contact({ onNavigate }: ContactProps) {
       });
 
       // Check if response is JSON before parsing
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        await response.text(); // Consume the response body
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Non-JSON response received:", {
+          status: response.status,
+          statusText: response.statusText,
+          contentType,
+          bodyPreview: text.substring(0, 200),
+        });
+        // If status is 200 but not JSON, it might be an HTML error page
+        if (response.status === 200) {
+          throw new Error(
+            `Server returned HTML instead of JSON. This usually means the serverless function isn't being called. Response preview: ${text.substring(
+              0,
+              100
+            )}`
+          );
+        }
         throw new Error(
-          `Server error: ${response.status} ${response.statusText}. Please make sure the server is running.`
+          `Server error: ${response.status} ${
+            response.statusText
+          }. ${text.substring(0, 100)}`
         );
       }
 
