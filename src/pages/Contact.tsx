@@ -61,12 +61,6 @@ export default function Contact({ onNavigate }: ContactProps) {
       const contentType = response.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
         const text = await response.text();
-        console.error("Non-JSON response received:", {
-          status: response.status,
-          statusText: response.statusText,
-          contentType,
-          bodyPreview: text.substring(0, 200),
-        });
         // If status is 200 but not JSON, it might be an HTML error page
         if (response.status === 200) {
           throw new Error(
@@ -107,7 +101,6 @@ export default function Contact({ onNavigate }: ContactProps) {
         setSubmitted(false);
       }, 5000);
     } catch (err) {
-      console.error("Error submitting form:", err);
       setError(
         err instanceof Error
           ? err.message

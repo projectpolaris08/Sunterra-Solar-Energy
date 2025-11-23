@@ -17,10 +17,6 @@ export default async function handler(req, res) {
   );
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // Log function invocation
-  console.log("=== Contact function invoked ===");
-  console.log("Method:", req.method);
-
   try {
     // Handle preflight requests
     if (req.method === "OPTIONS") {
@@ -39,7 +35,6 @@ export default async function handler(req, res) {
 
     // Vercel automatically parses JSON request bodies, so req.body should be available
     const body = req.body || {};
-    console.log("Body:", JSON.stringify(body));
 
     const { name, email, phone, propertyType, systemType, message } =
       body || {};
@@ -61,7 +56,6 @@ export default async function handler(req, res) {
       process.env.RECIPIENT_EMAIL || "info@sunterrasolarenergy.com";
 
     if (!smtpPassword) {
-      console.error("SMTP_PASSWORD is not set in environment variables");
       return sendJson(res, 500, {
         success: false,
         message:
@@ -69,7 +63,6 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log("Creating email transporter...");
     // Create transporter
     const transporter = nodemailer.createTransport({
       host: smtpHost,
@@ -81,7 +74,6 @@ export default async function handler(req, res) {
       },
     });
 
-    console.log("Preparing email content...");
     // Email content
     const mailOptions = {
       from: `"Sunterra Solar Website" <${smtpUser}>`,
@@ -144,10 +136,8 @@ You can reply directly to this email to contact ${name} at ${email}.
       `,
     };
 
-    console.log("Sending email...");
     // Send email
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully:", info.messageId);
 
     return sendJson(res, 200, {
       success: true,
@@ -156,8 +146,6 @@ You can reply directly to this email to contact ${name} at ${email}.
       messageId: info.messageId,
     });
   } catch (error) {
-    console.error("Error in contact handler:", error);
-    console.error("Error stack:", error.stack);
     // Always return JSON, even on error
     return sendJson(res, 500, {
       success: false,
