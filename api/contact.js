@@ -2,25 +2,21 @@ import nodemailer from "nodemailer";
 
 // Vercel serverless function handler
 export default async function handler(req, res) {
+  // Immediately set headers to ensure JSON response
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,OPTIONS,PATCH,DELETE,POST,PUT"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
   // Log function invocation
-  console.log("Contact function called:", req.method, req.url);
+  console.log("=== Contact function invoked ===");
+  console.log("Method:", req.method);
+  console.log("Body:", JSON.stringify(req.body));
 
   try {
-    // Set content type for all responses first
-    res.setHeader("Content-Type", "application/json");
-
-    // Enable CORS
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET,OPTIONS,PATCH,DELETE,POST,PUT"
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
-    );
-
     // Handle preflight requests
     if (req.method === "OPTIONS") {
       return res.status(200).json({});
@@ -34,7 +30,8 @@ export default async function handler(req, res) {
       });
     }
 
-    const { name, email, phone, propertyType, systemType, message } = req.body;
+    const { name, email, phone, propertyType, systemType, message } =
+      req.body || {};
 
     // Validate required fields
     if (!name || !email || !phone || !propertyType || !systemType) {
@@ -61,6 +58,7 @@ export default async function handler(req, res) {
       });
     }
 
+    console.log("Creating email transporter...");
     // Create transporter
     const transporter = nodemailer.createTransport({
       host: smtpHost,
@@ -72,6 +70,7 @@ export default async function handler(req, res) {
       },
     });
 
+    console.log("Preparing email content...");
     // Email content
     const mailOptions = {
       from: `"Sunterra Solar Website" <${smtpUser}>`,
@@ -134,8 +133,10 @@ You can reply directly to this email to contact ${name} at ${email}.
       `,
     };
 
+    console.log("Sending email...");
     // Send email
     const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully:", info.messageId);
 
     return res.status(200).json({
       success: true,
@@ -145,11 +146,8 @@ You can reply directly to this email to contact ${name} at ${email}.
     });
   } catch (error) {
     console.error("Error in contact handler:", error);
+    console.error("Error stack:", error.stack);
     // Always return JSON, even on error
-    // Make sure headers are set even in error case
-    if (!res.headersSent) {
-      res.setHeader("Content-Type", "application/json");
-    }
     return res.status(500).json({
       success: false,
       message:
