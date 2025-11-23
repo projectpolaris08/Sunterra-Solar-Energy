@@ -109,7 +109,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
     },
   ];
 
-  const upcomingProjects = [
+  const ongoingProjects = [
     {
       id: 7,
       title: "Residential Hybrid Solar Installation",
@@ -123,7 +123,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
       estimatedSavings: "₱20,000/month",
       category: "Residential",
       image: "/images/Batasan-project.jpg",
-      status: "upcoming",
+      status: "ongoing",
       progress: 30,
       details: {
         currentPhase: "Pre-wiring for the inverter",
@@ -131,9 +131,9 @@ export default function Projects({ onNavigate }: ProjectsProps) {
     },
   ];
 
-  // Add status to existing projects and put upcoming projects first
+  // Add status to existing projects and put ongoing projects first
   const allProjects = [
-    ...upcomingProjects,
+    ...ongoingProjects,
     ...projects.map((p) => ({ ...p, status: "completed" })),
   ];
 
@@ -152,16 +152,16 @@ export default function Projects({ onNavigate }: ProjectsProps) {
       count: allProjects.filter((p) => p.category === "Industrial").length,
     },
     {
-      name: "Upcoming",
-      count: upcomingProjects.length,
+      name: "Ongoing",
+      count: ongoingProjects.length,
     },
   ];
 
   const filteredProjects =
     selectedCategory === "All Projects"
       ? allProjects
-      : selectedCategory === "Upcoming"
-      ? upcomingProjects
+      : selectedCategory === "Ongoing"
+      ? ongoingProjects
       : allProjects.filter((project) => project.category === selectedCategory);
 
   // Calculate pagination
@@ -260,10 +260,10 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                       {project.title}
                     </h3>
-                    {project.status === "upcoming" && (
+                    {project.status === "ongoing" && (
                       <span className="flex items-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-semibold rounded-full">
                         <Clock className="w-3 h-3" />
-                        Upcoming
+                        Ongoing
                       </span>
                     )}
                     {project.status === "completed" && (
@@ -293,7 +293,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                     {project.description}
                   </p>
 
-                  {project.status === "upcoming" &&
+                  {project.status === "ongoing" &&
                     (project as any).progress && (
                       <div className="pt-3">
                         <div className="flex items-center justify-between mb-2">
@@ -319,23 +319,23 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          {project.status === "upcoming"
+                          {project.status === "ongoing"
                             ? "Estimated Savings"
                             : "Monthly Savings"}
                         </p>
                         <p
                           className={`text-lg font-bold ${
-                            project.status === "upcoming"
+                            project.status === "ongoing"
                               ? "text-amber-600"
                               : "text-green-600"
                           }`}
                         >
-                          {project.status === "upcoming"
+                          {project.status === "ongoing"
                             ? (project as any).estimatedSavings
                             : (project as any).savings}
                         </p>
                       </div>
-                      {project.status === "upcoming" ? (
+                      {project.status === "ongoing" ? (
                         <Clock className="w-8 h-8 text-amber-500" />
                       ) : (
                         <CheckCircle className="w-8 h-8 text-green-500" />
@@ -416,7 +416,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
               },
               {
                 number: "1",
-                label: "Upcoming Projects",
+                label: "Ongoing Projects",
                 color: "text-amber-600",
               },
               {

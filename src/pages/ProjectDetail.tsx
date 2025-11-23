@@ -188,7 +188,7 @@ const allProjectsData = [
     estimatedSavings: "₱20,000/month",
     category: "Residential",
     image: "/images/Batasan-project.jpg",
-    status: "upcoming",
+    status: "ongoing",
     progress: 30,
     details: {
       panels: "27pcs 620W Solar panels (planned)",
@@ -273,10 +273,10 @@ export default function ProjectDetail({
                             {project.capacity}
                           </p>
                         </div>
-                        {project.status === "upcoming" && (
+                        {project.status === "ongoing" && (
                           <span className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-full">
                             <Clock className="w-4 h-4" />
-                            Upcoming
+                            Ongoing
                           </span>
                         )}
                         {project.status === "completed" && (
@@ -326,7 +326,7 @@ export default function ProjectDetail({
                   </div>
                 </div>
 
-                {project.status === "upcoming" && (project as any).progress && (
+                {project.status === "ongoing" && (project as any).progress && (
                   <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -414,18 +414,18 @@ export default function ProjectDetail({
                     <dl className="space-y-3">
                       <div>
                         <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                          {project.status === "upcoming"
+                          {project.status === "ongoing"
                             ? "Monthly Savings (estimated savings)"
                             : "Monthly Savings"}
                         </dt>
                         <dd
                           className={`text-2xl font-bold ${
-                            project.status === "upcoming"
+                            project.status === "ongoing"
                               ? "text-amber-600"
                               : "text-green-600"
                           }`}
                         >
-                          {project.status === "upcoming"
+                          {project.status === "ongoing"
                             ? (project as any).estimatedSavings
                             : project.savings}
                         </dd>
