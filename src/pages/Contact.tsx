@@ -48,6 +48,15 @@ export default function Contact({ onNavigate }: ContactProps) {
         body: JSON.stringify(formData),
       });
 
+      // Check if response is JSON before parsing
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        await response.text(); // Consume the response body
+        throw new Error(
+          `Server error: ${response.status} ${response.statusText}. Please make sure the server is running.`
+        );
+      }
+
       const data = await response.json();
 
       if (!response.ok || !data.success) {
