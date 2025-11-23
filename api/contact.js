@@ -2,6 +2,9 @@ import nodemailer from "nodemailer";
 
 // Vercel serverless function handler
 export default async function handler(req, res) {
+  // Log function invocation
+  console.log("Contact function called:", req.method, req.url);
+
   try {
     // Set content type for all responses first
     res.setHeader("Content-Type", "application/json");
