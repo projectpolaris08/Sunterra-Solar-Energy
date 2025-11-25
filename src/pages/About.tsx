@@ -298,7 +298,8 @@ export default function About({ onNavigate }: AboutProps) {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+          {/* Statistics section - hidden for now */}
+          {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             {[
               { number: "6", label: "Projects Completed" },
               { number: "68kW", label: "Total Installed Capacity" },
@@ -314,7 +315,7 @@ export default function About({ onNavigate }: AboutProps) {
                 </div>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </section>
 
