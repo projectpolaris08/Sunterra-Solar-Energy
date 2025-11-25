@@ -108,15 +108,15 @@ export default function About({ onNavigate }: AboutProps) {
                 every Filipino home and business.
               </p>
               <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                Our team brings years of combined experience in solar installation
-                and renewable energy solutions. We're committed to becoming one of
-                the Philippines' most trusted solar installation companies, helping
-                families and businesses reduce their carbon footprint while saving
-                significantly on energy costs.
+                Our team brings years of combined experience in solar
+                installation and renewable energy solutions. We're committed to
+                becoming one of the Philippines' most trusted solar installation
+                companies, helping families and businesses reduce their carbon
+                footprint while saving significantly on energy costs.
               </p>
               <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                Today, we lead with innovative solutions, exceptional service, and
-                an unwavering commitment to quality and sustainability.
+                Today, we lead with innovative solutions, exceptional service,
+                and an unwavering commitment to quality and sustainability.
               </p>
             </div>
           </div>
@@ -191,6 +191,82 @@ export default function About({ onNavigate }: AboutProps) {
                 </div>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              Meet Our Team
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              The passionate individuals driving our solar energy mission
+              forward
+            </p>
+          </div>
+
+          <div className="space-y-8 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {[
+                { name: "Jayar", image: "/images/Jayar.jpg" },
+                { name: "Mhy", image: "/images/Mhy.jpg" },
+                { name: "Aira", image: "/images/Aira.jpg" },
+                { name: "Reynald", image: "/images/Reynald.jpg" },
+              ].map((member, index) => (
+                <Card
+                  key={index}
+                  className="group overflow-hidden hover:shadow-2xl transition-all duration-300"
+                >
+                  <div className="relative overflow-hidden rounded-t-2xl -mx-6 -mt-6 mb-6">
+                    <div className="aspect-[4/5] bg-gradient-to-br from-blue-100 to-blue-50 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                      {member.name}
+                    </h3>
+                    <div className="w-12 h-1 bg-blue-600 mx-auto rounded-full"></div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:max-w-4xl lg:mx-auto">
+              {[
+                { name: "Joshua", image: "/images/Joshua.jpg" },
+                { name: "Diane", image: "/images/Diane.jpg" },
+                { name: "David", image: "/images/David.jpg" },
+              ].map((member, index) => (
+                <Card
+                  key={index}
+                  className="group overflow-hidden hover:shadow-2xl transition-all duration-300"
+                >
+                  <div className="relative overflow-hidden rounded-t-2xl -mx-6 -mt-6 mb-6">
+                    <div className="aspect-[4/5] bg-gradient-to-br from-blue-100 to-blue-50 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                      {member.name}
+                    </h3>
+                    <div className="w-12 h-1 bg-blue-600 mx-auto rounded-full"></div>
+                  </div>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       </section>
