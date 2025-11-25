@@ -17,97 +17,31 @@ interface ProjectsProps {
   onNavigate: (page: string) => void;
 }
 
+interface Project {
+  id: number;
+  title: string;
+  location: string;
+  systemType: string;
+  capacity: string;
+  installDate: string;
+  description: string;
+  color: string;
+  savings?: string;
+  estimatedSavings?: string;
+  category: string;
+  image?: string;
+  status?: string;
+  progress?: number;
+  details?: {
+    currentPhase: string;
+  };
+}
+
 export default function Projects({ onNavigate }: ProjectsProps) {
   const [selectedCategory, setSelectedCategory] = useState("All Projects");
   const [currentPage, setCurrentPage] = useState(1);
   const projectsPerPage = 6;
-  const projects = [
-    {
-      id: 1,
-      title: "Residential Hybrid Solar Installation",
-      location: "Cubao, Quezon City",
-      systemType: "Hybrid Solar",
-      capacity: "12kW",
-      installDate: "January 2025",
-      description:
-        "Premium hybrid installation for large homes. Modern design with high-efficiency panels and advanced battery storage. Reduced electricity costs by 85% while ensuring power reliability during outages.",
-      color: "from-blue-400 to-blue-600",
-      savings: "₱15,000/month",
-      category: "Residential",
-      image: "/images/12kW-Hybrid.jpg",
-    },
-    {
-      id: 2,
-      title: "Residential Hybrid Solar Installation",
-      location: "Lagro, Quezon City",
-      systemType: "Hybrid Solar",
-      capacity: "12kW",
-      installDate: "February 2025",
-      description:
-        "Ideal hybrid system for medium to large-sized homes with higher energy consumption. Battery storage ensures uninterrupted power supply during outages. Provides excellent ROI and covers most household energy requirements.",
-      color: "from-cyan-400 to-cyan-600",
-      savings: "₱15,000/month",
-      category: "Residential",
-      image: "/images/12kW.jpg",
-    },
-    {
-      id: 3,
-      title: "Residential Hybrid Solar Installation",
-      location: "Batasan, Quezon City",
-      systemType: "Hybrid Solar",
-      capacity: "12kW",
-      installDate: "March 2025",
-      description:
-        "Perfect hybrid system installation for residential property. Includes battery backup for power reliability during outages. Covers daily energy needs and significantly reduces monthly electricity bills with smart energy management.",
-      color: "from-amber-400 to-amber-600",
-      savings: "₱15,000/month",
-      category: "Residential",
-      image: "/images/12kW-Hybrid-Solar.jpg",
-    },
-    {
-      id: 4,
-      title: "Residential Hybrid Solar Installation",
-      location: "Cabanatuan, Nueva Ecija",
-      systemType: "Hybrid Solar",
-      capacity: "16kW",
-      installDate: "April 2025",
-      description:
-        "Comprehensive hybrid system with battery backup for a large family home. Ensures power reliability during outages and maximizes energy independence. Perfect for properties requiring high energy capacity.",
-      color: "from-green-400 to-green-600",
-      savings: "₱20,000/month",
-      category: "Residential",
-      image: "/images/16kW.jpg",
-    },
-    {
-      id: 5,
-      title: "Residential Hybrid Solar Installation",
-      location: "Gen. Trias, Cavite",
-      systemType: "Hybrid Solar",
-      capacity: "8kW",
-      installDate: "May 2025",
-      description:
-        "Ideal hybrid system for medium-sized homes with higher energy consumption. Battery storage ensures uninterrupted power supply during outages. Provides excellent ROI and covers most household energy requirements.",
-      color: "from-purple-400 to-purple-600",
-      savings: "₱11,000/month",
-      category: "Residential",
-      image: "/images/8kW-Hybrid-Solar.jpg",
-    },
-    {
-      id: 6,
-      title: "Residential Hybrid Solar Installation",
-      location: "Marilao, Bulacan",
-      systemType: "Hybrid Solar",
-      capacity: "8kW",
-      installDate: "June 2025",
-      description:
-        "Perfect hybrid system installation for residential property. Includes battery backup for power reliability during outages. Covers daily energy needs and significantly reduces monthly electricity bills with smart energy management.",
-      color: "from-emerald-400 to-emerald-600",
-      savings: "₱11,000/month",
-      category: "Residential",
-      image: "/images/8kW-Hybrid.jpg",
-      status: "completed",
-    },
-  ];
+  const projects: Project[] = [];
 
   const ongoingProjects = [
     {
@@ -396,7 +330,8 @@ export default function Projects({ onNavigate }: ProjectsProps) {
         </div>
       </section>
 
-      <section className="py-20 bg-white dark:bg-gray-900">
+      {/* By the Numbers section - hidden for now */}
+      {/* <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -410,7 +345,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
             {[
               {
-                number: "6",
+                number: "0",
                 label: "Completed Projects",
                 color: "text-blue-600",
               },
@@ -420,12 +355,12 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                 color: "text-amber-600",
               },
               {
-                number: "84kW",
+                number: "16kW",
                 label: "Total Capacity",
                 color: "text-purple-600",
               },
               {
-                number: "₱1.04M+",
+                number: "₱0",
                 label: "Annual Savings",
                 color: "text-green-600",
               },
@@ -443,7 +378,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       <section className="py-20 bg-gradient-to-br from-blue-600 to-blue-700">
         <div className="container mx-auto px-4">

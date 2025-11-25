@@ -4,8 +4,6 @@ import {
   Shield,
   TrendingUp,
   ArrowRight,
-  CheckCircle,
-  Star,
   DollarSign,
   Leaf,
   Wrench,
@@ -101,33 +99,6 @@ export default function Home({ onNavigate }: HomeProps) {
     },
   ];
 
-  const testimonials = [
-    {
-      name: "Sir Kyle",
-      location: "Cubao, Quezon City",
-      text: "Our electricity bill dropped by 85%. The installation was professional and hassle-free. The 12kW hybrid system is perfect for our family.",
-      rating: 5,
-    },
-    {
-      name: "Doc Emman",
-      location: "Cabanatuan, Nueva Ecija",
-      text: "Excellent service from consultation to installation. The team was knowledgeable and the 16kW system works perfectly. We're now energy independent with battery backup.",
-      rating: 5,
-    },
-    {
-      name: "Sir Rommel",
-      location: "Marilao",
-      text: "Best investment we made for our home. The 8kW hybrid system provides excellent ROI and requires minimal maintenance. Highly recommend Sunterra Solar!",
-      rating: 5,
-    },
-  ];
-
-  const stats = [
-    { number: "6", label: "Completed Projects" },
-    { number: "68kW", label: "Total Capacity" },
-    { number: "98%", label: "Efficiency Rate" },
-  ];
-
   return (
     <>
       <SEO
@@ -195,7 +166,8 @@ export default function Home({ onNavigate }: HomeProps) {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Stats section - hidden for now */}
+            {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {stats.map((stat, index) => (
                 <div
                   key={index}
@@ -212,7 +184,7 @@ export default function Home({ onNavigate }: HomeProps) {
                   </div>
                 </div>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -338,7 +310,8 @@ export default function Home({ onNavigate }: HomeProps) {
         </div>
       </section>
 
-      <section className="py-20 bg-white dark:bg-gray-900">
+      {/* Featured Installations section - hidden for now */}
+      {/* <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -418,9 +391,10 @@ export default function Home({ onNavigate }: HomeProps) {
             </Button>
           </div>
         </div>
-      </section>
+      </section> */}
 
-      <section className="py-20 bg-gradient-to-br from-blue-600 to-blue-700">
+      {/* What Our Clients Say section - hidden for now */}
+      {/* <section className="py-20 bg-gradient-to-br from-blue-600 to-blue-700">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -457,7 +431,7 @@ export default function Home({ onNavigate }: HomeProps) {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       <section className="py-20 bg-gradient-to-br from-amber-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4">
