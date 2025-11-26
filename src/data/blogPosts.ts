@@ -43,10 +43,12 @@ export const blogPosts: BlogPost[] = [
       <p>Most solar panel systems in the Philippines pay for themselves within 4-6 years, with savings continuing for the system's 25-30 year lifespan. The exact ROI depends on your electricity consumption, system size, and local electricity rates.</p>
     `,
     author: "Sunterra Solar Team",
-    publishDate: "2024-01-15",
+    publishDate: "2025-11-01",
     readTime: "8 min read",
     category: "Installation",
     tags: ["solar installation", "Philippines", "guide", "grid-tie"],
+    image:
+      "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=600&fit=crop&auto=format",
   },
   {
     id: 2,
@@ -75,10 +77,12 @@ export const blogPosts: BlogPost[] = [
       <p>To qualify for net metering in the Philippines, your system must be connected to the distribution utility's grid and meet certain technical requirements. Your solar installer will ensure your system is compliant.</p>
     `,
     author: "Sunterra Solar Team",
-    publishDate: "2024-01-10",
+    publishDate: "2025-11-05",
     readTime: "6 min read",
     category: "Financial",
     tags: ["net metering", "savings", "grid-tie", "electricity"],
+    image:
+      "https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?w=800&h=600&fit=crop&auto=format",
   },
   {
     id: 3,
@@ -104,10 +108,12 @@ export const blogPosts: BlogPost[] = [
       </ul>
     `,
     author: "Sunterra Solar Team",
-    publishDate: "2024-01-05",
+    publishDate: "2025-11-10",
     readTime: "7 min read",
     category: "Technology",
     tags: ["hybrid solar", "battery backup", "power outages", "Philippines"],
+    image:
+      "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=600&fit=crop&auto=format",
   },
   {
     id: 4,
@@ -134,10 +140,12 @@ export const blogPosts: BlogPost[] = [
       <p>Most solar systems in the Philippines pay for themselves within 4-6 years. After that, you're essentially getting free electricity for the remaining 20+ years of the system's lifespan.</p>
     `,
     author: "Sunterra Solar Team",
-    publishDate: "2023-12-28",
+    publishDate: "2025-11-15",
     readTime: "5 min read",
     category: "Financial",
     tags: ["ROI", "savings", "investment", "calculator"],
+    image:
+      "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=600&fit=crop&auto=format",
   },
   {
     id: 5,
@@ -162,10 +170,12 @@ export const blogPosts: BlogPost[] = [
       <p>Schedule annual professional inspections to check connections, wiring, and overall system health. This helps catch issues early before they become costly problems.</p>
     `,
     author: "Sunterra Solar Team",
-    publishDate: "2023-12-20",
+    publishDate: "2025-11-20",
     readTime: "6 min read",
     category: "Maintenance",
     tags: ["maintenance", "cleaning", "performance", "lifespan"],
+    image:
+      "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=600&fit=crop&auto=format",
   },
   {
     id: 6,
@@ -192,9 +202,11 @@ export const blogPosts: BlogPost[] = [
       <p>Complete energy independence, no monthly electricity bills, and the ability to power remote locations make off-grid systems an excellent choice for many properties in the Philippines.</p>
     `,
     author: "Sunterra Solar Team",
-    publishDate: "2023-12-15",
+    publishDate: "2025-11-25",
     readTime: "7 min read",
     category: "Technology",
     tags: ["off-grid", "energy independence", "remote", "batteries"],
+    image:
+      "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=600&fit=crop&auto=format",
   },
 ];

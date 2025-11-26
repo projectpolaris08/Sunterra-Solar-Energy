@@ -50,16 +50,22 @@ export default function About({ onNavigate }: AboutProps) {
       role: "Expert Solar Installers",
       description: "Licensed and certified solar installation professionals",
       icon: Zap,
+      image:
+        "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=600&fit=crop&auto=format",
     },
     {
       role: "Project Managers",
       description: "Dedicated coordinators ensuring smooth installations",
       icon: TrendingUp,
+      image:
+        "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop&auto=format",
     },
     {
       role: "Support Team",
       description: "Always available for maintenance and assistance",
       icon: Users,
+      image:
+        "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800&h=600&fit=crop&auto=format",
     },
   ];
 
@@ -286,8 +292,16 @@ export default function About({ onNavigate }: AboutProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16">
             {team.map((member, index) => (
               <Card key={index}>
-                <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-6 -mx-6 -mt-6 mb-6 flex items-center justify-center h-40">
-                  <member.icon className="w-16 h-16 text-white" />
+                <div className="bg-gradient-to-br from-blue-600 to-blue-700 -mx-6 -mt-6 mb-6 flex items-center justify-center h-40 overflow-hidden">
+                  {member.image ? (
+                    <img
+                      src={member.image}
+                      alt={member.role}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <member.icon className="w-16 h-16 text-white" />
+                  )}
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
                   {member.role}
@@ -320,78 +334,78 @@ export default function About({ onNavigate }: AboutProps) {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
+      <section className="py-12 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <Card className="p-8">
-              <div className="flex items-center justify-center mb-6">
-                <div className="bg-blue-600 p-4 rounded-full">
-                  <BadgeCheck className="w-12 h-12 text-white" />
+          <div className="max-w-3xl mx-auto">
+            <Card className="p-6">
+              <div className="flex items-center justify-center mb-4">
+                <div className="bg-blue-600 p-3 rounded-full">
+                  <BadgeCheck className="w-8 h-8 text-white" />
                 </div>
               </div>
-              <div className="text-center mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   DTI Business Registration
                 </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   Legitimately registered with the Department of Trade and
                   Industry
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                     Business Name
                   </p>
-                  <p className="text-base font-semibold text-gray-900 dark:text-white">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
                     SUNTERRA SOLAR POWER INSTALLATION SERVICES
                   </p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                     Business Name No.
                   </p>
-                  <p className="text-base font-semibold text-gray-900 dark:text-white">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
                     7550942
                   </p>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                     Validity Period
                   </p>
-                  <p className="text-base font-semibold text-gray-900 dark:text-white">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
                     October 28, 2025 - October 28, 2030
                   </p>
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center mb-6">
-                <p className="text-sm text-gray-600 dark:text-gray-300">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-center mb-4">
+                <p className="text-xs text-gray-600 dark:text-gray-300">
                   <span className="font-semibold">Reference Number:</span>{" "}
                   JIICX213618248342
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Scope: NATIONAL
                 </p>
               </div>
 
               <div className="flex flex-col items-center justify-center">
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 font-medium">
+                <p className="text-xs text-gray-600 dark:text-gray-300 mb-2 font-medium">
                   Verify Certificate
                 </p>
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700">
                   <img
                     src="/images/DTI.jpg"
                     alt="DTI Certificate QR Code"
-                    className="w-32 h-32 object-contain"
+                    className="w-24 h-24 object-contain"
                     onError={(e) => {
                       // Hide image if not found
                       (e.target as HTMLImageElement).style.display = "none";
                     }}
                   />
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   Scan QR code to verify registration
                 </p>
               </div>
