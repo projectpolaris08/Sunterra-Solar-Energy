@@ -7,6 +7,7 @@ import {
   Shield,
   TrendingUp,
   Heart,
+  BadgeCheck,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -316,6 +317,86 @@ export default function About({ onNavigate }: AboutProps) {
               </div>
             ))}
           </div> */}
+        </div>
+      </section>
+
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <Card className="p-8">
+              <div className="flex items-center justify-center mb-6">
+                <div className="bg-blue-600 p-4 rounded-full">
+                  <BadgeCheck className="w-12 h-12 text-white" />
+                </div>
+              </div>
+              <div className="text-center mb-8">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                  DTI Business Registration
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300">
+                  Legitimately registered with the Department of Trade and
+                  Industry
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    Business Name
+                  </p>
+                  <p className="text-base font-semibold text-gray-900 dark:text-white">
+                    SUNTERRA SOLAR POWER INSTALLATION SERVICES
+                  </p>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    Business Name No.
+                  </p>
+                  <p className="text-base font-semibold text-gray-900 dark:text-white">
+                    7550942
+                  </p>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    Validity Period
+                  </p>
+                  <p className="text-base font-semibold text-gray-900 dark:text-white">
+                    October 28, 2025 - October 28, 2030
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center mb-6">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-semibold">Reference Number:</span>{" "}
+                  JIICX213618248342
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Scope: NATIONAL
+                </p>
+              </div>
+
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 font-medium">
+                  Verify Certificate
+                </p>
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+                  <img
+                    src="/images/DTI.jpg"
+                    alt="DTI Certificate QR Code"
+                    className="w-32 h-32 object-contain"
+                    onError={(e) => {
+                      // Hide image if not found
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                  Scan QR code to verify registration
+                </p>
+              </div>
+            </Card>
+          </div>
         </div>
       </section>
 
