@@ -1,7 +1,15 @@
 import { useState } from "react";
 import AdminLayout from "../components/dashboard/AdminLayout";
 import ChartCard from "../components/dashboard/ChartCard";
-import { Calendar, ChevronLeft, ChevronRight, Plus, Clock, MapPin, User, X } from "lucide-react";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Clock,
+  MapPin,
+  X,
+} from "lucide-react";
 
 interface AdminCalendarProps {
   onNavigate: (page: string) => void;
@@ -18,9 +26,11 @@ interface Appointment {
   type: "visitation" | "installation" | "maintenance" | "consultation";
 }
 
-export default function AdminCalendar({ onNavigate, currentPage = "admin-calendar" }: AdminCalendarProps) {
+export default function AdminCalendar({
+  onNavigate,
+  currentPage = "admin-calendar",
+}: AdminCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     clientName: "",
@@ -28,7 +38,11 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
     time: "09:00",
     location: "",
     notes: "",
-    type: "visitation" as "visitation" | "installation" | "maintenance" | "consultation",
+    type: "visitation" as
+      | "visitation"
+      | "installation"
+      | "maintenance"
+      | "consultation",
   });
 
   const [appointments, setAppointments] = useState<Appointment[]>([
@@ -81,24 +95,26 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
     return days;
   };
 
-  const getAppointmentsForDate = (date: Date) => {
-    const dateStr = date.toISOString().split("T")[0];
-    return appointments.filter((apt) => apt.date === dateStr);
-  };
-
   const handlePrevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+    );
   };
 
   const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+    );
   };
 
   const handleDateClick = (day: number | null) => {
     if (day) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      const date = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        day
+      );
       const dateStr = date.toISOString().split("T")[0];
-      setSelectedDate(dateStr);
       setFormData({ ...formData, date: dateStr });
       setIsModalOpen(true);
     }
@@ -107,7 +123,10 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
   const handleAddAppointment = (e: React.FormEvent) => {
     e.preventDefault();
     const newAppointment: Appointment = {
-      id: appointments.length > 0 ? Math.max(...appointments.map((a) => a.id)) + 1 : 1,
+      id:
+        appointments.length > 0
+          ? Math.max(...appointments.map((a) => a.id)) + 1
+          : 1,
       clientName: formData.clientName,
       date: formData.date,
       time: formData.time,
@@ -125,7 +144,6 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
       type: "visitation",
     });
     setIsModalOpen(false);
-    setSelectedDate(null);
   };
 
   const handleDeleteAppointment = (id: number) => {
@@ -169,7 +187,11 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
   const today = new Date();
   const isToday = (day: number | null) => {
     if (!day) return false;
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    const date = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    );
     return (
       date.getDate() === today.getDate() &&
       date.getMonth() === today.getMonth() &&
@@ -186,8 +208,12 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Calendar</h1>
-            <p className="text-gray-600 dark:text-gray-400">Schedule and manage client appointments</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Calendar
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Schedule and manage client appointments
+            </p>
           </div>
           <button
             onClick={() => {
@@ -218,13 +244,23 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
                   className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 hover:bg-white/70 dark:hover:bg-gray-800/70 transition-all duration-200"
                 >
                   <div className="flex items-center gap-4 flex-1">
-                    <div className={`p-3 rounded-xl ${getTypeColor(appointment.type)}`}>
+                    <div
+                      className={`p-3 rounded-xl ${getTypeColor(
+                        appointment.type
+                      )}`}
+                    >
                       <Clock className="w-5 h-5" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">{appointment.clientName}</h3>
-                        <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${getTypeColor(appointment.type)}`}>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                          {appointment.clientName}
+                        </h3>
+                        <span
+                          className={`px-2 py-1 rounded-lg text-xs font-semibold ${getTypeColor(
+                            appointment.type
+                          )}`}
+                        >
                           {appointment.type}
                         </span>
                       </div>
@@ -239,7 +275,9 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
                         </span>
                       </div>
                       {appointment.notes && (
-                        <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">{appointment.notes}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                          {appointment.notes}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -256,7 +294,12 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
         )}
 
         {/* Calendar */}
-        <ChartCard title={`${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`} className="mb-6">
+        <ChartCard
+          title={`${
+            monthNames[currentDate.getMonth()]
+          } ${currentDate.getFullYear()}`}
+          className="mb-6"
+        >
           <div className="mb-6 flex items-center justify-between">
             <button
               onClick={handlePrevMonth}
@@ -295,9 +338,15 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
                 return <div key={`empty-${index}`} className="aspect-square" />;
               }
 
-              const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+              const date = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                day
+              );
               const dateStr = date.toISOString().split("T")[0];
-              const dayAppointments = appointments.filter((apt) => apt.date === dateStr);
+              const dayAppointments = appointments.filter(
+                (apt) => apt.date === dateStr
+              );
               const isCurrentDay = isToday(day);
 
               return (
@@ -324,7 +373,9 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
                       {dayAppointments.slice(0, 2).map((apt) => (
                         <div
                           key={apt.id}
-                          className={`text-xs px-1 py-0.5 rounded truncate ${getTypeColor(apt.type)}`}
+                          className={`text-xs px-1 py-0.5 rounded truncate ${getTypeColor(
+                            apt.type
+                          )}`}
                         >
                           {apt.time} {apt.clientName.split(" ")[0]}
                         </div>
@@ -347,11 +398,12 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <div className="w-full max-w-2xl rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/20 shadow-2xl max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 p-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Schedule Appointment</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Schedule Appointment
+                </h2>
                 <button
                   onClick={() => {
                     setIsModalOpen(false);
-                    setSelectedDate(null);
                   }}
                   className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
                 >
@@ -369,7 +421,9 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
                       type="text"
                       required
                       value={formData.clientName}
-                      onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, clientName: e.target.value })
+                      }
                       className="w-full px-4 py-3 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-gray-900 dark:text-gray-100"
                       placeholder="John Doe"
                     />
@@ -383,7 +437,9 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
                       type="date"
                       required
                       value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, date: e.target.value })
+                      }
                       className="w-full px-4 py-3 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-gray-900 dark:text-gray-100"
                     />
                   </div>
@@ -396,7 +452,9 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
                       type="time"
                       required
                       value={formData.time}
-                      onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, time: e.target.value })
+                      }
                       className="w-full px-4 py-3 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-gray-900 dark:text-gray-100"
                     />
                   </div>
@@ -411,7 +469,11 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          type: e.target.value as "visitation" | "installation" | "maintenance" | "consultation",
+                          type: e.target.value as
+                            | "visitation"
+                            | "installation"
+                            | "maintenance"
+                            | "consultation",
                         })
                       }
                       className="w-full px-4 py-3 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-gray-900 dark:text-gray-100"
@@ -431,7 +493,9 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
                       type="text"
                       required
                       value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, location: e.target.value })
+                      }
                       className="w-full px-4 py-3 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-gray-900 dark:text-gray-100"
                       placeholder="Manila, Philippines"
                     />
@@ -443,7 +507,9 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
                     </label>
                     <textarea
                       value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, notes: e.target.value })
+                      }
                       rows={3}
                       className="w-full px-4 py-3 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-gray-900 dark:text-gray-100 resize-none"
                       placeholder="Additional notes about the appointment..."
@@ -456,7 +522,6 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
                     type="button"
                     onClick={() => {
                       setIsModalOpen(false);
-                      setSelectedDate(null);
                     }}
                     className="px-6 py-3 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 text-gray-700 dark:text-gray-300 font-semibold hover:bg-white/80 dark:hover:bg-gray-700/80 transition-all duration-300"
                   >
@@ -478,4 +543,3 @@ export default function AdminCalendar({ onNavigate, currentPage = "admin-calenda
     </AdminLayout>
   );
 }
-

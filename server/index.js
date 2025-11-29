@@ -3,9 +3,20 @@ import cors from "cors";
 import crypto from "crypto";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
+import AIMonitoringService from "./services/aiMonitoringService.js";
+import DeyeCloudApiWrapper from "./services/deyeCloudApiWrapper.js";
 
 // Load environment variables from .env file
 dotenv.config();
+
+// Helper function to mask email addresses in logs for security
+const maskEmail = (email) => {
+  if (!email) return "N/A";
+  const [local, domain] = email.split("@");
+  if (!domain) return email;
+  const visible = local.length > 2 ? local.slice(-2) : local;
+  return `${"*".repeat(Math.max(2, local.length - 2))}${visible}@${domain}`;
+};
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -423,6 +434,287 @@ You can reply directly to this email to contact ${name} at ${email}.
   }
 });
 
+// AI Monitoring Service Integration
+let aiMonitoringService = null;
+
+// Initialize AI Monitoring Service
+function initializeAIMonitoring() {
+  try {
+    const deyeApiWrapper = new DeyeCloudApiWrapper(
+      BASE_URL,
+      APP_ID,
+      APP_SECRET
+    );
+    aiMonitoringService = new AIMonitoringService(deyeApiWrapper);
+
+    // Start monitoring with 60 second intervals
+    const monitoringInterval = parseInt(
+      process.env.AI_MONITORING_INTERVAL || "60",
+      10
+    );
+    aiMonitoringService.startMonitoring(monitoringInterval);
+
+    console.log(
+      `AI Monitoring Service initialized (interval: ${monitoringInterval}s)`
+    );
+  } catch (error) {
+    console.error("Failed to initialize AI Monitoring Service:", error);
+    console.log("AI Monitoring will be disabled");
+  }
+}
+
+// API endpoint to get alert history
+app.get("/api/ai-monitoring/alerts", async (req, res) => {
+  try {
+    if (!aiMonitoringService) {
+      return res.status(503).json({
+        success: false,
+        message: "AI Monitoring Service is not available",
+      });
+    }
+
+    const limit = parseInt(req.query.limit || "100", 10);
+    const alerts = aiMonitoringService.getAlertHistory(limit);
+
+    res.json({
+      success: true,
+      alerts,
+      count: alerts.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get alerts",
+    });
+  }
+});
+
+// API endpoint to get error code database
+app.get("/api/ai-monitoring/error-codes", async (req, res) => {
+  try {
+    if (!aiMonitoringService) {
+      return res.status(503).json({
+        success: false,
+        message: "AI Monitoring Service is not available",
+      });
+    }
+
+    const errorCodes = aiMonitoringService.getErrorCodeDatabase();
+
+    res.json({
+      success: true,
+      errorCodes,
+      count: errorCodes.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get error codes",
+    });
+  }
+});
+
+// API endpoint to manually trigger monitoring cycle
+app.post("/api/ai-monitoring/trigger", async (req, res) => {
+  try {
+    if (!aiMonitoringService) {
+      return res.status(503).json({
+        success: false,
+        message: "AI Monitoring Service is not available",
+      });
+    }
+
+    // Run monitoring in background
+    aiMonitoringService.monitorDevices().catch((error) => {
+      console.error("Error in manual monitoring trigger:", error);
+    });
+
+    res.json({
+      success: true,
+      message: "Monitoring cycle triggered",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to trigger monitoring",
+    });
+  }
+});
+
+// API endpoint to send a test inverter overheat email to a specific address
+// Simple SMTP test endpoint
+app.post("/api/test-smtp", async (req, res) => {
+  try {
+    const smtpHost = process.env.SMTP_HOST || "smtp.hostinger.com";
+    const smtpPort = parseInt(process.env.SMTP_PORT || "465", 10);
+    const smtpUser = process.env.SMTP_USER || "info@sunterrasolarenergy.com";
+    const smtpPassword = process.env.SMTP_PASSWORD;
+    const { to } = req.body || {};
+    const targetEmail =
+      to || process.env.RECIPIENT_EMAIL || "info@sunterrasolarenergy.com";
+
+    if (!smtpPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "SMTP_PASSWORD not configured in .env file",
+      });
+    }
+
+    // Mask emails in logs for security
+    console.log(`Testing SMTP connection to ${smtpHost}:${smtpPort}...`);
+    console.log(`From: ${maskEmail(smtpUser)}`);
+    console.log(`To: ${maskEmail(targetEmail)}`);
+
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: {
+        user: smtpUser,
+        pass: smtpPassword,
+      },
+      debug: true,
+      logger: true,
+    });
+
+    // Verify connection
+    await transporter.verify();
+    console.log("SMTP connection verified successfully");
+
+    // Send test email
+    const info = await transporter.sendMail({
+      from: `"Sunterra Test" <${smtpUser}>`,
+      to: targetEmail,
+      subject: "SMTP Test - Sunterra Solar",
+      html: `
+        <h2>SMTP Test Email</h2>
+        <p>This is a test email to verify SMTP configuration.</p>
+        <p>If you receive this, your email settings are working correctly.</p>
+        <p>Time: ${new Date().toLocaleString()}</p>
+      `,
+    });
+
+    console.log("Test email sent successfully:", info.messageId);
+
+    res.json({
+      success: true,
+      message: `Test email sent to ${targetEmail}`,
+      messageId: info.messageId,
+    });
+  } catch (error) {
+    console.error("SMTP Test Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to send test email",
+      error: error.toString(),
+      stack: error.stack,
+    });
+  }
+});
+
+app.post("/api/ai-monitoring/send-test-email", async (req, res) => {
+  console.log(
+    `[TEST EMAIL ENDPOINT] Request received at ${new Date().toISOString()}`
+  );
+  try {
+    if (!aiMonitoringService) {
+      console.error(
+        "[TEST EMAIL ENDPOINT] AI Monitoring Service is not available"
+      );
+      return res.status(503).json({
+        success: false,
+        message: "AI Monitoring Service is not available",
+      });
+    }
+
+    const { to } = req.body || {};
+    const targetEmail = to || process.env.RECIPIENT_EMAIL;
+
+    // Mask email in logs
+    console.log(
+      `[TEST EMAIL ENDPOINT] Target email: ${maskEmail(targetEmail)}`
+    );
+
+    if (!targetEmail) {
+      console.error("[TEST EMAIL ENDPOINT] No recipient email specified");
+      return res.status(400).json({
+        success: false,
+        message:
+          "No recipient email specified. Provide 'to' in body or configure RECIPIENT_EMAIL.",
+      });
+    }
+
+    console.log(
+      `[TEST EMAIL ENDPOINT] Sending test inverter overheat email to ${maskEmail(
+        targetEmail
+      )}...`
+    );
+
+    // Use unique device SN for each test to bypass cooldown
+    const testDeviceSn = `TEST-${Date.now()}`;
+    console.log(`[TEST EMAIL ENDPOINT] Using test device SN: ${testDeviceSn}`);
+
+    const anomaly = {
+      type: "inverter_overheat",
+      severity: "critical",
+      deviceSn: testDeviceSn,
+      stationId: null,
+      message: `Inverter Overheat - Auto Shutdown. Device ${testDeviceSn} exceeded safe operating temperature and was automatically shut down to protect the inverter. Immediate on-site inspection is required.`,
+      data: null,
+      overrideRecipientEmail: targetEmail,
+      bypassCooldown: true, // Flag to bypass cooldown for test emails
+      aiRecommendation: {
+        explanation:
+          "The inverter reported an over‑temperature condition and shut itself down to prevent damage. This is treated as a critical fault and the system will not generate power until the issue is resolved. Sunterra support has been notified and will contact you shortly. Please keep your phone and email available so we can coordinate any required on‑site visit.",
+        possibleCauses: [
+          "Inverter installed in direct sunlight or a poorly ventilated area",
+          "Dust or debris blocking inverter heat sinks or vents",
+          "High ambient temperature combined with continuous high load",
+          "Internal cooling fan failure (if applicable)",
+        ],
+        recommendedActions: [
+          "Check that the inverter has good airflow and is not enclosed or blocked",
+          "Clean any dust or debris around the vents and heat sinks (with power off)",
+          "Ensure the inverter is not installed in direct sunlight; provide shading if needed",
+          "After it cools, restart and monitor temperature and load",
+          "If the fault repeats, contact your installer or technical support for a detailed inspection",
+          "Sunterra support has been notified and will contact you shortly. Please keep your phone and email available so we can coordinate any required on‑site visit.",
+        ],
+        severity: "critical",
+        ownerCanFix: true,
+        requiresOnsite: true,
+      },
+    };
+
+    console.log(
+      `[TEST EMAIL ENDPOINT] Calling sendAlert with anomaly type: ${anomaly.type}`
+    );
+    await aiMonitoringService.sendAlert(anomaly, anomaly.aiRecommendation);
+    console.log(
+      `[TEST EMAIL ENDPOINT] sendAlert completed for ${maskEmail(targetEmail)}`
+    );
+
+    res.json({
+      success: true,
+      message: `Test inverter overheat email sent to ${targetEmail}`,
+    });
+  } catch (error) {
+    console.error("Failed to send test email:", error);
+    console.error("Error details:", error.message);
+    console.error("Error stack:", error.stack);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to send test email",
+      error: error.toString(),
+    });
+  }
+});
+
 app.listen(PORT, () => {
-  // Server started
+  console.log(`Server running on port ${PORT}`);
+  // Initialize AI Monitoring after server starts
+  // Delay to ensure server is fully ready
+  setTimeout(() => {
+    initializeAIMonitoring();
+  }, 2000);
 });

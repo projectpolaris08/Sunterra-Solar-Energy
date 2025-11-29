@@ -30,12 +30,27 @@ import {
   WifiOff,
   Battery,
   Sun,
+  ChevronDown,
+  ChevronUp,
+  Mail,
 } from "lucide-react";
 
 interface AdminMonitoringProps {
   onNavigate: (page: string) => void;
   currentPage?: string;
 }
+
+// Helper function to mask email addresses (show only last 2 chars before @)
+const maskEmail = (email: string): string => {
+  if (!email || !email.includes("@")) return email;
+  const [localPart, domain] = email.split("@");
+  if (localPart.length <= 2) {
+    return "*".repeat(localPart.length) + "@" + domain;
+  }
+  const visibleChars = localPart.slice(-2);
+  const maskedChars = "*".repeat(localPart.length - 2);
+  return maskedChars + visibleChars + "@" + domain;
+};
 
 export default function AdminMonitoring({
   onNavigate,
@@ -64,6 +79,17 @@ export default function AdminMonitoring({
   const [dailyToBattery, setDailyToBattery] = useState<number | null>(null);
   const [totalProduction, setTotalProduction] = useState<number | null>(null);
   const [totalConsumption, setTotalConsumption] = useState<number | null>(null);
+
+  // AI Monitoring state
+  const [aiAlerts, setAiAlerts] = useState<any[]>([]);
+  const [isLoadingAi, setIsLoadingAi] = useState(false);
+  const [aiMonitoringAvailable, setAiMonitoringAvailable] = useState<
+    boolean | null
+  >(null);
+  const [expandedAiExplanations, setExpandedAiExplanations] = useState<
+    Set<string>
+  >(new Set());
+  const [emailAlerts, setEmailAlerts] = useState<any[]>([]);
 
   // Fetch stations and devices from Deye Cloud
   const fetchDevices = async () => {
@@ -403,12 +429,82 @@ export default function AdminMonitoring({
       }
     }, 30000); // 30 seconds
 
-    // Cleanup interval on unmount
+    // Fetch AI monitoring data
+    fetchAIMonitoringData();
+
+    // Set up AI monitoring refresh every 60 seconds
+    const aiRefreshInterval = setInterval(() => {
+      fetchAIMonitoringData();
+    }, 60000); // 60 seconds
+
+    // Cleanup intervals on unmount
     return () => {
       clearInterval(refreshInterval);
+      clearInterval(aiRefreshInterval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Fetch AI monitoring alerts and error codes
+  const fetchAIMonitoringData = async () => {
+    try {
+      // Fetch alerts
+      const alertsResponse = await fetch(
+        "http://localhost:3001/api/ai-monitoring/alerts?limit=50"
+      );
+      if (alertsResponse.ok) {
+        const alertsData = await alertsResponse.json();
+        if (alertsData.success) {
+          console.log(
+            "AI Alerts received:",
+            alertsData.alerts.length,
+            alertsData.alerts
+          );
+          // Filter to only show alerts for device 2310286498 or "no_production" type
+          // Also exclude example alerts (voltage, device_state, low_production)
+          const filteredAlerts = (alertsData.alerts || []).filter(
+            (alert: any) =>
+              alert.type !== "voltage" &&
+              alert.type !== "device_state" &&
+              alert.type !== "low_production" &&
+              (alert.deviceSn === "2310286498" ||
+                alert.deviceSn?.includes("2310286498") ||
+                alert.type === "no_production")
+          );
+          setAiAlerts(filteredAlerts);
+          setAiMonitoringAvailable(true);
+
+          // Filter alerts that were sent via email (sent: true) and for device 2310286498
+          // Exclude example alerts (voltage, device_state, low_production)
+          const sentAlerts = filteredAlerts.filter(
+            (alert: any) =>
+              alert.sent === true &&
+              alert.type !== "voltage" &&
+              alert.type !== "device_state" &&
+              alert.type !== "low_production" &&
+              (alert.deviceSn === "2310286498" ||
+                alert.deviceSn?.includes("2310286498") ||
+                alert.type === "no_production")
+          );
+          setEmailAlerts(sentAlerts);
+        } else {
+          console.log("AI Monitoring response not successful:", alertsData);
+          setAiMonitoringAvailable(false);
+        }
+      } else {
+        console.log("AI Monitoring endpoint returned:", alertsResponse.status);
+        setAiMonitoringAvailable(false);
+      }
+
+      // Note: Error codes endpoint is available but not currently used in UI
+    } catch (error) {
+      // AI monitoring service might not be available
+      console.log("AI Monitoring service not available:", error);
+      setAiMonitoringAvailable(false);
+      setAiAlerts([]);
+      setEmailAlerts([]);
+    }
+  };
 
   // Energy generation data
   const energyData = [
@@ -719,7 +815,7 @@ export default function AdminMonitoring({
         severity: "critical",
         title: "Device Offline",
         message: `Device ${system.name} is currently offline and not reporting data.`,
-        timestamp: system.lastUpdate,
+        timestamp: new Date().toISOString(), // Use current time when warning is detected
       });
     }
 
@@ -738,7 +834,7 @@ export default function AdminMonitoring({
         severity: "warning",
         title: "No Power Generation",
         message: `Device ${system.name} is online but generating 0kW during daytime. Check solar panels and weather conditions.`,
-        timestamp: system.lastUpdate,
+        timestamp: new Date().toISOString(), // Use current time when warning is detected
       });
     }
 
@@ -751,7 +847,7 @@ export default function AdminMonitoring({
         severity: "warning",
         title: "Low Efficiency",
         message: `Device ${system.name} is operating at ${system.efficiency}% efficiency. Expected: 70-100%. Check system health.`,
-        timestamp: system.lastUpdate,
+        timestamp: new Date().toISOString(), // Use current time when warning is detected
       });
     }
 
@@ -771,7 +867,7 @@ export default function AdminMonitoring({
           message: `Device ${system.name} hasn't updated in ${Math.round(
             timeDiff / 60000
           )} minutes. Connection may be unstable.`,
-          timestamp: system.lastUpdate,
+          timestamp: new Date().toISOString(), // Use current time when warning is detected
         });
       }
     }
@@ -792,7 +888,7 @@ export default function AdminMonitoring({
           } is only utilizing ${utilization.toFixed(
             1
           )}% of capacity. This may be normal during low sunlight.`,
-          timestamp: system.lastUpdate,
+          timestamp: new Date().toISOString(), // Use current time when warning is detected
         });
       }
     }
@@ -800,8 +896,22 @@ export default function AdminMonitoring({
     return alerts;
   });
 
-  const criticalAlerts = systemAlerts.filter((a) => a.severity === "critical");
-  const warningAlerts = systemAlerts.filter((a) => a.severity === "warning");
+  // Filter to only show "No Power Generation" alert for device 2310286498
+  const criticalAlerts = systemAlerts.filter(
+    (a) =>
+      a.severity === "critical" &&
+      (a.deviceId === "2310286498" ||
+        a.deviceName === "2310286498" ||
+        a.deviceName?.includes("2310286498"))
+  );
+  const warningAlerts = systemAlerts.filter(
+    (a) =>
+      a.severity === "warning" &&
+      a.title === "No Power Generation" &&
+      (a.deviceId === "2310286498" ||
+        a.deviceName === "2310286498" ||
+        a.deviceName?.includes("2310286498"))
+  );
 
   // Calculate stats from station-level data for more accuracy
   // Use station data if available, otherwise fall back to device data
@@ -981,6 +1091,300 @@ export default function AdminMonitoring({
           </div>
         </div>
 
+        {/* AI Monitoring Alerts - Always Visible */}
+        <div className="rounded-xl bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 border border-purple-200 dark:border-purple-700 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/50">
+                <Activity className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                  AI Monitoring
+                </h3>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-purple-700 dark:text-purple-300">
+                    Automated anomaly detection, error analysis, and AI-powered
+                    solutions
+                  </p>
+                  {aiMonitoringAvailable === true && (
+                    <span className="px-2 py-0.5 rounded text-xs font-semibold bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">
+                      Active
+                    </span>
+                  )}
+                  {aiMonitoringAvailable === false && (
+                    <span className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                      Service Unavailable
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  setIsLoadingAi(true);
+                  try {
+                    // Trigger monitoring cycle
+                    const triggerResponse = await fetch(
+                      "http://localhost:3001/api/ai-monitoring/trigger",
+                      {
+                        method: "POST",
+                      }
+                    );
+
+                    if (triggerResponse.ok) {
+                      // Wait a bit for analysis to complete (AI needs time to process)
+                      await new Promise((resolve) => setTimeout(resolve, 5000));
+
+                      // Refresh alerts multiple times to catch new alerts
+                      for (let i = 0; i < 3; i++) {
+                        await fetchAIMonitoringData();
+                        await new Promise((resolve) =>
+                          setTimeout(resolve, 2000)
+                        );
+                      }
+                    }
+                  } catch (error) {
+                    console.error("Failed to trigger monitoring:", error);
+                  } finally {
+                    setIsLoadingAi(false);
+                  }
+                }}
+                disabled={isLoadingAi}
+                className="px-3 py-1.5 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
+              >
+                {isLoadingAi ? "Analyzing..." : "Analyze Now"}
+              </button>
+              <button
+                onClick={fetchAIMonitoringData}
+                disabled={isLoadingAi}
+                className="px-3 py-1.5 rounded-lg bg-purple-500/80 text-white text-sm font-medium hover:bg-purple-600 transition-colors disabled:opacity-50"
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
+          {aiAlerts.length > 0 ? (
+            <>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {aiAlerts.slice(0, 10).map((alert: any, index: number) => (
+                  <div
+                    key={index}
+                    className={`p-3 rounded-lg border ${
+                      alert.severity === "critical"
+                        ? "bg-red-100 dark:bg-red-900/50 border-red-300 dark:border-red-700"
+                        : alert.severity === "warning"
+                        ? "bg-orange-100 dark:bg-orange-900/50 border-orange-300 dark:border-orange-700"
+                        : "bg-blue-100 dark:bg-blue-900/50 border-blue-300 dark:border-blue-700"
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
+                      {alert.severity === "critical" ? (
+                        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-semibold text-gray-900 dark:text-white">
+                            {alert.type?.replace(/_/g, " ").toUpperCase()}
+                          </p>
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                              alert.severity === "critical"
+                                ? "bg-red-600 text-white"
+                                : "bg-orange-600 text-white"
+                            }`}
+                          >
+                            {alert.severity}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          {alert.message}
+                        </p>
+                        {alert.aiRecommendation && (
+                          <div className="mt-2 p-2 rounded-lg bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
+                            <p className="text-xs font-semibold text-purple-900 dark:text-purple-100 mb-1">
+                              🤖 AI Recommendation:
+                            </p>
+                            <p className="text-xs text-purple-700 dark:text-purple-300 mb-1">
+                              {alert.aiRecommendation.explanation ||
+                                alert.aiRecommendation.message}
+                            </p>
+                            {alert.aiRecommendation.recommendedActions &&
+                              alert.aiRecommendation.recommendedActions.length >
+                                0 && (
+                                <div className="mt-1">
+                                  <p className="text-xs font-semibold text-purple-800 dark:text-purple-200 mb-0.5">
+                                    Actions:
+                                  </p>
+                                  <ul className="text-xs text-purple-700 dark:text-purple-300 list-disc list-inside space-y-0.5">
+                                    {alert.aiRecommendation.recommendedActions
+                                      .slice(0, 3)
+                                      .map((action: string, idx: number) => (
+                                        <li key={idx}>{action}</li>
+                                      ))}
+                                  </ul>
+                                </div>
+                              )}
+                          </div>
+                        )}
+                        {alert.deviceSn && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Device: {alert.deviceSn}
+                          </p>
+                        )}
+                        {alert.timestamp && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(alert.timestamp).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {aiAlerts.length > 10 && (
+                <p className="text-xs text-purple-600 dark:text-purple-400 mt-2 text-center">
+                  Showing 10 of {aiAlerts.length} alerts
+                </p>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-6">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/50 mb-3">
+                <Activity className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <p className="text-sm text-purple-700 dark:text-purple-300 mb-2">
+                {isLoadingAi
+                  ? "AI is analyzing your systems..."
+                  : aiMonitoringAvailable === false
+                  ? "AI Monitoring service is not available. Please ensure the backend server is running."
+                  : "No AI alerts detected. All systems operating normally."}
+              </p>
+              <p className="text-xs text-purple-600 dark:text-purple-400">
+                {aiMonitoringAvailable === false
+                  ? "Make sure your backend server is running with AI monitoring enabled."
+                  : "AI monitoring runs automatically every 60 seconds. Click 'Analyze Now' to check immediately."}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Client Email Notifications - After-Sales Support */}
+        <div className="rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border border-blue-200 dark:border-blue-700 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
+                <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">
+                  Client Email Notifications
+                </h3>
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  Automated email alerts sent to clients when errors are
+                  detected
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {emailAlerts.length > 0 && (
+                <span className="px-3 py-1 rounded-lg bg-blue-600 text-white text-sm font-semibold">
+                  {emailAlerts.length} Sent
+                </span>
+              )}
+              <button
+                onClick={fetchAIMonitoringData}
+                disabled={isLoadingAi}
+                className="px-3 py-1.5 rounded-lg bg-blue-500/80 text-white text-sm font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                Refresh
+              </button>
+            </div>
+          </div>
+          {emailAlerts.length > 0 ? (
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {emailAlerts.slice(0, 10).map((alert: any, index: number) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded-lg border ${
+                    alert.severity === "critical"
+                      ? "bg-red-50 dark:bg-red-900/30 border-red-300 dark:border-red-700"
+                      : alert.severity === "warning"
+                      ? "bg-orange-50 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700"
+                      : "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700"
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold text-gray-900 dark:text-white">
+                          {alert.type?.replace(/_/g, " ").toUpperCase() ||
+                            "ALERT"}
+                        </p>
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                            alert.severity === "critical"
+                              ? "bg-red-600 text-white"
+                              : "bg-orange-600 text-white"
+                          }`}
+                        >
+                          {alert.severity}
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-green-600 text-white">
+                          ✓ Email Sent
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        {alert.message}
+                      </p>
+                      {alert.deviceSn && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          Device: {alert.deviceSn}
+                        </p>
+                      )}
+                      <div className="mt-2 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                        {alert.timestamp && (
+                          <span>
+                            📧 Sent:{" "}
+                            {new Date(alert.timestamp).toLocaleString()}
+                          </span>
+                        )}
+                        {alert.recipientEmail && (
+                          <span>To: {maskEmail(alert.recipientEmail)}</span>
+                        )}
+                      </div>
+                      {alert.aiRecommendation && (
+                        <div className="mt-2 p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700">
+                          <p className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                            📋 Email included AI explanation and recommendations
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/50 mb-3">
+                <Mail className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                No email alerts sent yet
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-400">
+                When AI detects an error, an email will be automatically sent to
+                the client with AI explanations and recommendations.
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Alerts Banner */}
         {(criticalAlerts.length > 0 || warningAlerts.length > 0) && (
           <div className="rounded-xl bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30 border border-red-200 dark:border-red-700 p-4">
@@ -1022,24 +1426,182 @@ export default function AdminMonitoring({
                   </div>
                 </div>
               ))}
-              {warningAlerts.slice(0, 3).map((alert) => (
-                <div
-                  key={alert.id}
-                  className="p-3 rounded-lg bg-orange-100 dark:bg-orange-900/50 border border-orange-300 dark:border-orange-700"
-                >
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="font-semibold text-orange-900 dark:text-orange-100">
-                        {alert.title} - {alert.deviceName}
-                      </p>
-                      <p className="text-sm text-orange-700 dark:text-orange-300">
-                        {alert.message}
-                      </p>
+              {warningAlerts.slice(0, 3).map((alert) => {
+                // Find matching AI alert for this device
+                // Try multiple matching strategies since device identifiers might vary
+                let matchingAiAlert = aiAlerts.find(
+                  (a: any) =>
+                    a.deviceSn === alert.deviceName ||
+                    a.deviceSn === alert.deviceId ||
+                    a.deviceSn?.toString() === alert.deviceName?.toString() ||
+                    a.deviceSn?.toString() === alert.deviceId?.toString() ||
+                    (a.stationId &&
+                      alert.deviceName &&
+                      a.deviceSn?.includes(alert.deviceName)) ||
+                    (a.message && a.message.includes(alert.deviceName))
+                );
+
+                // Fallback: Match by alert type if no exact device match
+                if (!matchingAiAlert && alert.title === "No Power Generation") {
+                  matchingAiAlert = aiAlerts.find(
+                    (a: any) => a.type === "no_production"
+                  );
+                }
+
+                // Debug logging for "No Power Generation" alerts
+                if (alert.title === "No Power Generation") {
+                  console.log(
+                    "🔍 Matching AI alert for 'No Power Generation':",
+                    {
+                      alertDeviceName: alert.deviceName,
+                      alertDeviceId: alert.deviceId,
+                      aiAlertsCount: aiAlerts.length,
+                      aiAlertDeviceSns: aiAlerts.map((a: any) => a.deviceSn),
+                      aiAlertTypes: aiAlerts.map((a: any) => a.type),
+                      foundMatch: !!matchingAiAlert,
+                      matchingAlert: matchingAiAlert
+                        ? {
+                            type: matchingAiAlert.type,
+                            deviceSn: matchingAiAlert.deviceSn,
+                            hasRecommendation:
+                              !!matchingAiAlert.aiRecommendation,
+                          }
+                        : null,
+                    }
+                  );
+                }
+
+                return (
+                  <div
+                    key={alert.id}
+                    className="p-3 rounded-lg bg-orange-100 dark:bg-orange-900/50 border border-orange-300 dark:border-orange-700"
+                  >
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="font-semibold text-orange-900 dark:text-orange-100">
+                          {alert.title} - {alert.deviceName}
+                        </p>
+                        <p className="text-sm text-orange-700 dark:text-orange-300">
+                          {alert.message}
+                        </p>
+                        {alert.timestamp && alert.timestamp !== "Unknown" && (
+                          <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                            ⏰ Detected at:{" "}
+                            {new Date(alert.timestamp).toLocaleString()}
+                          </p>
+                        )}
+                        {matchingAiAlert &&
+                          matchingAiAlert.aiRecommendation && (
+                            <div className="mt-2">
+                              <button
+                                onClick={() => {
+                                  const newExpanded = new Set(
+                                    expandedAiExplanations
+                                  );
+                                  if (newExpanded.has(alert.id)) {
+                                    newExpanded.delete(alert.id);
+                                  } else {
+                                    newExpanded.add(alert.id);
+                                  }
+                                  setExpandedAiExplanations(newExpanded);
+                                }}
+                                className="w-full flex items-center justify-between p-2 rounded-lg bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors"
+                              >
+                                <span className="text-xs font-semibold text-purple-900 dark:text-purple-100 flex items-center gap-2">
+                                  🤖 AI Explanation
+                                  {expandedAiExplanations.has(alert.id) ? (
+                                    <ChevronUp className="w-3 h-3" />
+                                  ) : (
+                                    <ChevronDown className="w-3 h-3" />
+                                  )}
+                                </span>
+                              </button>
+                              {expandedAiExplanations.has(alert.id) && (
+                                <div className="mt-2 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
+                                  <p className="text-xs font-semibold text-purple-900 dark:text-purple-100 mb-2">
+                                    Explanation:
+                                  </p>
+                                  <p className="text-xs text-purple-700 dark:text-purple-300 mb-3">
+                                    {matchingAiAlert.aiRecommendation
+                                      .explanation || matchingAiAlert.message}
+                                  </p>
+                                  {matchingAiAlert.aiRecommendation
+                                    .possibleCauses &&
+                                    matchingAiAlert.aiRecommendation
+                                      .possibleCauses.length > 0 && (
+                                      <div className="mb-3">
+                                        <p className="text-xs font-semibold text-purple-800 dark:text-purple-200 mb-1">
+                                          Possible Causes:
+                                        </p>
+                                        <ul className="text-xs text-purple-700 dark:text-purple-300 list-disc list-inside space-y-0.5">
+                                          {matchingAiAlert.aiRecommendation.possibleCauses
+                                            .slice(0, 5)
+                                            .map(
+                                              (cause: string, idx: number) => (
+                                                <li key={idx}>{cause}</li>
+                                              )
+                                            )}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  {matchingAiAlert.aiRecommendation
+                                    .recommendedActions &&
+                                    matchingAiAlert.aiRecommendation
+                                      .recommendedActions.length > 0 && (
+                                      <div>
+                                        <p className="text-xs font-semibold text-purple-800 dark:text-purple-200 mb-1">
+                                          Recommended Actions:
+                                        </p>
+                                        <ol className="text-xs text-purple-700 dark:text-purple-300 list-decimal list-inside space-y-0.5">
+                                          {matchingAiAlert.aiRecommendation.recommendedActions
+                                            .slice(0, 5)
+                                            .map(
+                                              (action: string, idx: number) => (
+                                                <li key={idx}>{action}</li>
+                                              )
+                                            )}
+                                        </ol>
+                                      </div>
+                                    )}
+                                  {(matchingAiAlert.aiRecommendation
+                                    .ownerCanFix !== undefined ||
+                                    matchingAiAlert.aiRecommendation
+                                      .requiresOnsite !== undefined) && (
+                                    <div className="mt-3 pt-2 border-t border-purple-200 dark:border-purple-700">
+                                      <div className="flex items-center gap-4 text-xs">
+                                        {matchingAiAlert.aiRecommendation
+                                          .ownerCanFix !== undefined && (
+                                          <span className="text-purple-700 dark:text-purple-300">
+                                            <strong>Owner Can Fix:</strong>{" "}
+                                            {matchingAiAlert.aiRecommendation
+                                              .ownerCanFix
+                                              ? "Yes"
+                                              : "No"}
+                                          </span>
+                                        )}
+                                        {matchingAiAlert.aiRecommendation
+                                          .requiresOnsite !== undefined && (
+                                          <span className="text-purple-700 dark:text-purple-300">
+                                            <strong>Requires Onsite:</strong>{" "}
+                                            {matchingAiAlert.aiRecommendation
+                                              .requiresOnsite
+                                              ? "Yes"
+                                              : "No"}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

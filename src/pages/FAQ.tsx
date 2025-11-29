@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { ChevronDown, Sun, HelpCircle } from "lucide-react";
+import {
+  ChevronDown,
+  Sun,
+  HelpCircle,
+  Zap,
+  Battery,
+  Home,
+  Plug,
+  ArrowRight,
+  ArrowDown,
+} from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import SEO from "../components/SEO";
@@ -17,7 +27,7 @@ export default function FAQ({ onNavigate }: FAQProps) {
       questions: [
         {
           question:
-            "How much does a solar panel system cost in the Philippines?",
+            "How much does a solar energy system cost in the Philippines?",
           answer:
             "The cost varies based on system size and type. A typical residential grid-tie system (5kW) ranges from ₱250,000 to ₱350,000. Hybrid systems with battery backup cost ₱400,000 to ₱600,000. We offer free site assessments to provide accurate quotes based on your specific needs.",
         },
@@ -29,7 +39,7 @@ export default function FAQ({ onNavigate }: FAQProps) {
         {
           question: "Do I need permits for solar installation?",
           answer:
-            "Yes, solar installations require permits from your local government and electrical inspection. For grid-tie systems, you also need approval from your utility company for net metering. Sunterra Solar handles all permit applications and coordination as part of our service.",
+            "It depends on your location and property type. In the Philippines, requirements vary: For homeowners associations (HOAs), some require permits and approval from the HOA board before installation, while others don't have specific requirements. Always check with your HOA first. Local government units (LGUs) do not require permits for solar installations. For grid-tie systems, you need approval from your utility company (Meralco, VECO, etc.) for net metering connection. Electrical inspection is typically required for safety compliance.",
         },
         {
           question: "What is the return on investment (ROI) for solar panels?",
@@ -55,7 +65,7 @@ export default function FAQ({ onNavigate }: FAQProps) {
         {
           question: "Can I add batteries to my grid-tie system later?",
           answer:
-            "Yes! Many customers start with grid-tie and upgrade to hybrid later. However, it's more cost-effective to plan for batteries initially. We design systems with future expansion in mind.",
+            "No, you cannot directly add batteries to an existing grid-tie system. Grid-tie inverters are designed specifically for grid connection and do not have the communication ports or battery management capabilities required for battery integration. How Grid-Tie Systems Work: Grid-tie systems convert DC electricity from solar panels directly into AC power that synchronizes with the utility grid. They have no battery storage - excess solar energy flows back to the grid (net metering), and when solar production is insufficient, power is drawn from the grid. These inverters lack battery communication protocols (like CAN bus or RS485) and battery management system (BMS) interfaces that hybrid inverters have. To add battery backup, you would need to replace the entire grid-tie inverter with a hybrid inverter, which can manage both grid connection and battery storage. This essentially means upgrading to a hybrid system. It's more cost-effective to plan for batteries from the start if you anticipate needing backup power.",
         },
       ],
     },
@@ -65,7 +75,7 @@ export default function FAQ({ onNavigate }: FAQProps) {
         {
           question: "How much electricity will my solar panels generate?",
           answer:
-            "In the Philippines, a 1kW system typically generates 4-5 kWh per day (1,460-1,825 kWh annually). A 5kW residential system produces 20-25 kWh daily, enough for most Filipino households. Actual output depends on location, shading, and panel orientation.",
+            "Solar panel generation depends on several factors: system size, location, weather, and panel orientation. In the Philippines, a 1kW solar system typically generates 3-4 kWh per day on average (approximately 1,100-1,460 kWh per year). A 5kW system would produce around 15-20 kWh daily. However, actual generation varies significantly: sunny days produce more (up to 4-5 kWh per 1kW), while cloudy or rainy days produce less (1-2 kWh per 1kW). Peak generation occurs during midday (10 AM to 2 PM) when the sun is strongest. Factors affecting output include roof angle, shading from trees or buildings, panel quality, and seasonal weather patterns. During the dry season (March to May), you'll see higher generation, while the rainy season (June to October) typically produces less.",
         },
         {
           question: "What happens during cloudy days or at night?",
@@ -90,7 +100,7 @@ export default function FAQ({ onNavigate }: FAQProps) {
         {
           question: "Are there financing options available?",
           answer:
-            "Yes, we partner with banks offering solar loans with competitive interest rates. Many customers opt for 3-5 year payment plans. Some systems pay for themselves through electricity savings before the loan term ends.",
+            "Currently, we accept cash payments and bank transfers. We are working on establishing partnerships with banks to offer financing options and payment plans in the future. For now, all installations are on a cash basis or bank transfer. We'll update our customers once financing options become available.",
         },
         {
           question: "What is net metering and how does it work?",
@@ -169,6 +179,227 @@ export default function FAQ({ onNavigate }: FAQProps) {
         </div>
       </section>
 
+      {/* Solar Hybrid System Infographic */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                How a Solar Hybrid System Works
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                A simple guide to understanding solar energy flow in your home
+              </p>
+            </div>
+
+            <Card className="p-8 md:p-12 bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-800 dark:to-gray-700">
+              <div className="mb-12">
+                <div className="relative max-w-4xl mx-auto">
+                  {/* Daytime Flow Section */}
+                  <div className="mb-16">
+                    <div className="flex items-center justify-center mb-8">
+                      <Sun className="w-10 h-10 text-yellow-500 mr-3" />
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Daytime Flow
+                      </h3>
+                    </div>
+
+                    <div className="space-y-3">
+                      {/* Sunlight to Solar Panels */}
+                      <div className="flex flex-col items-center">
+                        <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center mb-2 border-2 border-yellow-300 dark:border-yellow-700">
+                          <Sun className="w-8 h-8 text-yellow-500" />
+                        </div>
+                        <p className="font-semibold text-gray-900 dark:text-white text-xs mb-1">
+                          Sunlight
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 text-center max-w-[100px]">
+                          Solar panels capture sunlight
+                        </p>
+                      </div>
+
+                      <ArrowDown className="w-6 h-6 text-blue-600 mx-auto" />
+
+                      {/* Solar Panels */}
+                      <div className="flex flex-col items-center">
+                        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-2 border-2 border-blue-300 dark:border-blue-700">
+                          <Zap className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <p className="font-semibold text-gray-900 dark:text-white text-xs mb-1">
+                          Solar Panels
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 text-center max-w-[100px]">
+                          Convert sunlight to DC electricity
+                        </p>
+                      </div>
+
+                      <ArrowDown className="w-6 h-6 text-blue-600 mx-auto" />
+
+                      {/* Hybrid Inverter */}
+                      <div className="flex flex-col items-center">
+                        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-2 border-2 border-blue-300 dark:border-blue-700">
+                          <Plug className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <p className="font-semibold text-gray-900 dark:text-white text-xs mb-1">
+                          Hybrid Inverter
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 text-center max-w-[100px]">
+                          Converts DC to AC power
+                        </p>
+                      </div>
+
+                      {/* Split to House and Battery */}
+                      <div className="flex items-center justify-center gap-6 mt-4">
+                        <div className="flex flex-col items-center">
+                          <ArrowRight className="w-6 h-6 text-blue-600 mb-2" />
+                          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-2 border-2 border-blue-300 dark:border-blue-700">
+                            <Home className="w-8 h-8 text-blue-600" />
+                          </div>
+                          <p className="font-semibold text-gray-900 dark:text-white text-xs mb-1">
+                            Powers the House
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 text-center max-w-[100px]">
+                            Electricity flows to household loads
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col items-center">
+                          <ArrowRight className="w-6 h-6 text-blue-600 mb-2" />
+                          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-2 border-2 border-blue-300 dark:border-blue-700">
+                            <Battery className="w-8 h-8 text-blue-600" />
+                          </div>
+                          <p className="font-semibold text-gray-900 dark:text-white text-xs mb-1">
+                            Charges Battery
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 text-center max-w-[100px]">
+                            Excess energy stored in LiFePO4 battery
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Nighttime Flow Section */}
+                  <div className="border-t-2 border-blue-200 dark:border-gray-700 pt-12">
+                    <div className="flex items-center justify-center mb-8">
+                      <div className="w-10 h-10 bg-gray-800 dark:bg-gray-200 rounded-full mr-3 flex items-center justify-center">
+                        <div className="w-5 h-5 bg-yellow-400 rounded-full"></div>
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Nighttime Flow
+                      </h3>
+                    </div>
+
+                    <div className="space-y-3">
+                      {/* Battery */}
+                      <div className="flex flex-col items-center">
+                        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-2 border-2 border-blue-300 dark:border-blue-700">
+                          <Battery className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <p className="font-semibold text-gray-900 dark:text-white text-xs mb-1">
+                          LiFePO4 Battery Bank
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 text-center max-w-[100px]">
+                          Stored energy from daytime
+                        </p>
+                      </div>
+
+                      <ArrowDown className="w-6 h-6 text-blue-600 mx-auto" />
+
+                      {/* Hybrid Inverter */}
+                      <div className="flex flex-col items-center">
+                        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-2 border-2 border-blue-300 dark:border-blue-700">
+                          <Plug className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <p className="font-semibold text-gray-900 dark:text-white text-xs mb-1">
+                          Hybrid Inverter
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 text-center max-w-[100px]">
+                          Converts battery DC to AC power
+                        </p>
+                      </div>
+
+                      <ArrowDown className="w-6 h-6 text-blue-600 mx-auto" />
+
+                      {/* House */}
+                      <div className="flex flex-col items-center">
+                        <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-2 border-2 border-blue-300 dark:border-blue-700">
+                          <Home className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <p className="font-semibold text-gray-900 dark:text-white text-xs mb-1">
+                          Powers the House
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 text-center max-w-[100px]">
+                          Continuous power supply at night
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* System Components Legend */}
+              <div className="border-t-2 border-blue-200 dark:border-gray-700 pt-8">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+                  System Components
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="text-center">
+                    <div className="w-14 h-14 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center mx-auto mb-2 border-2 border-yellow-300 dark:border-yellow-700">
+                      <Sun className="w-7 h-7 text-yellow-500" />
+                    </div>
+                    <p className="font-semibold text-gray-900 dark:text-white text-xs">
+                      Solar Panels
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mx-auto mb-2 border-2 border-blue-300 dark:border-blue-700">
+                      <Plug className="w-7 h-7 text-blue-600" />
+                    </div>
+                    <p className="font-semibold text-gray-900 dark:text-white text-xs">
+                      Hybrid Inverter
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mx-auto mb-2 border-2 border-blue-300 dark:border-blue-700">
+                      <Battery className="w-7 h-7 text-blue-600" />
+                    </div>
+                    <p className="font-semibold text-gray-900 dark:text-white text-xs">
+                      LiFePO4 Battery
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mx-auto mb-2 border-2 border-blue-300 dark:border-blue-700">
+                      <Home className="w-7 h-7 text-blue-600" />
+                    </div>
+                    <p className="font-semibold text-gray-900 dark:text-white text-xs">
+                      Household Loads
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Utility Grid Backup */}
+              <div className="border-t-2 border-blue-200 dark:border-gray-700 pt-6">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
+                    <Plug className="w-8 h-8 text-gray-600 dark:text-gray-300" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-semibold text-gray-900 dark:text-white text-base mb-1">
+                      DU/Grid (Optional Backup)
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 max-w-md">
+                      Utility grid connection for backup power when needed
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto space-y-12">
@@ -210,7 +441,7 @@ export default function FAQ({ onNavigate }: FAQProps) {
 
                         <div
                           className={`overflow-hidden transition-all duration-300 ${
-                            isOpen ? "max-h-96 mt-4" : "max-h-0"
+                            isOpen ? "max-h-[5000px] mt-4" : "max-h-0"
                           }`}
                         >
                           <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
