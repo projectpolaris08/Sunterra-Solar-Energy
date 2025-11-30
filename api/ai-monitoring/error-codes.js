@@ -1,6 +1,7 @@
 // API endpoint to get error code database
 
 import { getAllErrorCodes } from "../lib/supabase-storage.js";
+import { setCorsHeaders, handleOptions } from "../lib/cors.js";
 
 function sendJson(res, statusCode, data) {
   res.setHeader("Content-Type", "application/json");
@@ -9,30 +10,12 @@ function sendJson(res, statusCode, data) {
 }
 
 export default async function handler(req, res) {
-  // Set CORS headers for all responses
-  const origin = req.headers.origin;
-  const allowedOrigins = [
-    "https://sunterrasolarenergy.com",
-    "https://www.sunterrasolarenergy.com",
-    "http://localhost:5173",
-    "http://localhost:3000",
-  ];
+  // Set CORS headers FIRST, before any processing
+  setCorsHeaders(req, res);
 
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  } else {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-  }
-
-  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Access-Control-Max-Age", "86400"); // 24 hours
-
-  // Handle preflight requests
+  // Handle preflight OPTIONS requests immediately
   if (req.method === "OPTIONS") {
-    res.statusCode = 200;
-    res.end();
-    return;
+    return handleOptions(req, res);
   }
 
   try {
