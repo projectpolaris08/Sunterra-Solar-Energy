@@ -450,9 +450,7 @@ export default function AdminMonitoring({
     try {
       // Fetch alerts
       const alertsResponse = await fetch(
-        `${
-          import.meta.env.VITE_API_URL || window.location.origin
-        }/api/ai-monitoring/alerts?limit=50`
+        `https://sunterra-solar-energy.vercel.app/api/ai-monitoring/alerts?limit=50`
       );
       if (alertsResponse.ok) {
         const alertsData = await alertsResponse.json();
@@ -1129,9 +1127,7 @@ export default function AdminMonitoring({
                   try {
                     // Trigger monitoring cycle
                     const triggerResponse = await fetch(
-                      `${
-                        import.meta.env.VITE_API_URL || window.location.origin
-                      }/api/ai-monitoring/trigger`,
+                      `https://sunterra-solar-energy.vercel.app/api/ai-monitoring/trigger`,
                       {
                         method: "POST",
                       }

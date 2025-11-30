@@ -40,14 +40,9 @@ export default function Contact({ onNavigate }: ContactProps) {
     try {
       // Determine the API URL based on environment
       // Frontend on Hostinger, backend on Vercel
-      // IMPORTANT: Set VITE_API_URL to your Vercel deployment URL when building for production
-      const apiUrl = import.meta.env.VITE_API_URL;
-
-      if (!apiUrl) {
-        throw new Error(
-          "API URL is not configured. Please set VITE_API_URL environment variable to your Vercel deployment URL (e.g., https://your-project.vercel.app)"
-        );
-      }
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        "https://sunterra-solar-energy.vercel.app";
 
       const endpoint = "/api/contact";
       const response = await fetch(`${apiUrl}${endpoint}`, {

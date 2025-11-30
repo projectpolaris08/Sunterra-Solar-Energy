@@ -2,8 +2,9 @@
 // Using backend proxy to avoid CORS issues
 // Backend proxy URL from environment variable
 
-const PROXY_URL =
-  import.meta.env.VITE_PROXY_URL || "http://localhost:3001/api/deye";
+import { DEYE_PROXY_URL } from "../config/api";
+
+const PROXY_URL = DEYE_PROXY_URL;
 
 class DeyeCloudApi {
   // Get or refresh access token (handled by backend proxy)

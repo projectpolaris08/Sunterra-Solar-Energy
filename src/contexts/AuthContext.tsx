@@ -26,14 +26,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (email: string, password: string): boolean => {
-    // Get credentials from environment variables
-    const validEmail = import.meta.env.VITE_ADMIN_EMAIL;
-    const validPassword = import.meta.env.VITE_ADMIN_PASSWORD;
-
-    // Validate that environment variables are set
-    if (!validEmail || !validPassword) {
-      return false;
-    }
+    // Admin credentials (hardcoded for simplicity)
+    const validEmail =
+      import.meta.env.VITE_ADMIN_EMAIL || "info@sunterrasolarenergy.com";
+    const validPassword =
+      import.meta.env.VITE_ADMIN_PASSWORD || "2Tradeasiaprime";
 
     if (email === validEmail && password === validPassword) {
       setIsAuthenticated(true);
