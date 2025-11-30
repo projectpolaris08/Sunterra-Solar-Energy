@@ -14,8 +14,12 @@ function sendJson(res, statusCode, data) {
 }
 
 export default async function handler(req, res) {
-  // Get origin from request
-  const origin = req.headers.origin || req.headers.Origin;
+  // Get origin from request - handle both lowercase and capitalized headers
+  const origin =
+    req.headers.origin ||
+    req.headers.Origin ||
+    req.headers["origin"] ||
+    req.headers["Origin"];
   const allowedOrigins = [
     "https://sunterrasolarenergy.com",
     "https://www.sunterrasolarenergy.com",
@@ -23,31 +27,33 @@ export default async function handler(req, res) {
     "http://localhost:3000",
   ];
 
-  // Determine allowed origin
-  let allowOrigin = "*";
-  if (origin) {
-    if (allowedOrigins.includes(origin)) {
-      allowOrigin = origin;
-    } else {
-      allowOrigin = origin; // Allow any origin for development
-    }
+  // Determine allowed origin - always use the requesting origin if present
+  let allowOrigin = origin || "*";
+  if (origin && allowedOrigins.includes(origin)) {
+    allowOrigin = origin;
   }
 
-  // Handle preflight OPTIONS requests FIRST - inline for maximum reliability
+  // CRITICAL: Handle OPTIONS preflight requests FIRST
+  // This MUST return before any other code runs
   if (req.method === "OPTIONS") {
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": allowOrigin,
-      "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,PATCH",
-      "Access-Control-Allow-Headers":
-        "Content-Type,Authorization,X-Requested-With,Accept,Origin",
-      "Access-Control-Max-Age": "86400",
-    };
+    // Set headers individually to ensure they're applied
+    res.setHeader("Access-Control-Allow-Origin", allowOrigin);
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type,Authorization,X-Requested-With,Accept,Origin"
+    );
+    res.setHeader("Access-Control-Max-Age", "86400");
 
     if (allowOrigin !== "*") {
-      corsHeaders["Access-Control-Allow-Credentials"] = "true";
+      res.setHeader("Access-Control-Allow-Credentials", "true");
     }
 
-    res.writeHead(200, corsHeaders);
+    // Return immediately with 200 status
+    res.statusCode = 200;
     res.end();
     return;
   }
