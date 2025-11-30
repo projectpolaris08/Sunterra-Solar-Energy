@@ -32,7 +32,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const validPassword =
       import.meta.env.VITE_ADMIN_PASSWORD || "2Tradeasiaprime";
 
-    if (email === validEmail && password === validPassword) {
+    // Trim whitespace and normalize email to lowercase for comparison
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedValidEmail = validEmail.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    // Debug logging (only in development)
+    if (import.meta.env.DEV) {
+      console.log("Login attempt:", {
+        providedEmail: normalizedEmail,
+        validEmail: normalizedValidEmail,
+        emailMatch: normalizedEmail === normalizedValidEmail,
+        passwordMatch: normalizedPassword === validPassword,
+      });
+    }
+
+    if (
+      normalizedEmail === normalizedValidEmail &&
+      normalizedPassword === validPassword
+    ) {
       setIsAuthenticated(true);
       localStorage.setItem("admin_authenticated", "true");
       return true;
