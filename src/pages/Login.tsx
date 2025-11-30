@@ -20,21 +20,34 @@ export default function Login({ onNavigate }: LoginProps) {
     setIsLoading(true);
 
     try {
+      console.log("=== LOGIN ATTEMPT ===");
+      console.log("Email:", email);
+      console.log("Supabase configured:", !!import.meta.env.VITE_SUPABASE_URL);
+      console.log(
+        "API URL:",
+        import.meta.env.VITE_API_URL ||
+          "https://sunterra-solar-energy.vercel.app"
+      );
+
       const success = await login(email, password);
+
       if (success) {
+        console.log("Login successful!");
         onNavigate("admin");
       } else {
         // Check browser console for detailed error
-        setError(
-          "Invalid email or password. Please check the browser console for details."
-        );
+        const errorMsg =
+          "Invalid email or password. Please check the browser console (F12) for detailed error information.";
+        console.error("Login failed - check errors above");
+        setError(errorMsg);
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Login exception:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      console.error("Error details:", errorMessage);
       setError(
-        `An error occurred: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+        `An error occurred: ${errorMessage}. Check console (F12) for details.`
       );
     } finally {
       setIsLoading(false);

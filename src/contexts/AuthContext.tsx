@@ -60,6 +60,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           import.meta.env.VITE_API_URL ||
           "https://sunterra-solar-energy.vercel.app";
 
+        console.log("Attempting login to:", `${apiUrl}/api/auth/login`);
+        console.log("Email:", email);
+
         const response = await fetch(`${apiUrl}/api/auth/login`, {
           method: "POST",
           headers: {
@@ -68,17 +71,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify({ email, password }),
         });
 
-        const data = await response.json();
+        console.log("Login response status:", response.status);
+        console.log(
+          "Login response headers:",
+          Object.fromEntries(response.headers.entries())
+        );
+
+        // Check if response is JSON
+        const contentType = response.headers.get("content-type") || "";
+        let data;
+
+        if (contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          console.error("Non-JSON response:", text.substring(0, 200));
+          throw new Error(
+            `Server returned non-JSON response: ${response.status} ${response.statusText}`
+          );
+        }
+
+        console.log("Login response data:", {
+          ...data,
+          password: "[REDACTED]",
+        });
 
         if (data.success) {
           setIsAuthenticated(true);
           return true;
         }
 
-        console.error("Server-side login failed:", data.message);
+        console.error(
+          "Server-side login failed:",
+          data.message || "Unknown error"
+        );
         return false;
       } catch (error) {
         console.error("Server-side login error:", error);
+        if (error instanceof Error) {
+          console.error("Error message:", error.message);
+          console.error("Error stack:", error.stack);
+        }
         return false;
       }
     }
