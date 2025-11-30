@@ -450,7 +450,9 @@ export default function AdminMonitoring({
     try {
       // Fetch alerts
       const alertsResponse = await fetch(
-        "http://localhost:3001/api/ai-monitoring/alerts?limit=50"
+        `${
+          import.meta.env.VITE_API_URL || window.location.origin
+        }/api/ai-monitoring/alerts?limit=50`
       );
       if (alertsResponse.ok) {
         const alertsData = await alertsResponse.json();
@@ -1127,7 +1129,9 @@ export default function AdminMonitoring({
                   try {
                     // Trigger monitoring cycle
                     const triggerResponse = await fetch(
-                      "http://localhost:3001/api/ai-monitoring/trigger",
+                      `${
+                        import.meta.env.VITE_API_URL || window.location.origin
+                      }/api/ai-monitoring/trigger`,
                       {
                         method: "POST",
                       }
