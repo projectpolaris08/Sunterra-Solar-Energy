@@ -26,6 +26,7 @@ dist-ssr
 .env.local
 .env.development
 .env.production
+# .env.production - We need this for build, but it only contains public URLs
 .env.test
 .env.*.local
 .env*.local

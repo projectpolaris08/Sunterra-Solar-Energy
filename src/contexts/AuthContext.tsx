@@ -52,72 +52,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // If Supabase is not configured, fallback to server-side auth
-    if (!supabase) {
-      console.warn("Supabase not configured, trying server-side auth");
-      try {
-        const apiUrl =
-          import.meta.env.VITE_API_URL ||
-          "https://sunterra-solar-energy.vercel.app";
+    // Option 1: Try server-side auth first (Vercel endpoint)
+    // This is more reliable if Supabase user doesn't exist yet
+    try {
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        "https://sunterra-solar-energy.vercel.app";
 
-        console.log("Attempting login to:", `${apiUrl}/api/auth/login`);
-        console.log("Email:", email);
+      console.log(
+        "Attempting server-side login to:",
+        `${apiUrl}/api/auth/login`
+      );
+      console.log("Email:", email);
 
-        const response = await fetch(`${apiUrl}/api/auth/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        });
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-        console.log("Login response status:", response.status);
-        console.log(
-          "Login response headers:",
-          Object.fromEntries(response.headers.entries())
+      console.log("Server-side login response status:", response.status);
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type") || "";
+      let data;
+
+      if (contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error("Non-JSON response:", text.substring(0, 200));
+        throw new Error(
+          `Server returned non-JSON response: ${response.status} ${response.statusText}`
         );
-
-        // Check if response is JSON
-        const contentType = response.headers.get("content-type") || "";
-        let data;
-
-        if (contentType.includes("application/json")) {
-          data = await response.json();
-        } else {
-          const text = await response.text();
-          console.error("Non-JSON response:", text.substring(0, 200));
-          throw new Error(
-            `Server returned non-JSON response: ${response.status} ${response.statusText}`
-          );
-        }
-
-        console.log("Login response data:", {
-          ...data,
-          password: "[REDACTED]",
-        });
-
-        if (data.success) {
-          setIsAuthenticated(true);
-          return true;
-        }
-
-        console.error(
-          "Server-side login failed:",
-          data.message || "Unknown error"
-        );
-        return false;
-      } catch (error) {
-        console.error("Server-side login error:", error);
-        if (error instanceof Error) {
-          console.error("Error message:", error.message);
-          console.error("Error stack:", error.stack);
-        }
-        return false;
       }
+
+      console.log("Server-side login response data:", {
+        ...data,
+        password: "[REDACTED]",
+      });
+
+      if (data.success) {
+        console.log("Server-side login successful!");
+        setIsAuthenticated(true);
+        return true;
+      }
+
+      console.warn("Server-side login failed, trying Supabase...");
+      console.error(
+        "Server-side login error:",
+        data.message || "Unknown error"
+      );
+    } catch (error) {
+      console.warn("Server-side login error, trying Supabase...", error);
     }
 
-    // Use Supabase Auth
+    // Option 2: Fallback to Supabase Auth if server-side fails
+    if (!supabase) {
+      console.error("Supabase not configured and server-side auth failed");
+      return false;
+    }
+
+    // Use Supabase Auth as fallback
     try {
+      console.log("Attempting Supabase login...");
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim(),
@@ -129,6 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data.user && data.session) {
+        console.log("Supabase login successful!");
         setIsAuthenticated(true);
         setUser(data.user);
         return true;

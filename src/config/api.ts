@@ -6,8 +6,12 @@ export const API_BASE_URL =
   import.meta.env.VITE_API_URL || "https://sunterra-solar-energy.vercel.app";
 
 // Deye Cloud API proxy URL (also on Vercel)
+// Always use API_BASE_URL for production, never localhost
 export const DEYE_PROXY_URL =
-  import.meta.env.VITE_PROXY_URL || `${API_BASE_URL}/api/deye`;
+  import.meta.env.VITE_PROXY_URL &&
+  !import.meta.env.VITE_PROXY_URL.includes("localhost")
+    ? import.meta.env.VITE_PROXY_URL
+    : `${API_BASE_URL}/api/deye`;
 
 // AI Monitoring API endpoints
 export const AI_MONITORING_API = {
