@@ -5,49 +5,72 @@ import {
   ReactNode,
   useEffect,
 } from "react";
+import { supabase } from "../lib/supabase";
 
 interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  user: any;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
-  // Check if user is already logged in (from localStorage)
+  // Check if user is already logged in (Supabase session)
   useEffect(() => {
-    const authStatus = localStorage.getItem("admin_authenticated");
-    if (authStatus === "true") {
-      setIsAuthenticated(true);
+    if (!supabase) {
+      console.warn("Supabase not configured");
+      return;
     }
+
+    // Check existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsAuthenticated(true);
+        setUser(session.user);
+      }
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setIsAuthenticated(true);
+        setUser(session.user);
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      // Use server-side authentication endpoint (password never exposed in client)
-      const apiUrl =
-        import.meta.env.VITE_API_URL ||
-        "https://sunterra-solar-energy.vercel.app";
+    if (!supabase) {
+      console.error("Supabase not configured");
+      return false;
+    }
 
-      const response = await fetch(`${apiUrl}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
       });
 
-      const data = await response.json();
+      if (error) {
+        console.error("Login error:", error.message);
+        return false;
+      }
 
-      if (data.success) {
+      if (data.user && data.session) {
         setIsAuthenticated(true);
-        localStorage.setItem("admin_authenticated", "true");
-        if (data.token) {
-          localStorage.setItem("admin_token", data.token);
-        }
+        setUser(data.user);
         return true;
       }
 
@@ -58,13 +81,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (!supabase) {
+      setIsAuthenticated(false);
+      setUser(null);
+      return;
+    }
+
+    await supabase.auth.signOut();
     setIsAuthenticated(false);
-    localStorage.removeItem("admin_authenticated");
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, user }}>
       {children}
     </AuthContext.Provider>
   );

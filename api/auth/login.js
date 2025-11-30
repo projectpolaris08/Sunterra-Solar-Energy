@@ -39,9 +39,21 @@ export default async function handler(req, res) {
     }
 
     // Get credentials from environment variables (server-side only)
-    const validEmail =
-      process.env.ADMIN_EMAIL || "info@sunterrasolarenergy.com";
-    const validPassword = process.env.ADMIN_PASSWORD || "2Tradeasiaprime";
+    // NOTE: This endpoint is deprecated - use Supabase Auth instead
+    // Keeping for backward compatibility only
+    const validEmail = process.env.ADMIN_EMAIL;
+    const validPassword = process.env.ADMIN_PASSWORD;
+
+    // Require environment variables - no hardcoded fallbacks for security
+    if (!validEmail || !validPassword) {
+      console.error(
+        "ADMIN_EMAIL and ADMIN_PASSWORD must be set in environment variables"
+      );
+      return sendJson(res, 500, {
+        success: false,
+        message: "Authentication not configured",
+      });
+    }
 
     // Normalize and compare
     const normalizedEmail = email.trim().toLowerCase();
