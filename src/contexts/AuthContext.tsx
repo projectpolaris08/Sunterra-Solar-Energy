@@ -52,11 +52,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    // If Supabase is not configured, fallback to server-side auth
     if (!supabase) {
-      console.error("Supabase not configured");
-      return false;
+      console.warn("Supabase not configured, trying server-side auth");
+      try {
+        const apiUrl =
+          import.meta.env.VITE_API_URL ||
+          "https://sunterra-solar-energy.vercel.app";
+
+        const response = await fetch(`${apiUrl}/api/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          setIsAuthenticated(true);
+          return true;
+        }
+
+        console.error("Server-side login failed:", data.message);
+        return false;
+      } catch (error) {
+        console.error("Server-side login error:", error);
+        return false;
+      }
     }
 
+    // Use Supabase Auth
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -64,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        console.error("Login error:", error.message);
+        console.error("Supabase login error:", error.message, error);
         return false;
       }
 
@@ -74,9 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return true;
       }
 
+      console.error("Supabase login: No user or session returned");
       return false;
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Supabase login exception:", error);
       return false;
     }
   };

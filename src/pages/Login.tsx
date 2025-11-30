@@ -24,11 +24,18 @@ export default function Login({ onNavigate }: LoginProps) {
       if (success) {
         onNavigate("admin");
       } else {
-        setError("Invalid email or password. Please try again.");
+        // Check browser console for detailed error
+        setError(
+          "Invalid email or password. Please check the browser console for details."
+        );
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError("An error occurred. Please try again.");
+      setError(
+        `An error occurred: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -141,7 +148,8 @@ export default function Login({ onNavigate }: LoginProps) {
               <p className="text-xs text-gray-600 text-center">
                 <span className="font-semibold">Development Mode:</span>
                 <br />
-                Email: <span className="font-mono">
+                Email:{" "}
+                <span className="font-mono">
                   {import.meta.env.VITE_ADMIN_EMAIL || "Not configured"}
                 </span>
                 <br />
