@@ -13,9 +13,9 @@ export const DEYE_PROXY_URL =
     ? import.meta.env.VITE_PROXY_URL
     : `${API_BASE_URL}/api/deye`;
 
-// AI Monitoring API endpoints
+// AI Monitoring API endpoints (consolidated to reduce serverless function count)
 export const AI_MONITORING_API = {
-  alerts: `${API_BASE_URL}/api/ai-monitoring/alerts`,
-  errorCodes: `${API_BASE_URL}/api/ai-monitoring/error-codes`,
-  trigger: `${API_BASE_URL}/api/ai-monitoring/trigger`,
+  alerts: `${API_BASE_URL}/api/ai-monitoring?action=alerts`,
+  errorCodes: `${API_BASE_URL}/api/ai-monitoring?action=error-codes`,
+  trigger: `${API_BASE_URL}/api/ai-monitoring?action=trigger`,
 };
