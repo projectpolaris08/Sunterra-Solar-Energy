@@ -10,13 +10,13 @@ function sendJson(res, statusCode, data) {
 }
 
 export default async function handler(req, res) {
-  // Set CORS headers FIRST, before any processing
-  setCorsHeaders(req, res);
-
-  // Handle preflight OPTIONS requests immediately
+  // Handle preflight OPTIONS requests FIRST, before anything else
   if (req.method === "OPTIONS") {
     return handleOptions(req, res);
   }
+
+  // Set CORS headers for all other requests
+  setCorsHeaders(req, res);
 
   try {
     // Only allow POST requests

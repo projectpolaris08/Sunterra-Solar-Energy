@@ -2,7 +2,7 @@
 // Ensures proper CORS headers are set for all responses
 
 export function setCorsHeaders(req, res) {
-  const origin = req.headers.origin;
+  const origin = req.headers.origin || req.headers.Origin;
   const allowedOrigins = [
     "https://sunterrasolarenergy.com",
     "https://www.sunterrasolarenergy.com",
@@ -11,12 +11,14 @@ export function setCorsHeaders(req, res) {
   ];
 
   // Set Access-Control-Allow-Origin
-  // Note: Cannot use * with credentials, so we check for specific origins
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  } else if (origin) {
-    // If origin is provided but not in allowed list, still allow it for development
-    res.setHeader("Access-Control-Allow-Origin", origin);
+  // Always allow the requesting origin if it's in our list or matches
+  if (origin) {
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    } else {
+      // For development, allow any origin
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    }
   } else {
     // No origin header (e.g., same-origin request or server-to-server)
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -29,14 +31,56 @@ export function setCorsHeaders(req, res) {
   );
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type,Authorization,X-Requested-With"
+    "Content-Type,Authorization,X-Requested-With,Accept,Origin"
   );
   res.setHeader("Access-Control-Max-Age", "86400"); // 24 hours
+
+  // Only set credentials if we're using a specific origin (not *)
+  if (origin && (allowedOrigins.includes(origin) || origin)) {
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
 }
 
 export function handleOptions(req, res) {
-  setCorsHeaders(req, res);
-  res.statusCode = 200;
+  // Set CORS headers explicitly
+  const origin = req.headers.origin || req.headers.Origin;
+  const allowedOrigins = [
+    "https://sunterrasolarenergy.com",
+    "https://www.sunterrasolarenergy.com",
+    "http://localhost:5173",
+    "http://localhost:3000",
+  ];
+
+  // Determine the origin to allow
+  let allowOrigin = "*";
+  let allowCredentials = false;
+
+  if (origin) {
+    if (allowedOrigins.includes(origin)) {
+      allowOrigin = origin;
+      allowCredentials = true;
+    } else {
+      // For development, allow any origin but don't set credentials
+      allowOrigin = origin;
+    }
+  }
+
+  // Build headers object
+  const headers = {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,PATCH",
+    "Access-Control-Allow-Headers":
+      "Content-Type,Authorization,X-Requested-With,Accept,Origin",
+    "Access-Control-Max-Age": "86400",
+  };
+
+  // Only add credentials header if we're using a specific origin (not *)
+  if (allowCredentials) {
+    headers["Access-Control-Allow-Credentials"] = "true";
+  }
+
+  // Use writeHead to ensure headers are sent
+  res.writeHead(200, headers);
   res.end();
-  return; // Explicit return to ensure function exits
+  return;
 }
