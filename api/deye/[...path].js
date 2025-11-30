@@ -43,29 +43,55 @@ export default async function handler(req, res) {
   // CRITICAL: Handle OPTIONS preflight requests FIRST
   // This MUST return before any other code runs
   if (req.method === "OPTIONS") {
-    console.log(`[DEYE API] Handling OPTIONS request for origin: ${origin}`);
+    console.log(`[DEYE API] OPTIONS request received`, {
+      origin,
+      url: req.url,
+      headers: Object.keys(req.headers),
+    });
 
-    // Set headers individually to ensure they're applied
-    res.setHeader("Access-Control-Allow-Origin", allowOrigin);
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET,POST,PUT,DELETE,OPTIONS,PATCH"
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type,Authorization,X-Requested-With,Accept,Origin"
-    );
-    res.setHeader("Access-Control-Max-Age", "86400");
+    try {
+      // Set headers individually to ensure they're applied
+      res.setHeader("Access-Control-Allow-Origin", allowOrigin);
+      res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+      );
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type,Authorization,X-Requested-With,Accept,Origin"
+      );
+      res.setHeader("Access-Control-Max-Age", "86400");
 
-    if (allowOrigin !== "*") {
-      res.setHeader("Access-Control-Allow-Credentials", "true");
+      if (allowOrigin !== "*") {
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+      }
+
+      // CRITICAL: Use writeHead to ensure status is set before headers
+      res.writeHead(200, {
+        "Access-Control-Allow-Origin": allowOrigin,
+        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,PATCH",
+        "Access-Control-Allow-Headers":
+          "Content-Type,Authorization,X-Requested-With,Accept,Origin",
+        "Access-Control-Max-Age": "86400",
+        ...(allowOrigin !== "*" && {
+          "Access-Control-Allow-Credentials": "true",
+        }),
+      });
+
+      res.end();
+      console.log(
+        `[DEYE API] OPTIONS response sent successfully with origin: ${allowOrigin}`
+      );
+      return;
+    } catch (error) {
+      console.error(`[DEYE API] Error handling OPTIONS:`, error);
+      res.writeHead(200, {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      });
+      res.end();
+      return;
     }
-
-    // Return immediately with 200 status
-    res.statusCode = 200;
-    res.end();
-    console.log(`[DEYE API] OPTIONS response sent with origin: ${allowOrigin}`);
-    return;
   }
 
   // Set CORS headers for all other requests
