@@ -14,9 +14,42 @@ function sendJson(res, statusCode, data) {
 }
 
 export default async function handler(req, res) {
-  // Handle preflight OPTIONS requests FIRST, before anything else
+  // Get origin from request
+  const origin = req.headers.origin || req.headers.Origin;
+  const allowedOrigins = [
+    "https://sunterrasolarenergy.com",
+    "https://www.sunterrasolarenergy.com",
+    "http://localhost:5173",
+    "http://localhost:3000",
+  ];
+
+  // Determine allowed origin
+  let allowOrigin = "*";
+  if (origin) {
+    if (allowedOrigins.includes(origin)) {
+      allowOrigin = origin;
+    } else {
+      allowOrigin = origin; // Allow any origin for development
+    }
+  }
+
+  // Handle preflight OPTIONS requests FIRST - inline for maximum reliability
   if (req.method === "OPTIONS") {
-    return handleOptions(req, res);
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": allowOrigin,
+      "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,PATCH",
+      "Access-Control-Allow-Headers":
+        "Content-Type,Authorization,X-Requested-With,Accept,Origin",
+      "Access-Control-Max-Age": "86400",
+    };
+
+    if (allowOrigin !== "*") {
+      corsHeaders["Access-Control-Allow-Credentials"] = "true";
+    }
+
+    res.writeHead(200, corsHeaders);
+    res.end();
+    return;
   }
 
   // Set CORS headers for all other requests
