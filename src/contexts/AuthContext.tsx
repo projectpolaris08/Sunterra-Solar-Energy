@@ -17,7 +17,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Check localStorage for server-side auth token on initial load
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // Check if there's a stored auth token from server-side login
+    return localStorage.getItem("admin_authenticated") === "true";
+  });
   const [user, setUser] = useState<any>(null);
 
   // Check if user is already logged in (Supabase session)
@@ -31,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session) {
         setIsAuthenticated(true);
         setUser(session.user);
+        localStorage.setItem("admin_authenticated", "true");
       }
     });
 
@@ -41,9 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session) {
         setIsAuthenticated(true);
         setUser(session.user);
+        localStorage.setItem("admin_authenticated", "true");
       } else {
         setIsAuthenticated(false);
         setUser(null);
+        localStorage.removeItem("admin_authenticated");
       }
     });
 
@@ -80,6 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (data.success) {
         setIsAuthenticated(true);
+        // Store authentication state in localStorage for persistence
+        localStorage.setItem("admin_authenticated", "true");
+        if (data.token) {
+          localStorage.setItem("admin_token", data.token);
+        }
         return true;
       }
     } catch (error) {
@@ -115,6 +127,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    // Clear localStorage
+    localStorage.removeItem("admin_authenticated");
+    localStorage.removeItem("admin_token");
+
     if (!supabase) {
       setIsAuthenticated(false);
       setUser(null);
