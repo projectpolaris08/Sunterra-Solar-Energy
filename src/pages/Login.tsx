@@ -19,16 +19,19 @@ export default function Login({ onNavigate }: LoginProps) {
     setError("");
     setIsLoading(true);
 
-    // Simulate a small delay for better UX
-    setTimeout(() => {
-      const success = login(email, password);
+    try {
+      const success = await login(email, password);
       if (success) {
         onNavigate("admin");
       } else {
         setError("Invalid email or password. Please try again.");
       }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("An error occurred. Please try again.");
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   return (

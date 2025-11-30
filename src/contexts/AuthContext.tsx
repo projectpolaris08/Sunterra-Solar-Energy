@@ -8,7 +8,7 @@ import {
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -25,37 +25,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (email: string, password: string): boolean => {
-    // Admin credentials (hardcoded for simplicity)
-    const validEmail =
-      import.meta.env.VITE_ADMIN_EMAIL || "info@sunterrasolarenergy.com";
-    const validPassword =
-      import.meta.env.VITE_ADMIN_PASSWORD || "2Tradeasiaprime";
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      // Use server-side authentication endpoint (password never exposed in client)
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        "https://sunterra-solar-energy.vercel.app";
 
-    // Trim whitespace and normalize email to lowercase for comparison
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedValidEmail = validEmail.trim().toLowerCase();
-    const normalizedPassword = password.trim();
-
-    // Debug logging (only in development)
-    if (import.meta.env.DEV) {
-      console.log("Login attempt:", {
-        providedEmail: normalizedEmail,
-        validEmail: normalizedValidEmail,
-        emailMatch: normalizedEmail === normalizedValidEmail,
-        passwordMatch: normalizedPassword === validPassword,
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
       });
-    }
 
-    if (
-      normalizedEmail === normalizedValidEmail &&
-      normalizedPassword === validPassword
-    ) {
-      setIsAuthenticated(true);
-      localStorage.setItem("admin_authenticated", "true");
-      return true;
+      const data = await response.json();
+
+      if (data.success) {
+        setIsAuthenticated(true);
+        localStorage.setItem("admin_authenticated", "true");
+        if (data.token) {
+          localStorage.setItem("admin_token", data.token);
+        }
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Login error:", error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
