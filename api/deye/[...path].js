@@ -14,6 +14,13 @@ function sendJson(res, statusCode, data) {
 }
 
 export default async function handler(req, res) {
+  // Log for debugging - check Vercel logs
+  console.log(`[DEYE API] ${req.method} ${req.url}`, {
+    origin: req.headers.origin,
+    method: req.method,
+    path: req.query.path,
+  });
+
   // Get origin from request - handle both lowercase and capitalized headers
   const origin =
     req.headers.origin ||
@@ -36,6 +43,8 @@ export default async function handler(req, res) {
   // CRITICAL: Handle OPTIONS preflight requests FIRST
   // This MUST return before any other code runs
   if (req.method === "OPTIONS") {
+    console.log(`[DEYE API] Handling OPTIONS request for origin: ${origin}`);
+
     // Set headers individually to ensure they're applied
     res.setHeader("Access-Control-Allow-Origin", allowOrigin);
     res.setHeader(
@@ -55,6 +64,7 @@ export default async function handler(req, res) {
     // Return immediately with 200 status
     res.statusCode = 200;
     res.end();
+    console.log(`[DEYE API] OPTIONS response sent with origin: ${allowOrigin}`);
     return;
   }
 
