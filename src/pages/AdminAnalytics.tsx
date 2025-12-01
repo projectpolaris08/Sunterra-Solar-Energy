@@ -124,6 +124,7 @@ export default function AdminAnalytics({
       "social media": "#8b5cf6", // Purple
       direct: "#f59e0b", // Amber
       manual: "#6b7280", // Gray
+      phone: "#10b981", // Green
       facebook: "#1877f2", // Facebook Blue
       instagram: "#e4405f", // Instagram Pink
       linkedin: "#0077b5", // LinkedIn Blue
