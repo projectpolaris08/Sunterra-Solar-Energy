@@ -19,7 +19,13 @@ export default async function handler(req, res) {
   // Set CORS headers for all requests
   setCorsHeaders(req, res);
 
+  // Verify cron requests (for scheduled runs)
+  const authHeader = req.headers.authorization;
+  const cronSecret = process.env.CRON_SECRET;
+  const isCronRequest = authHeader && (cronSecret ? authHeader === `Bearer ${cronSecret}` : true);
+
   try {
+    // Allow GET (for manual/cron) and POST (for manual trigger)
     if (req.method !== "GET" && req.method !== "POST") {
       return sendJson(req, res, 405, {
         success: false,
@@ -27,14 +33,25 @@ export default async function handler(req, res) {
       });
     }
 
+    console.log(`[EMAIL CHECK] ${isCronRequest ? 'Cron' : 'Manual'} email check started at ${new Date().toISOString()}`);
     const result = await checkEmailsForLeads();
+    
+    console.log(`[EMAIL CHECK] Completed: ${result.message || "Success"}`);
+    if (result.leads && result.leads.length > 0) {
+      console.log(`[EMAIL CHECK] Found ${result.leads.length} new lead(s)`);
+    }
 
-    return sendJson(req, res, 200, result);
+    return sendJson(req, res, 200, {
+      success: true,
+      ...result,
+      timestamp: new Date().toISOString(),
+    });
   } catch (error) {
-    console.error("Error checking emails:", error);
+    console.error("[EMAIL CHECK] Error:", error);
     return sendJson(req, res, 500, {
       success: false,
       message: error.message || "Internal server error",
+      timestamp: new Date().toISOString(),
     });
   }
 }

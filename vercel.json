@@ -5,7 +5,7 @@
             "schedule": "0 9 * * *"
           },
         {
-          "path": "/api/cron/check-email",
+          "path": "/api/email/check",
           "schedule": "0 10 * * *"
         }
         ],
