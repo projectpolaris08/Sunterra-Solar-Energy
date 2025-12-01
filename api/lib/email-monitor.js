@@ -78,11 +78,12 @@ export async function checkEmailsForLeads() {
           return reject(err);
         }
 
-        // Search for unread emails from the last 24 hours
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
+        // Search for emails from today (both read and unread)
+        // This ensures we catch emails even if they were already read in the email client
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-        imap.search(["UNSEEN", ["SINCE", yesterday]], async (err, results) => {
+        imap.search([["SINCE", today]], async (err, results) => {
           if (err) {
             console.error("Error searching emails:", err);
             imap.end();
@@ -123,17 +124,35 @@ export async function checkEmailsForLeads() {
                 const parsed = await simpleParser(emailData);
                 const leadInfo = extractLeadInfo(parsed);
 
-                // Check if this email already exists in leads
-                if (supabase && parsed.messageId) {
-                  const { data: existing } = await supabase
-                    .from("leads")
-                    .select("id")
-                    .eq("email_id", parsed.messageId)
-                    .single();
+                // Check if this email already exists in leads (by messageId or by email+subject)
+                if (supabase) {
+                  let existing = null;
+                  
+                  // First check by messageId if available
+                  if (parsed.messageId) {
+                    const { data } = await supabase
+                      .from("leads")
+                      .select("id")
+                      .eq("email_id", parsed.messageId)
+                      .single();
+                    existing = data;
+                  }
+                  
+                  // Also check by email and subject to catch duplicates even without messageId
+                  if (!existing && leadInfo.email && leadInfo.subject) {
+                    const { data } = await supabase
+                      .from("leads")
+                      .select("id")
+                      .eq("email", leadInfo.email)
+                      .eq("subject", leadInfo.subject)
+                      .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Within last 24 hours
+                      .single();
+                    existing = data;
+                  }
 
                   if (existing) {
                     console.log(
-                      `Email ${parsed.messageId} already processed, skipping`
+                      `Email already processed, skipping`
                     );
                     processedCount++;
                     if (processedCount === results.length) {

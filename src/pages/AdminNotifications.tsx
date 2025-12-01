@@ -273,6 +273,29 @@ export default function AdminNotifications({
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={async () => {
+                try {
+                  const response = await fetch("/api/email/check", {
+                    method: "POST",
+                  });
+                  const result = await response.json();
+                  if (result.success) {
+                    // Refresh notifications after checking emails
+                    window.location.reload();
+                  } else {
+                    alert(result.message || "Failed to check emails");
+                  }
+                } catch (error) {
+                  console.error("Failed to check emails:", error);
+                  alert("Failed to check emails. Please try again.");
+                }
+              }}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-medium hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 flex items-center gap-2"
+            >
+              <Bell className="w-4 h-4" />
+              Check Emails Now
+            </button>
+            <button
               onClick={markAllAsRead}
               className="px-4 py-2 rounded-xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 text-gray-700 dark:text-gray-300 font-medium hover:bg-white/90 dark:hover:bg-gray-800/90 transition-all duration-200 flex items-center gap-2"
             >
