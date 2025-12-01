@@ -13,6 +13,8 @@ import Contact from "./pages/Contact";
 import Admin from "./pages/Admin";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminUsers from "./pages/AdminUsers";
+import AdminLeads from "./pages/AdminLeads";
+import AdminExpenses from "./pages/AdminExpenses";
 import AdminCalendar from "./pages/AdminCalendar";
 import AdminMonitoring from "./pages/AdminMonitoring";
 import AdminReports from "./pages/AdminReports";
@@ -155,6 +157,17 @@ function App() {
         case "admin-users":
           return (
             <AdminUsers onNavigate={handleNavigate} currentPage={currentPage} />
+          );
+        case "admin-leads":
+          return (
+            <AdminLeads onNavigate={handleNavigate} currentPage={currentPage} />
+          );
+        case "admin-expenses":
+          return (
+            <AdminExpenses
+              onNavigate={handleNavigate}
+              currentPage={currentPage}
+            />
           );
         case "admin-calendar":
           return (

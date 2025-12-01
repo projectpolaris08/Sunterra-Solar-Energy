@@ -9,6 +9,8 @@ import {
   LogOut,
   Calendar,
   Activity,
+  UserPlus,
+  Receipt,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -27,6 +29,8 @@ const navItems: NavItem[] = [
   { name: "Dashboard", icon: LayoutDashboard, path: "admin" },
   { name: "Analytics", icon: BarChart3, path: "admin-analytics" },
   { name: "Clients", icon: Users, path: "admin-users" },
+  { name: "Leads", icon: UserPlus, path: "admin-leads" },
+  { name: "Expenses", icon: Receipt, path: "admin-expenses" },
   { name: "Calendar", icon: Calendar, path: "admin-calendar" },
   { name: "Monitoring", icon: Activity, path: "admin-monitoring" },
   { name: "Reports", icon: FileText, path: "admin-reports" },

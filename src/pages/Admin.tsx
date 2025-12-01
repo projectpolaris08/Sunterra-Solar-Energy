@@ -15,10 +15,12 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useState, useEffect } from "react";
 import AdminLayout from "../components/dashboard/AdminLayout";
 import StatsCard from "../components/dashboard/StatsCard";
 import ChartCard from "../components/dashboard/ChartCard";
-import { Users, DollarSign, Zap, Target } from "lucide-react";
+import { Users, DollarSign, Zap, Target, Receipt } from "lucide-react";
+import { supabase } from "../lib/supabase";
 
 interface AdminProps {
   onNavigate: (page: string) => void;
@@ -29,6 +31,43 @@ export default function Admin({
   onNavigate,
   currentPage = "admin",
 }: AdminProps) {
+  const [totalExpenses, setTotalExpenses] = useState(0);
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+
+  // Fetch expenses data
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        if (!supabase) return;
+
+        const { data, error } = await supabase
+          .from("expenses")
+          .select("amount, date");
+
+        if (error) throw error;
+
+        const total = (data || []).reduce((sum, e) => sum + (e.amount || 0), 0);
+        setTotalExpenses(total);
+
+        // Calculate this month's expenses
+        const now = new Date();
+        const thisMonth = (data || []).filter((e) => {
+          const expenseDate = new Date(e.date);
+          return (
+            expenseDate.getMonth() === now.getMonth() &&
+            expenseDate.getFullYear() === now.getFullYear()
+          );
+        });
+        const monthly = thisMonth.reduce((sum, e) => sum + (e.amount || 0), 0);
+        setMonthlyExpenses(monthly);
+      } catch (error) {
+        console.error("Failed to fetch expenses:", error);
+      }
+    };
+
+    fetchExpenses();
+  }, []);
+
   // Sample data for charts - reflecting current business status
   const revenueData = [
     { name: "Jan", value: 0, target: 0 },
@@ -65,7 +104,7 @@ export default function Admin({
   return (
     <AdminLayout currentPage={currentPage} onNavigate={onNavigate}>
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <StatsCard
           title="Total Revenue"
           value="₱270,000"
@@ -73,6 +112,14 @@ export default function Admin({
           trend="up"
           icon={DollarSign}
           gradient="from-emerald-500 to-teal-600"
+        />
+        <StatsCard
+          title="Total Expenses"
+          value={`₱${totalExpenses.toLocaleString()}`}
+          change={`₱${monthlyExpenses.toLocaleString()} this month`}
+          trend={monthlyExpenses > 0 ? "up" : undefined}
+          icon={Receipt}
+          gradient="from-red-500 to-rose-600"
         />
         <StatsCard
           title="Active Clients"
