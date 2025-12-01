@@ -49,3 +49,6 @@ Thumbs.db
 # Documentation files (don't push to GitHub)
 *.md
 !README.md
+
+# SQL schema files (don't push to GitHub)
+*.sql
