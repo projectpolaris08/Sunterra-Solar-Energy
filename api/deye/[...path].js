@@ -2,10 +2,45 @@
 // Handles all Deye Cloud API requests with proper CORS headers
 
 import { DeyeCloudApi } from "../lib/deye-cloud-api.js";
-import { setCorsHeaders, handleOptions } from "../lib/cors.js";
+
+// Helper function to set CORS headers
+function setCorsHeaders(req, res) {
+  const origin = req.headers.origin || req.headers.Origin;
+  const allowedOrigins = [
+    "https://sunterrasolarenergy.com",
+    "https://www.sunterrasolarenergy.com",
+    "http://localhost:5173",
+    "http://localhost:3000",
+  ];
+
+  // Determine allowed origin
+  let allowOrigin = "*";
+  if (origin && allowedOrigins.includes(origin)) {
+    allowOrigin = origin;
+  } else if (origin) {
+    // For development, allow the requesting origin
+    allowOrigin = origin;
+  }
+
+  // Set CORS headers
+  res.setHeader("Access-Control-Allow-Origin", allowOrigin);
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type,Authorization,X-Requested-With,Accept,Origin"
+  );
+  res.setHeader("Access-Control-Max-Age", "86400");
+
+  if (allowOrigin !== "*") {
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
+}
 
 function sendJson(res, statusCode, data) {
-  // Ensure Content-Type is set (CORS headers already set by setCorsHeaders)
+  // Ensure Content-Type is set
   if (!res.getHeader("Content-Type")) {
     res.setHeader("Content-Type", "application/json");
   }
@@ -21,77 +56,26 @@ export default async function handler(req, res) {
     path: req.query.path,
   });
 
-  // Get origin from request - handle both lowercase and capitalized headers
-  const origin =
-    req.headers.origin ||
-    req.headers.Origin ||
-    req.headers["origin"] ||
-    req.headers["Origin"];
-  const allowedOrigins = [
-    "https://sunterrasolarenergy.com",
-    "https://www.sunterrasolarenergy.com",
-    "http://localhost:5173",
-    "http://localhost:3000",
-  ];
-
-  // Determine allowed origin - always use the requesting origin if present
-  let allowOrigin = origin || "*";
-  if (origin && allowedOrigins.includes(origin)) {
-    allowOrigin = origin;
-  }
-
   // CRITICAL: Handle OPTIONS preflight requests FIRST
   // This MUST return before any other code runs
   if (req.method === "OPTIONS") {
-    console.log(`[DEYE API] OPTIONS request received`, {
+    const origin = req.headers.origin || req.headers.Origin;
+    console.log(`[DEYE API] OPTIONS preflight request`, {
       origin,
       url: req.url,
-      headers: Object.keys(req.headers),
+      "access-control-request-method":
+        req.headers["access-control-request-method"],
+      "access-control-request-headers":
+        req.headers["access-control-request-headers"],
     });
 
-    try {
-      // Set headers individually to ensure they're applied
-      res.setHeader("Access-Control-Allow-Origin", allowOrigin);
-      res.setHeader(
-        "Access-Control-Allow-Methods",
-        "GET,POST,PUT,DELETE,OPTIONS,PATCH"
-      );
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type,Authorization,X-Requested-With,Accept,Origin"
-      );
-      res.setHeader("Access-Control-Max-Age", "86400");
+    // Set CORS headers for preflight
+    setCorsHeaders(req, res);
 
-      if (allowOrigin !== "*") {
-        res.setHeader("Access-Control-Allow-Credentials", "true");
-      }
-
-      // CRITICAL: Use writeHead to ensure status is set before headers
-      res.writeHead(200, {
-        "Access-Control-Allow-Origin": allowOrigin,
-        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,PATCH",
-        "Access-Control-Allow-Headers":
-          "Content-Type,Authorization,X-Requested-With,Accept,Origin",
-        "Access-Control-Max-Age": "86400",
-        ...(allowOrigin !== "*" && {
-          "Access-Control-Allow-Credentials": "true",
-        }),
-      });
-
-      res.end();
-      console.log(
-        `[DEYE API] OPTIONS response sent successfully with origin: ${allowOrigin}`
-      );
-      return;
-    } catch (error) {
-      console.error(`[DEYE API] Error handling OPTIONS:`, error);
-      res.writeHead(200, {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-      });
-      res.end();
-      return;
-    }
+    // Return 204 No Content for OPTIONS (standard for preflight)
+    res.statusCode = 204;
+    res.end();
+    return;
   }
 
   // Set CORS headers for all other requests
@@ -114,10 +98,21 @@ export default async function handler(req, res) {
     // Initialize Deye Cloud API
     const deyeApi = new DeyeCloudApi();
 
+    // Parse request body if needed (Vercel may already parse it)
+    let requestBody = req.body;
+    if (typeof requestBody === "string" && requestBody.length > 0) {
+      try {
+        requestBody = JSON.parse(requestBody);
+      } catch (e) {
+        // If parsing fails, use as-is (might be empty string)
+        requestBody = requestBody || {};
+      }
+    }
+
     // Make request to Deye Cloud API (it handles authentication internally)
     const deyeResponse = await deyeApi.request(path, {
       method: req.method,
-      body: req.body,
+      body: requestBody,
     });
 
     // Return the response
