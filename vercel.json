@@ -13,6 +13,14 @@
     {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
+    },
+    {
+      "source": "/api/cron/monitor",
+      "destination": "/api?endpoint=cron&path=monitor"
+    },
+    {
+      "source": "/api/email/check",
+      "destination": "/api?endpoint=email"
     }
   ],
   "headers": [
