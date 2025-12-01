@@ -728,6 +728,7 @@ export default function AdminLeads({
                     <option value="linkedin">LinkedIn</option>
                     <option value="tiktok">TikTok</option>
                     <option value="reddit">Reddit</option>
+                    <option value="viber">Viber</option>
                   </select>
                 </div>
 

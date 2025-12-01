@@ -130,6 +130,7 @@ export default function AdminAnalytics({
       linkedin: "#0077b5", // LinkedIn Blue
       tiktok: "#000000", // TikTok Black
       reddit: "#ff4500", // Reddit Orange
+      viber: "#665cac", // Viber Purple
       twitter: "#1da1f2", // Twitter Blue
       youtube: "#ff0000", // YouTube Red
       google: "#4285f4", // Google Blue
