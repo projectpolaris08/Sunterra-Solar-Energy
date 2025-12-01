@@ -65,6 +65,13 @@ export function handleOptions(req, res) {
     }
   }
 
+  console.log(`[CORS] handleOptions called`, {
+    origin,
+    allowOrigin,
+    allowCredentials,
+    url: req.url,
+  });
+
   // Set headers individually (Vercel serverless functions work better with this)
   res.setHeader("Access-Control-Allow-Origin", allowOrigin);
   res.setHeader(
@@ -85,6 +92,15 @@ export function handleOptions(req, res) {
   // Return 204 No Content for OPTIONS (standard for preflight)
   // Vercel serverless functions use statusCode property
   res.statusCode = 204;
+
+  console.log(`[CORS] Sending OPTIONS response with headers:`, {
+    "Access-Control-Allow-Origin": res.getHeader("Access-Control-Allow-Origin"),
+    "Access-Control-Allow-Methods": res.getHeader(
+      "Access-Control-Allow-Methods"
+    ),
+    statusCode: res.statusCode,
+  });
+
   res.end();
   return;
 }

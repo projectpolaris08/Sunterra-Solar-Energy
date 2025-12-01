@@ -14,21 +14,28 @@ function sendJson(res, statusCode, data) {
 }
 
 export default async function handler(req, res) {
-  // CRITICAL: Handle OPTIONS preflight requests FIRST
-  // This MUST return before any other code runs
-  if (req.method === "OPTIONS") {
-    const origin = req.headers.origin || req.headers.Origin;
-    console.log(`[DEYE API] OPTIONS preflight request`, {
-      origin,
-      url: req.url,
+  // Log EVERY request immediately - this helps debug if requests are reaching the function
+  console.log(`[DEYE API] Request received: ${req.method} ${req.url}`, {
+    origin: req.headers.origin,
+    method: req.method,
+    path: req.query.path,
+    headers: {
+      origin: req.headers.origin,
       "access-control-request-method":
         req.headers["access-control-request-method"],
       "access-control-request-headers":
         req.headers["access-control-request-headers"],
-    });
+    },
+  });
+
+  // CRITICAL: Handle OPTIONS preflight requests FIRST
+  // This MUST return before any other code runs
+  if (req.method === "OPTIONS") {
+    console.log(`[DEYE API] Processing OPTIONS preflight request`);
 
     // Use the standard handleOptions function (matches pattern from other working routes)
-    return handleOptions(req, res);
+    handleOptions(req, res);
+    return;
   }
 
   // Log for debugging - check Vercel logs
