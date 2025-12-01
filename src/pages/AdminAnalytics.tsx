@@ -20,7 +20,7 @@ import {
 import AdminLayout from "../components/dashboard/AdminLayout";
 import ChartCard from "../components/dashboard/ChartCard";
 import StatsCard from "../components/dashboard/StatsCard";
-import { Mail, Users, Target, Zap } from "lucide-react";
+import { Mail, Users, Target, Zap, Phone } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 interface AdminAnalyticsProps {
@@ -442,58 +442,102 @@ export default function AdminAnalytics({
           </ChartCard>
         ) : leads.length > 0 ? (
           <ChartCard title="Recent Leads" className="mb-6">
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {leads.slice(0, 10).map((lead) => (
-                <div
-                  key={lead.id}
-                  className="p-4 rounded-xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border border-white/20 dark:border-gray-700/30 hover:shadow-md transition-all"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
-                          {lead.name}
-                        </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200/50 dark:border-gray-700/50">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Lead Name
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Contact
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Subject
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Source
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Status
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.slice(0, 10).map((lead) => (
+                    <tr
+                      key={lead.id}
+                      className="border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors"
+                    >
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-semibold">
+                            {lead.name?.charAt(0).toUpperCase() || "?"}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900 dark:text-white">
+                              {lead.name || "Unknown"}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                            <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                            {lead.email || "N/A"}
+                          </div>
+                          {lead.phone && (
+                            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                              <Phone className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                              {lead.phone}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <p className="text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate">
+                          {lead.subject || "No subject"}
+                        </p>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                          {lead.source || "email"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
                         <span
-                          className={`px-2 py-0.5 rounded text-xs font-medium ${
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold ${
                             lead.status === "new"
                               ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                               : lead.status === "contacted"
                               ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400"
                               : lead.status === "qualified"
                               ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                              : lead.status === "converted"
+                              ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                              : lead.status === "lost"
+                              ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
                               : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
                           }`}
                         >
-                          {lead.status}
+                          {lead.status || "new"}
                         </span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        {lead.email}
-                      </p>
-                      {lead.phone && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                          {lead.phone}
-                        </p>
-                      )}
-                      {lead.subject && (
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          {lead.subject}
-                        </p>
-                      )}
-                      {lead.message && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                          {lead.message.substring(0, 150)}
-                          {lead.message.length > 150 ? "..." : ""}
-                        </p>
-                      )}
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                        {new Date(lead.created_at).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                          {lead.created_at
+                            ? new Date(lead.created_at).toLocaleDateString()
+                            : "N/A"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </ChartCard>
         ) : (
