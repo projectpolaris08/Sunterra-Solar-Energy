@@ -1,10 +1,14 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/monitor",
-      "schedule": "0 9 * * *"
-    }
-  ],
+        "crons": [
+          {
+            "path": "/api/cron/monitor",
+            "schedule": "0 9 * * *"
+          },
+          {
+            "path": "/api/cron/check-email",
+            "schedule": "*/30 * * * *"
+          }
+        ],
   "rewrites": [
     {
       "source": "/((?!api/).*)",

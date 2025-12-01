@@ -122,6 +122,42 @@ export async function checkRecentAlert(deviceSn, type, cooldownMs = 3600000) {
   }
 }
 
+export async function deleteAlert(alertId) {
+  // Convert to number if it's a string that represents a number
+  const id =
+    typeof alertId === "string" && !isNaN(Number(alertId))
+      ? Number(alertId)
+      : alertId;
+
+  if (supabase) {
+    try {
+      const { error, data } = await supabase
+        .from("monitoring_alerts")
+        .delete()
+        .eq("id", id)
+        .select();
+
+      if (error) throw error;
+
+      // Return true if deletion was successful (even if no rows were deleted)
+      return true;
+    } catch (error) {
+      console.error("Failed to delete alert from Supabase:", error);
+      // Fallback to memory
+      memoryStorage.alerts = memoryStorage.alerts.filter(
+        (a) => a.id !== id && a.id !== alertId
+      );
+      return true;
+    }
+  } else {
+    // Fallback to memory
+    memoryStorage.alerts = memoryStorage.alerts.filter(
+      (a) => a.id !== id && a.id !== alertId
+    );
+    return true;
+  }
+}
+
 // Error code storage
 export async function saveErrorCode(errorCode, explanation) {
   if (supabase) {

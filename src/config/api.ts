@@ -18,4 +18,6 @@ export const AI_MONITORING_API = {
   alerts: `${API_BASE_URL}/api/ai-monitoring?action=alerts`,
   errorCodes: `${API_BASE_URL}/api/ai-monitoring?action=error-codes`,
   trigger: `${API_BASE_URL}/api/ai-monitoring?action=trigger`,
+  delete: (id: string | number) =>
+    `${API_BASE_URL}/api/ai-monitoring?action=delete&id=${id}`,
 };

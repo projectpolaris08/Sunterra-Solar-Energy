@@ -3,6 +3,7 @@ import AdminLayout from "../components/dashboard/AdminLayout";
 import ChartCard from "../components/dashboard/ChartCard";
 import StatsCard from "../components/dashboard/StatsCard";
 import { deyeCloudApi } from "../services/deyeCloudApi";
+import { AI_MONITORING_API } from "../config/api";
 import {
   LineChart,
   Line,
@@ -33,6 +34,7 @@ import {
   ChevronDown,
   ChevronUp,
   Mail,
+  Trash2,
 } from "lucide-react";
 
 interface AdminMonitoringProps {
@@ -90,6 +92,9 @@ export default function AdminMonitoring({
     Set<string>
   >(new Set());
   const [emailAlerts, setEmailAlerts] = useState<any[]>([]);
+  const [dismissedSystemAlerts, setDismissedSystemAlerts] = useState<
+    Set<string>
+  >(new Set());
 
   // Fetch stations and devices from Deye Cloud
   const fetchDevices = async () => {
@@ -450,7 +455,7 @@ export default function AdminMonitoring({
     try {
       // Fetch alerts
       const alertsResponse = await fetch(
-        `https://sunterra-solar-energy.vercel.app/api/ai-monitoring?action=alerts&limit=50`
+        `${AI_MONITORING_API.alerts}&limit=50`
       );
       if (alertsResponse.ok) {
         const alertsData = await alertsResponse.json();
@@ -470,10 +475,12 @@ export default function AdminMonitoring({
           setAiMonitoringAvailable(true);
 
           // Filter alerts that were sent via email (sent: true) and for device 2310286498
+          // Only show CRITICAL severity alerts (exclude warning like declining efficiency)
           // Exclude example alerts (voltage, device_state, low_production)
           const sentAlerts = filteredAlerts.filter(
             (alert: any) =>
               alert.sent === true &&
+              alert.severity === "critical" && // Only show critical severity
               alert.type !== "voltage" &&
               alert.type !== "device_state" &&
               alert.type !== "low_production" &&
@@ -495,6 +502,65 @@ export default function AdminMonitoring({
       setAiMonitoringAvailable(false);
       setAiAlerts([]);
       setEmailAlerts([]);
+    }
+  };
+
+  // Delete alert function
+  const deleteAlertById = async (alertId: number | string) => {
+    if (!alertId) {
+      console.error("Cannot delete alert: No ID provided");
+      alert("Cannot delete alert: No ID provided");
+      return;
+    }
+
+    console.log(
+      "Attempting to delete alert with ID:",
+      alertId,
+      "Type:",
+      typeof alertId
+    );
+
+    try {
+      const url = AI_MONITORING_API.delete(alertId);
+      console.log("Delete URL:", url);
+
+      // Use POST method instead of DELETE for better Vercel compatibility
+      const response = await fetch(url, {
+        method: "POST",
+      });
+
+      console.log("Delete response status:", response.status);
+
+      const responseData = await response.json();
+      console.log("Delete response data:", responseData);
+
+      if (response.ok && responseData.success) {
+        // Remove from local state immediately for better UX
+        setAiAlerts((prev) =>
+          prev.filter((alert: any) => alert.id !== alertId)
+        );
+        setEmailAlerts((prev) =>
+          prev.filter((alert: any) => alert.id !== alertId)
+        );
+        // Refresh to ensure consistency
+        await fetchAIMonitoringData();
+        console.log("Alert deleted successfully");
+      } else {
+        console.error(
+          "Failed to delete alert:",
+          responseData.message || "Unknown error"
+        );
+        alert(
+          `Failed to delete alert: ${responseData.message || "Unknown error"}`
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting alert:", error);
+      alert(
+        `Error deleting alert: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
@@ -889,8 +955,10 @@ export default function AdminMonitoring({
   });
 
   // Filter to only show "No Power Generation" alert for device 2310286498
+  // Also filter out dismissed alerts
   const criticalAlerts = systemAlerts.filter(
     (a) =>
+      !dismissedSystemAlerts.has(a.id) &&
       a.severity === "critical" &&
       (a.deviceId === "2310286498" ||
         a.deviceName === "2310286498" ||
@@ -898,6 +966,7 @@ export default function AdminMonitoring({
   );
   const warningAlerts = systemAlerts.filter(
     (a) =>
+      !dismissedSystemAlerts.has(a.id) &&
       a.severity === "warning" &&
       a.title === "No Power Generation" &&
       (a.deviceId === "2310286498" ||
@@ -1119,7 +1188,7 @@ export default function AdminMonitoring({
                   try {
                     // Trigger monitoring cycle
                     const triggerResponse = await fetch(
-                      `https://sunterra-solar-energy.vercel.app/api/ai-monitoring?action=trigger`,
+                      AI_MONITORING_API.trigger,
                       {
                         method: "POST",
                       }
@@ -1178,19 +1247,35 @@ export default function AdminMonitoring({
                         <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
                       )}
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold text-gray-900 dark:text-white">
-                            {alert.type?.replace(/_/g, " ").toUpperCase()}
-                          </p>
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                              alert.severity === "critical"
-                                ? "bg-red-600 text-white"
-                                : "bg-orange-600 text-white"
-                            }`}
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-gray-900 dark:text-white">
+                              {alert.type?.replace(/_/g, " ").toUpperCase()}
+                            </p>
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                alert.severity === "critical"
+                                  ? "bg-red-600 text-white"
+                                  : "bg-orange-600 text-white"
+                              }`}
+                            >
+                              {alert.severity}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (alert.id) {
+                                deleteAlertById(alert.id);
+                              } else {
+                                console.error("Alert has no ID:", alert);
+                                alert("Cannot delete: Alert ID is missing");
+                              }
+                            }}
+                            className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                            title="Delete alert"
                           >
-                            {alert.severity}
-                          </span>
+                            <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                          </button>
                         </div>
                         <p className="text-sm text-gray-700 dark:text-gray-300">
                           {alert.message}
@@ -1312,23 +1397,39 @@ export default function AdminMonitoring({
                   <div className="flex items-start gap-2">
                     <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-semibold text-gray-900 dark:text-white">
-                          {alert.type?.replace(/_/g, " ").toUpperCase() ||
-                            "ALERT"}
-                        </p>
-                        <span
-                          className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                            alert.severity === "critical"
-                              ? "bg-red-600 text-white"
-                              : "bg-orange-600 text-white"
-                          }`}
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-gray-900 dark:text-white">
+                            {alert.type?.replace(/_/g, " ").toUpperCase() ||
+                              "ALERT"}
+                          </p>
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                              alert.severity === "critical"
+                                ? "bg-red-600 text-white"
+                                : "bg-orange-600 text-white"
+                            }`}
+                          >
+                            {alert.severity}
+                          </span>
+                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-green-600 text-white">
+                            ✓ Email Sent
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (alert.id) {
+                              deleteAlertById(alert.id);
+                            } else {
+                              console.error("Alert has no ID:", alert);
+                              alert("Cannot delete: Alert ID is missing");
+                            }
+                          }}
+                          className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                          title="Delete alert"
                         >
-                          {alert.severity}
-                        </span>
-                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-green-600 text-white">
-                          ✓ Email Sent
-                        </span>
+                          <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        </button>
                       </div>
                       <p className="text-sm text-gray-700 dark:text-gray-300">
                         {alert.message}
@@ -1405,9 +1506,24 @@ export default function AdminMonitoring({
                   <div className="flex items-start gap-2">
                     <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
-                      <p className="font-semibold text-red-900 dark:text-red-100">
-                        {alert.title} - {alert.deviceName}
-                      </p>
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="font-semibold text-red-900 dark:text-red-100">
+                          {alert.title} - {alert.deviceName}
+                        </p>
+                        <button
+                          onClick={() => {
+                            setDismissedSystemAlerts((prev) => {
+                              const newSet = new Set(prev);
+                              newSet.add(alert.id);
+                              return newSet;
+                            });
+                          }}
+                          className="p-1.5 rounded hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                          title="Dismiss alert"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        </button>
+                      </div>
                       <p className="text-sm text-red-700 dark:text-red-300">
                         {alert.message}
                       </p>
@@ -1451,9 +1567,24 @@ export default function AdminMonitoring({
                     <div className="flex items-start gap-2">
                       <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
-                        <p className="font-semibold text-orange-900 dark:text-orange-100">
-                          {alert.title} - {alert.deviceName}
-                        </p>
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="font-semibold text-orange-900 dark:text-orange-100">
+                            {alert.title} - {alert.deviceName}
+                          </p>
+                          <button
+                            onClick={() => {
+                              setDismissedSystemAlerts((prev) => {
+                                const newSet = new Set(prev);
+                                newSet.add(alert.id);
+                                return newSet;
+                              });
+                            }}
+                            className="p-1.5 rounded hover:bg-orange-200 dark:hover:bg-orange-800 transition-colors"
+                            title="Dismiss alert"
+                          >
+                            <Trash2 className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                          </button>
+                        </div>
                         <p className="text-sm text-orange-700 dark:text-orange-300">
                           {alert.message}
                         </p>

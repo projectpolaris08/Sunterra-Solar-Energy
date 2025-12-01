@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "../components/dashboard/AdminLayout";
 import ChartCard from "../components/dashboard/ChartCard";
+import { supabase } from "../lib/supabase";
 import {
   Search,
   Plus,
@@ -60,98 +61,60 @@ export default function AdminUsers({
     notes: "",
   });
 
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      clientName: "John Doe",
-      email: "john.doe@example.com",
-      phone: "+63 912 345 6789",
-      location: "Manila, Philippines",
-      projectAmount: 150000,
-      date: "2024-01-15",
-      inverter: "10kW",
-      solarPanelsPcs: 20,
-      solarPanelsWattage: "600W",
-      batteryType: "48v 280Ah",
-      batteryPcs: 2,
-      facebookName: "John Doe",
-      visitationDate: "2024-01-10",
-      notes: "Initial consultation completed",
-      joinDate: "2024-01-15",
-    },
-    {
-      id: 2,
-      clientName: "Sarah Smith",
-      email: "sarah.smith@example.com",
-      phone: "+63 923 456 7890",
-      location: "Cebu, Philippines",
-      projectAmount: 120000,
-      date: "2024-02-20",
-      inverter: "8kW",
-      solarPanelsPcs: 16,
-      solarPanelsWattage: "580W",
-      batteryType: "24v 314Ah",
-      batteryPcs: 1,
-      facebookName: "Sarah Smith",
-      visitationDate: "2024-02-15",
-      notes: "Residential installation",
-      joinDate: "2024-02-20",
-    },
-    {
-      id: 3,
-      clientName: "Mike Johnson",
-      email: "mike.j@example.com",
-      phone: "+63 934 567 8901",
-      location: "Davao, Philippines",
-      projectAmount: 200000,
-      date: "2024-03-10",
-      inverter: "12kW",
-      solarPanelsPcs: 24,
-      solarPanelsWattage: "615W",
-      batteryType: "51.2v 280Ah",
-      batteryPcs: 3,
-      facebookName: "Mike Johnson",
-      visitationDate: "2024-03-05",
-      notes: "Commercial project",
-      joinDate: "2024-03-10",
-    },
-    {
-      id: 4,
-      clientName: "Emily Brown",
-      email: "emily.brown@example.com",
-      phone: "+63 945 678 9012",
-      location: "Quezon City, Philippines",
-      projectAmount: 180000,
-      date: "2024-03-05",
-      inverter: "16kW",
-      solarPanelsPcs: 30,
-      solarPanelsWattage: "620W",
-      batteryType: "48v 314Ah",
-      batteryPcs: 4,
-      facebookName: "Emily Brown",
-      visitationDate: "2024-02-28",
-      notes: "Large residential system",
-      joinDate: "2024-03-05",
-    },
-    {
-      id: 5,
-      clientName: "David Wilson",
-      email: "david.w@example.com",
-      phone: "+63 956 789 0123",
-      location: "Makati, Philippines",
-      projectAmount: 95000,
-      date: "2024-01-28",
-      inverter: "5kW",
-      solarPanelsPcs: 10,
-      solarPanelsWattage: "600W",
-      batteryType: "24v 280Ah",
-      batteryPcs: 1,
-      facebookName: "David Wilson",
-      visitationDate: "2024-01-25",
-      notes: "Small residential setup",
-      joinDate: "2024-01-28",
-    },
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
+
+  // Fetch clients directly from Supabase on mount
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        if (!supabase) {
+          throw new Error("Supabase not configured");
+        }
+
+        const { data, error } = await supabase
+          .from("clients")
+          .select("*")
+          .order("join_date", { ascending: false });
+
+        if (error) throw error;
+
+        // Map database fields to component fields
+        const mappedClients = (data || []).map((client: any) => ({
+          id: client.id,
+          clientName: client.client_name,
+          email: client.email,
+          phone: client.phone,
+          location: client.location,
+          projectAmount: client.project_amount || 0,
+          date: client.project_date || client.join_date,
+          inverter: client.inverter,
+          solarPanelsPcs: client.solar_panels_pcs || 0,
+          solarPanelsWattage: client.solar_panels_wattage,
+          batteryType: client.battery_type,
+          batteryPcs: client.battery_pcs || 0,
+          facebookName: client.facebook_name,
+          visitationDate: client.visitation_date,
+          notes: client.notes,
+          joinDate: client.join_date,
+        }));
+
+        setUsers(mappedClients);
+      } catch (error) {
+        console.error("Failed to fetch clients:", error);
+        // Fallback to localStorage if Supabase fails
+        try {
+          const saved = localStorage.getItem("sunterra_clients");
+          if (saved) {
+            setUsers(JSON.parse(saved));
+          }
+        } catch (e) {
+          console.error("Failed to load from localStorage:", e);
+        }
+      }
+    };
+
+    fetchClients();
+  }, []);
 
   const filteredUsers = users.filter(
     (user) =>
@@ -168,27 +131,85 @@ export default function AdminUsers({
   const totalClients = users.length;
   const totalProjects = users.reduce((sum, u) => sum + u.projectAmount, 0);
 
-  const handleAddClient = (e: React.FormEvent) => {
+  const handleAddClient = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newClient: User = {
-      id: users.length > 0 ? Math.max(...users.map((u) => u.id)) + 1 : 1,
-      clientName: formData.clientName,
-      email: formData.email,
-      phone: formData.phone,
-      location: formData.location,
-      projectAmount: formData.projectAmount,
-      date: formData.date,
-      inverter: formData.inverter,
-      solarPanelsPcs: formData.solarPanelsPcs,
-      solarPanelsWattage: formData.solarPanelsWattage,
-      batteryType: formData.batteryType,
-      batteryPcs: formData.batteryPcs,
-      facebookName: formData.facebookName,
-      visitationDate: formData.visitationDate,
-      notes: formData.notes,
-      joinDate: new Date().toISOString().split("T")[0],
-    };
-    setUsers([...users, newClient]);
+    try {
+      if (!supabase) {
+        throw new Error("Supabase not configured");
+      }
+
+      const { data, error } = await supabase
+        .from("clients")
+        .insert({
+          client_name: formData.clientName,
+          email: formData.email,
+          phone: formData.phone,
+          location: formData.location,
+          project_amount: formData.projectAmount,
+          project_date: formData.date,
+          inverter: formData.inverter,
+          solar_panels_pcs: formData.solarPanelsPcs,
+          solar_panels_wattage: formData.solarPanelsWattage,
+          battery_type: formData.batteryType,
+          battery_pcs: formData.batteryPcs,
+          facebook_name: formData.facebookName,
+          visitation_date: formData.visitationDate,
+          notes: formData.notes,
+          join_date: new Date().toISOString().split("T")[0],
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Map database fields to component fields
+      const newClient: User = {
+        id: data.id,
+        clientName: data.client_name,
+        email: data.email,
+        phone: data.phone,
+        location: data.location,
+        projectAmount: data.project_amount || 0,
+        date: data.project_date || data.join_date,
+        inverter: data.inverter,
+        solarPanelsPcs: data.solar_panels_pcs || 0,
+        solarPanelsWattage: data.solar_panels_wattage,
+        batteryType: data.battery_type,
+        batteryPcs: data.battery_pcs || 0,
+        facebookName: data.facebook_name,
+        visitationDate: data.visitation_date,
+        notes: data.notes,
+        joinDate: data.join_date,
+      };
+
+      setUsers([...users, newClient]);
+    } catch (error) {
+      console.error("Failed to add client:", error);
+      alert(`Failed to save to database: ${error instanceof Error ? error.message : "Unknown error"}. Saving locally as backup.`);
+      
+      // Fallback: add to local state
+      const newClient: User = {
+        id: users.length > 0 ? Math.max(...users.map((u) => u.id)) + 1 : 1,
+        clientName: formData.clientName,
+        email: formData.email,
+        phone: formData.phone,
+        location: formData.location,
+        projectAmount: formData.projectAmount,
+        date: formData.date,
+        inverter: formData.inverter,
+        solarPanelsPcs: formData.solarPanelsPcs,
+        solarPanelsWattage: formData.solarPanelsWattage,
+        batteryType: formData.batteryType,
+        batteryPcs: formData.batteryPcs,
+        facebookName: formData.facebookName,
+        visitationDate: formData.visitationDate,
+        notes: formData.notes,
+        joinDate: new Date().toISOString().split("T")[0],
+      };
+      setUsers([...users, newClient]);
+      localStorage.setItem("sunterra_clients", JSON.stringify([...users, newClient]));
+    }
+
     setFormData({
       clientName: "",
       email: "",
@@ -208,9 +229,28 @@ export default function AdminUsers({
     setIsModalOpen(false);
   };
 
-  const handleDeleteClient = (id: number) => {
+  const handleDeleteClient = async (id: number) => {
     if (window.confirm("Are you sure you want to delete this client?")) {
-      setUsers(users.filter((u) => u.id !== id));
+      try {
+        if (!supabase) {
+          throw new Error("Supabase not configured");
+        }
+
+        const { error } = await supabase
+          .from("clients")
+          .delete()
+          .eq("id", id);
+
+        if (error) throw error;
+
+        setUsers(users.filter((u) => u.id !== id));
+      } catch (error) {
+        console.error("Failed to delete client:", error);
+        alert(`Failed to delete from database: ${error instanceof Error ? error.message : "Unknown error"}. Removing from local view.`);
+        // Fallback: delete from local state
+        setUsers(users.filter((u) => u.id !== id));
+        localStorage.setItem("sunterra_clients", JSON.stringify(users.filter((u) => u.id !== id)));
+      }
     }
   };
 
@@ -603,6 +643,7 @@ export default function AdminUsers({
                     <option value="48v 280Ah">48v 280Ah</option>
                     <option value="48v 314Ah">48v 314Ah</option>
                     <option value="51.2v 280Ah">51.2v 280Ah</option>
+                    <option value="51.2v 300Ah">51.2v 300Ah</option>
                     <option value="51.2v 314Ah">51.2v 314Ah</option>
                   </select>
                 </div>

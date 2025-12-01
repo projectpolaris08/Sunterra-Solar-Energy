@@ -29,38 +29,35 @@ export default function Admin({
   onNavigate,
   currentPage = "admin",
 }: AdminProps) {
-  // Sample data for charts
+  // Sample data for charts - reflecting current business status
   const revenueData = [
-    { name: "Jan", value: 45000, target: 50000 },
-    { name: "Feb", value: 52000, target: 50000 },
-    { name: "Mar", value: 48000, target: 50000 },
-    { name: "Apr", value: 61000, target: 55000 },
-    { name: "May", value: 55000, target: 55000 },
-    { name: "Jun", value: 67000, target: 60000 },
+    { name: "Jan", value: 0, target: 0 },
+    { name: "Feb", value: 0, target: 0 },
+    { name: "Mar", value: 0, target: 0 },
+    { name: "Apr", value: 0, target: 0 },
+    { name: "May", value: 0, target: 0 },
+    { name: "Jun", value: 270000, target: 0 },
   ];
 
   const salesData = [
-    { name: "Mon", sales: 12, installations: 8 },
-    { name: "Tue", sales: 19, installations: 12 },
-    { name: "Wed", sales: 15, installations: 10 },
-    { name: "Thu", sales: 22, installations: 15 },
-    { name: "Fri", sales: 18, installations: 11 },
-    { name: "Sat", sales: 14, installations: 9 },
-    { name: "Sun", sales: 10, installations: 7 },
+    { name: "Mon", sales: 0, installations: 0 },
+    { name: "Tue", sales: 0, installations: 0 },
+    { name: "Wed", sales: 0, installations: 0 },
+    { name: "Thu", sales: 0, installations: 0 },
+    { name: "Fri", sales: 0, installations: 0 },
+    { name: "Sat", sales: 0, installations: 0 },
+    { name: "Sun", sales: 1, installations: 0 },
   ];
 
   const energyData = [
-    { name: "Week 1", generated: 1200, consumed: 800 },
-    { name: "Week 2", generated: 1350, consumed: 850 },
-    { name: "Week 3", generated: 1500, consumed: 900 },
-    { name: "Week 4", generated: 1400, consumed: 880 },
+    { name: "Week 1", generated: 0, consumed: 0 },
+    { name: "Week 2", generated: 0, consumed: 0 },
+    { name: "Week 3", generated: 0, consumed: 0 },
+    { name: "Week 4", generated: 0, consumed: 0 },
   ];
 
   const projectDistribution = [
-    { name: "Residential", value: 45, color: "#3b82f6" },
-    { name: "Commercial", value: 30, color: "#06b6d4" },
-    { name: "Industrial", value: 20, color: "#8b5cf6" },
-    { name: "Government", value: 5, color: "#f59e0b" },
+    { name: "Residential", value: 100, color: "#3b82f6" },
   ];
 
   const COLORS = ["#3b82f6", "#06b6d4", "#8b5cf6", "#f59e0b"];
@@ -71,33 +68,32 @@ export default function Admin({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatsCard
           title="Total Revenue"
-          value="₱328,000"
-          change="12.5%"
+          value="₱270,000"
+          change="New"
           trend="up"
           icon={DollarSign}
           gradient="from-emerald-500 to-teal-600"
         />
         <StatsCard
           title="Active Clients"
-          value="1,247"
-          change="8.2%"
+          value="1"
+          change="New"
           trend="up"
           icon={Users}
           gradient="from-blue-500 to-cyan-500"
         />
         <StatsCard
           title="Projects"
-          value="156"
-          change="5.1%"
+          value="1"
+          change="Pending"
           trend="up"
           icon={Target}
           gradient="from-purple-500 to-pink-500"
         />
         <StatsCard
           title="Energy Generated"
-          value="5.2M kWh"
-          change="15.3%"
-          trend="up"
+          value="0 kWh"
+          change="Pending"
           icon={Zap}
           gradient="from-amber-500 to-orange-500"
         />
@@ -260,9 +256,11 @@ export default function Admin({
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }: { name: string; percent: number }) =>
-                  `${name} ${(percent * 100).toFixed(0)}%`
-                }
+                label={(props: any) => {
+                  const name = props.name || "";
+                  const percent = props.percent || 0;
+                  return `${name} ${(percent * 100).toFixed(0)}%`;
+                }}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
@@ -292,28 +290,16 @@ export default function Admin({
         <div className="space-y-4">
           {[
             {
-              action: "New project proposal",
-              user: "John Doe",
-              time: "2 hours ago",
-              type: "project",
-            },
-            {
-              action: "Installation completed",
-              user: "Sarah Smith",
-              time: "5 hours ago",
-              type: "success",
-            },
-            {
-              action: "Payment received",
-              user: "Mike Johnson",
-              time: "1 day ago",
+              action: "Downpayment received",
+              user: "First Client",
+              time: "Recently",
               type: "payment",
             },
             {
-              action: "Maintenance scheduled",
-              user: "Emily Brown",
-              time: "2 days ago",
-              type: "maintenance",
+              action: "Project pending - House construction in progress",
+              user: "First Client",
+              time: "Recently",
+              type: "project",
             },
           ].map((activity, index) => (
             <div

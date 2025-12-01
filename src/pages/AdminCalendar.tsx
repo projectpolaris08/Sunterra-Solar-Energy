@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "../components/dashboard/AdminLayout";
 import ChartCard from "../components/dashboard/ChartCard";
+import { supabase } from "../lib/supabase";
 import {
   Calendar,
   ChevronLeft,
@@ -45,35 +46,55 @@ export default function AdminCalendar({
       | "consultation",
   });
 
-  const [appointments, setAppointments] = useState<Appointment[]>([
-    {
-      id: 1,
-      clientName: "John Doe",
-      date: new Date().toISOString().split("T")[0],
-      time: "10:00",
-      location: "Manila, Philippines",
-      notes: "Initial consultation",
-      type: "consultation",
-    },
-    {
-      id: 2,
-      clientName: "Sarah Smith",
-      date: new Date(Date.now() + 86400000).toISOString().split("T")[0],
-      time: "14:00",
-      location: "Cebu, Philippines",
-      notes: "Solar panel installation",
-      type: "installation",
-    },
-    {
-      id: 3,
-      clientName: "Mike Johnson",
-      date: new Date(Date.now() + 172800000).toISOString().split("T")[0],
-      time: "11:00",
-      location: "Davao, Philippines",
-      notes: "Site visitation",
-      type: "visitation",
-    },
-  ]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch appointments directly from Supabase on mount
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      setLoading(true);
+      try {
+        if (!supabase) {
+          throw new Error("Supabase not configured");
+        }
+
+        const { data, error } = await supabase
+          .from("appointments")
+          .select("*")
+          .order("date", { ascending: true });
+
+        if (error) throw error;
+
+        // Map database fields to component fields
+        const mappedAppointments = (data || []).map((apt: any) => ({
+          id: apt.id,
+          clientName: apt.client_name,
+          date: apt.date,
+          time: apt.time,
+          location: apt.location,
+          notes: apt.notes,
+          type: apt.type,
+        }));
+
+        setAppointments(mappedAppointments);
+      } catch (error) {
+        console.error("Failed to fetch appointments:", error);
+        // Fallback to localStorage if Supabase fails
+        try {
+          const saved = localStorage.getItem("sunterra_appointments");
+          if (saved) {
+            setAppointments(JSON.parse(saved));
+          }
+        } catch (e) {
+          console.error("Failed to load from localStorage:", e);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -120,21 +141,61 @@ export default function AdminCalendar({
     }
   };
 
-  const handleAddAppointment = (e: React.FormEvent) => {
+  const handleAddAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newAppointment: Appointment = {
-      id:
-        appointments.length > 0
-          ? Math.max(...appointments.map((a) => a.id)) + 1
-          : 1,
-      clientName: formData.clientName,
-      date: formData.date,
-      time: formData.time,
-      location: formData.location,
-      notes: formData.notes,
-      type: formData.type,
-    };
-    setAppointments([...appointments, newAppointment]);
+    try {
+      if (!supabase) {
+        throw new Error("Supabase not configured");
+      }
+
+      const { data, error } = await supabase
+        .from("appointments")
+        .insert({
+          client_name: formData.clientName,
+          date: formData.date,
+          time: formData.time,
+          location: formData.location,
+          notes: formData.notes,
+          type: formData.type,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Map database fields to component fields
+      const newAppointment: Appointment = {
+        id: data.id,
+        clientName: data.client_name,
+        date: data.date,
+        time: data.time,
+        location: data.location,
+        notes: data.notes,
+        type: data.type,
+      };
+
+      setAppointments([...appointments, newAppointment]);
+    } catch (error) {
+      console.error("Failed to add appointment:", error);
+      alert(`Failed to save to database: ${error instanceof Error ? error.message : "Unknown error"}. Saving locally as backup.`);
+      
+      // Fallback: add to local state
+      const newAppointment: Appointment = {
+        id:
+          appointments.length > 0
+            ? Math.max(...appointments.map((a) => a.id)) + 1
+            : 1,
+        clientName: formData.clientName,
+        date: formData.date,
+        time: formData.time,
+        location: formData.location,
+        notes: formData.notes,
+        type: formData.type,
+      };
+      setAppointments([...appointments, newAppointment]);
+      localStorage.setItem("sunterra_appointments", JSON.stringify([...appointments, newAppointment]));
+    }
+
     setFormData({
       clientName: "",
       date: new Date().toISOString().split("T")[0],
@@ -146,9 +207,28 @@ export default function AdminCalendar({
     setIsModalOpen(false);
   };
 
-  const handleDeleteAppointment = (id: number) => {
+  const handleDeleteAppointment = async (id: number) => {
     if (window.confirm("Are you sure you want to delete this appointment?")) {
-      setAppointments(appointments.filter((a) => a.id !== id));
+      try {
+        if (!supabase) {
+          throw new Error("Supabase not configured");
+        }
+
+        const { error } = await supabase
+          .from("appointments")
+          .delete()
+          .eq("id", id);
+
+        if (error) throw error;
+
+        setAppointments(appointments.filter((a) => a.id !== id));
+      } catch (error) {
+        console.error("Failed to delete appointment:", error);
+        alert(`Failed to delete from database: ${error instanceof Error ? error.message : "Unknown error"}. Removing from local view.`);
+        // Fallback: delete from local state
+        setAppointments(appointments.filter((a) => a.id !== id));
+        localStorage.setItem("sunterra_appointments", JSON.stringify(appointments.filter((a) => a.id !== id)));
+      }
     }
   };
 

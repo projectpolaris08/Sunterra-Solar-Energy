@@ -56,13 +56,9 @@ export function handleOptions(req, res) {
   let allowCredentials = false;
 
   if (origin) {
-    if (allowedOrigins.includes(origin)) {
-      allowOrigin = origin;
-      allowCredentials = true;
-    } else {
-      // For development, allow any origin but don't set credentials
-      allowOrigin = origin;
-    }
+    // Always allow the requesting origin (for development and production)
+    allowOrigin = origin;
+    allowCredentials = true;
   }
 
   // Set headers individually (Vercel serverless functions work better with this)
