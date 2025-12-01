@@ -463,15 +463,15 @@ async function handleDeye(req, res, pathParam, body) {
 async function handleCron(req, res, pathParam, body) {
   const path = pathParam || req.query.path || "";
   
-  if (path === "monitor") {
-    // Verify cron request
-    const authHeader = req.headers.authorization;
-    const cronSecret = process.env.CRON_SECRET;
-    
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return sendJson(req, res, 401, { success: false, error: "Unauthorized" });
-    }
+  // Verify cron request
+  const authHeader = req.headers.authorization;
+  const cronSecret = process.env.CRON_SECRET;
+  
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return sendJson(req, res, 401, { success: false, error: "Unauthorized" });
+  }
 
+  if (path === "monitor") {
     try {
       console.log(`[Cron] Monitoring job started at ${new Date().toISOString()}`);
       const deyeCloudApi = new DeyeCloudApi();
@@ -493,9 +493,61 @@ async function handleCron(req, res, pathParam, body) {
     }
   }
 
+  if (path === "all") {
+    // Run both monitoring and email check sequentially
+    const results = {
+      monitoring: null,
+      emailCheck: null,
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      // Run monitoring first
+      console.log(`[Cron] Combined job started at ${new Date().toISOString()}`);
+      
+      try {
+        console.log(`[Cron] Starting monitoring...`);
+        const deyeCloudApi = new DeyeCloudApi();
+        const monitoringService = new MonitoringService(deyeCloudApi);
+        await monitoringService.monitorDevices();
+        results.monitoring = { success: true, message: "Monitoring completed" };
+        console.log(`[Cron] Monitoring completed`);
+      } catch (error) {
+        console.error("[Cron] Monitoring failed:", error);
+        results.monitoring = { success: false, error: error.message };
+      }
+
+      // Then run email check
+      try {
+        console.log(`[Cron] Starting email check...`);
+        const emailResult = await checkEmailsForLeads();
+        results.emailCheck = { success: true, ...emailResult };
+        console.log(`[Cron] Email check completed`);
+      } catch (error) {
+        console.error("[Cron] Email check failed:", error);
+        results.emailCheck = { success: false, error: error.message };
+      }
+
+      const allSuccess = results.monitoring?.success && results.emailCheck?.success;
+      return sendJson(req, res, allSuccess ? 200 : 207, {
+        success: allSuccess,
+        message: "Combined cron job completed",
+        results,
+      });
+    } catch (error) {
+      console.error("[Cron] Combined job failed:", error);
+      return sendJson(req, res, 500, {
+        success: false,
+        error: error.message,
+        results,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
   return sendJson(req, res, 404, {
     success: false,
-    message: "Cron endpoint not found",
+    message: "Cron endpoint not found. Use: monitor or all",
   });
 }
 
