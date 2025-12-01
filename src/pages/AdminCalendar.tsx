@@ -429,7 +429,7 @@ export default function AdminCalendar({
                 <button
                   key={day}
                   onClick={() => handleDateClick(day)}
-                  className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 hover:shadow-md ${
+                  className={`aspect-square p-2 rounded-xl border-2 transition-all duration-200 hover:shadow-md min-h-[100px] ${
                     isCurrentDay
                       ? "bg-gradient-to-br from-blue-500 to-cyan-400 text-white border-blue-400 shadow-lg"
                       : "bg-white/50 dark:bg-gray-800/50 border-white/20 dark:border-gray-700/20 hover:bg-white/70 dark:hover:bg-gray-800/70"
@@ -449,15 +449,24 @@ export default function AdminCalendar({
                       {dayAppointments.slice(0, 2).map((apt) => (
                         <div
                           key={apt.id}
-                          className={`text-xs px-1 py-0.5 rounded truncate ${getTypeColor(
+                          className={`text-xs px-1.5 py-1 rounded-md ${getTypeColor(
                             apt.type
-                          )}`}
+                          )} flex flex-col gap-0.5`}
+                          title={`${apt.clientName} - ${apt.type} - ${apt.location}${apt.notes ? ` - ${apt.notes}` : ""}`}
                         >
-                          {apt.time} {apt.clientName.split(" ")[0]}
+                          <div className="font-semibold truncate">
+                            {apt.time} {apt.clientName}
+                          </div>
+                          <div className="text-[10px] opacity-90 truncate">
+                            {apt.location}
+                          </div>
+                          <div className="text-[10px] opacity-75 truncate capitalize">
+                            {apt.type}
+                          </div>
                         </div>
                       ))}
                       {dayAppointments.length > 2 && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 px-1.5 py-0.5">
                           +{dayAppointments.length - 2} more
                         </div>
                       )}
