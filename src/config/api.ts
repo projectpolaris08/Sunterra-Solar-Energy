@@ -2,8 +2,11 @@
 // This file centralizes all API endpoint URLs
 
 // Vercel API base URL (for serverless functions)
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "https://sunterra-solar-energy.vercel.app";
+// In development, use relative URLs to leverage Vite's proxy
+// In production, use the full Vercel URL
+export const API_BASE_URL = import.meta.env.DEV
+  ? "" // Use relative URLs in dev (Vite proxy handles /api)
+  : import.meta.env.VITE_API_URL || "https://sunterra-solar-energy.vercel.app";
 
 // Deye Cloud API proxy URL (also on Vercel)
 // Always use API_BASE_URL for production, never localhost
