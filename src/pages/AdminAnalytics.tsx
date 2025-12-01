@@ -4,11 +4,6 @@ import {
   Area,
   BarChart,
   Bar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
   ResponsiveContainer,
   XAxis,
   YAxis,
@@ -195,39 +190,6 @@ export default function AdminAnalytics({
     },
   ];
 
-  // Calculate radar data from actual metrics
-  const radarData = [
-    {
-      subject: "Sales",
-      A: totalClients > 0 ? Math.min(100, (totalClients / 10) * 100) : 0,
-      B: 75,
-      fullMark: 100,
-    },
-    {
-      subject: "Marketing",
-      A: totalLeads > 0 ? Math.min(100, (totalLeads / 20) * 100) : 0,
-      B: 80,
-      fullMark: 100,
-    },
-    {
-      subject: "Support",
-      A: conversionRate > 0 ? Math.min(100, conversionRate * 20) : 0,
-      B: 82,
-      fullMark: 100,
-    },
-    {
-      subject: "Operations",
-      A: 82,
-      B: 78,
-      fullMark: 100,
-    },
-    {
-      subject: "Finance",
-      A: 80,
-      B: 75,
-      fullMark: 100,
-    },
-  ];
 
   return (
     <AdminLayout currentPage={currentPage} onNavigate={onNavigate}>
@@ -380,56 +342,6 @@ export default function AdminAnalytics({
             </ResponsiveContainer>
           </ChartCard>
         </div>
-
-        {/* Radar Chart */}
-        <ChartCard
-          title="Department Performance"
-          subtitle="Multi-dimensional performance analysis"
-        >
-          <ResponsiveContainer width="100%" height={350}>
-            <RadarChart data={radarData}>
-              <PolarGrid stroke="#9ca3af" />
-              <PolarAngleAxis
-                dataKey="subject"
-                stroke="#d1d5db"
-                tick={{ fill: "#d1d5db", fontSize: 12 }}
-                style={{ fontSize: "12px" }}
-              />
-              <PolarRadiusAxis
-                angle={90}
-                domain={[0, 100]}
-                stroke="#d1d5db"
-                tick={{ fill: "#d1d5db", fontSize: 12 }}
-              />
-              <Radar
-                name="Current"
-                dataKey="A"
-                stroke="#3b82f6"
-                fill="#3b82f6"
-                fillOpacity={0.6}
-              />
-              <Radar
-                name="Previous"
-                dataKey="B"
-                stroke="#06b6d4"
-                fill="#06b6d4"
-                fillOpacity={0.4}
-              />
-              <Legend wrapperStyle={{ color: "#d1d5db" }} iconType="square" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "rgba(31, 41, 55, 0.95)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "12px",
-                  backdropFilter: "blur(10px)",
-                  color: "#f3f4f6",
-                }}
-                labelStyle={{ color: "#f3f4f6" }}
-                itemStyle={{ color: "#f3f4f6" }}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-        </ChartCard>
 
         {/* Recent Leads Section */}
         {loading ? (
