@@ -13,7 +13,7 @@
   ],
   "headers": [
     {
-      "source": "/api/deye/(.*)",
+      "source": "/api/deye/:path*",
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
