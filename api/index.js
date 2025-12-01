@@ -1,0 +1,501 @@
+// Consolidated API endpoint - handles all API routes
+// Reduces serverless function count to stay under Vercel Hobby plan limit
+import { setCorsHeaders, handleOptions } from "./lib/cors.js";
+import { checkEmailsForLeads } from "./lib/email-monitor.js";
+import { DeyeCloudApi } from "./lib/deye-cloud-api.js";
+import { MonitoringService } from "./lib/monitoring-service.js";
+import { getAlerts, getAllErrorCodes, deleteAlert } from "./lib/supabase-storage.js";
+import {
+  getClients,
+  createClientRecord,
+  updateClient,
+  deleteClient,
+  getNotifications,
+  createNotification,
+  markNotificationAsRead,
+  getAppointments,
+  createAppointment,
+  updateAppointment,
+  deleteAppointment,
+  getReports,
+  createReport,
+  getSettings,
+  updateSettings,
+} from "./lib/admin-database.js";
+import nodemailer from "nodemailer";
+
+function sendJson(req, res, statusCode, data) {
+  setCorsHeaders(req, res);
+  res.setHeader("Content-Type", "application/json");
+  res.statusCode = statusCode;
+  res.end(JSON.stringify(data));
+}
+
+export default async function handler(req, res) {
+  // Handle preflight OPTIONS requests
+  if (req.method === "OPTIONS") {
+    return handleOptions(req, res);
+  }
+
+  // Set CORS headers
+  setCorsHeaders(req, res);
+
+  try {
+    // Extract endpoint from query or path
+    const endpoint = req.query.endpoint || req.url.split("/api/")[1]?.split("?")[0]?.split("/")[0];
+    const resource = req.query.resource;
+    const action = req.query.action;
+    const body = req.body || {};
+
+    // Route to appropriate handler
+    switch (endpoint) {
+      case "contact":
+        return await handleContact(req, res, body);
+      case "auth":
+      case "login":
+        return await handleAuth(req, res, body);
+      case "admin":
+        return await handleAdmin(req, res, resource, action, req.query, body);
+      case "email":
+      case "email/check":
+        return await handleEmailCheck(req, res);
+      case "ai-monitoring":
+        return await handleAIMonitoring(req, res, action, req.query, body);
+      case "deye":
+        return await handleDeye(req, res, req.query.path, body);
+      case "cron":
+        return await handleCron(req, res, req.query.path, body);
+      default:
+        // Try to infer from URL path
+        if (req.url.includes("/contact")) {
+          return await handleContact(req, res, body);
+        }
+        if (req.url.includes("/auth") || req.url.includes("/login")) {
+          return await handleAuth(req, res, body);
+        }
+        if (req.url.includes("/admin")) {
+          return await handleAdmin(req, res, resource, action, req.query, body);
+        }
+        if (req.url.includes("/email")) {
+          return await handleEmailCheck(req, res);
+        }
+        if (req.url.includes("/ai-monitoring")) {
+          return await handleAIMonitoring(req, res, action, req.query, body);
+        }
+        if (req.url.includes("/deye")) {
+          return await handleDeye(req, res, req.query.path, body);
+        }
+        if (req.url.includes("/cron")) {
+          return await handleCron(req, res, req.query.path, body);
+        }
+        
+        return sendJson(req, res, 404, {
+          success: false,
+          message: "Endpoint not found. Available: contact, auth, admin, email, ai-monitoring, deye",
+        });
+    }
+  } catch (error) {
+    console.error("Error in consolidated API:", error);
+    return sendJson(req, res, 500, {
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
+}
+
+// Contact form handler
+async function handleContact(req, res, body) {
+  if (req.method !== "POST") {
+    return sendJson(req, res, 405, {
+      success: false,
+      message: "Method not allowed",
+    });
+  }
+
+  const { name, email, phone, propertyType, systemType, message } = body;
+
+  if (!name || !email || !phone || !propertyType || !systemType) {
+    return sendJson(req, res, 400, {
+      success: false,
+      message: "Please fill in all required fields",
+    });
+  }
+
+  const smtpHost = process.env.SMTP_HOST || "smtp.hostinger.com";
+  const smtpPort = parseInt(process.env.SMTP_PORT || "465", 10);
+  const smtpUser = process.env.SMTP_USER || "info@sunterrasolarenergy.com";
+  const smtpPassword = process.env.SMTP_PASSWORD;
+  const recipientEmail = process.env.RECIPIENT_EMAIL || "info@sunterrasolarenergy.com";
+
+  if (!smtpPassword) {
+    return sendJson(req, res, 500, {
+      success: false,
+      message: "Email service is not configured.",
+    });
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpPort === 465,
+    auth: { user: smtpUser, pass: smtpPassword },
+  });
+
+  const mailOptions = {
+    from: `"Sunterra Solar Website" <${smtpUser}>`,
+    to: recipientEmail,
+    replyTo: email,
+    subject: `New Contact Form Submission - ${propertyType} ${systemType} System`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2563eb;">New Contact Form Submission</h2>
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3>Contact Information</h3>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+          <p><strong>Phone:</strong> <a href="tel:${phone}">${phone}</a></p>
+        </div>
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3>Project Details</h3>
+          <p><strong>Property Type:</strong> ${propertyType}</p>
+          <p><strong>System Interest:</strong> ${systemType}</p>
+        </div>
+        ${message ? `<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;"><h3>Message</h3><p style="white-space: pre-wrap;">${message}</p></div>` : ""}
+      </div>
+    `,
+    text: `New Contact Form Submission\n\nContact: ${name} (${email}, ${phone})\nProperty: ${propertyType}\nSystem: ${systemType}\n${message ? `\nMessage:\n${message}` : ""}`,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return sendJson(req, res, 200, {
+      success: true,
+      message: "Your message has been sent successfully.",
+      messageId: info.messageId,
+    });
+  } catch (error) {
+    return sendJson(req, res, 500, {
+      success: false,
+      message: "Failed to send email. Please try again later.",
+    });
+  }
+}
+
+// Auth handler
+async function handleAuth(req, res, body) {
+  if (req.method !== "POST") {
+    return sendJson(req, res, 405, {
+      success: false,
+      message: "Method not allowed",
+    });
+  }
+
+  const { email, password } = body;
+
+  if (!email || !password) {
+    return sendJson(req, res, 400, {
+      success: false,
+      message: "Email and password are required",
+    });
+  }
+
+  const validEmail = process.env.ADMIN_EMAIL;
+  const validPassword = process.env.ADMIN_PASSWORD;
+
+  if (!validEmail || !validPassword) {
+    return sendJson(req, res, 500, {
+      success: false,
+      message: "Authentication not configured.",
+    });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedValidEmail = validEmail.trim().toLowerCase();
+
+  if (normalizedEmail === normalizedValidEmail && password.trim() === validPassword) {
+    const sessionToken = Buffer.from(`${normalizedEmail}:${Date.now()}`).toString("base64");
+    return sendJson(req, res, 200, {
+      success: true,
+      message: "Login successful",
+      token: sessionToken,
+    });
+  }
+
+  return sendJson(req, res, 401, {
+    success: false,
+    message: "Invalid email or password",
+  });
+}
+
+// Admin handler
+async function handleAdmin(req, res, resource, action, queryParams, body) {
+  switch (resource) {
+    case "clients":
+      return await handleClients(req, res, action, queryParams, body);
+    case "notifications":
+      return await handleNotifications(req, res, action, queryParams, body);
+    case "appointments":
+      return await handleAppointments(req, res, action, queryParams, body);
+    case "reports":
+      return await handleReports(req, res, action, queryParams, body);
+    case "settings":
+      return await handleSettings(req, res, action, queryParams, body);
+    default:
+      return sendJson(req, res, 400, {
+        success: false,
+        message: "Invalid resource. Use: clients, notifications, appointments, reports, or settings",
+      });
+  }
+}
+
+async function handleClients(req, res, action, queryParams, body) {
+  if (req.method === "GET") {
+    const clients = await getClients();
+    return sendJson(req, res, 200, { success: true, clients, count: clients.length });
+  }
+  if (req.method === "POST" && action === "create") {
+    const client = await createClientRecord(body);
+    return sendJson(req, res, 201, { success: true, client });
+  }
+  if (req.method === "PUT" || req.method === "PATCH") {
+    const { id, ...clientData } = body;
+    if (!id) return sendJson(req, res, 400, { success: false, message: "Client ID required" });
+    const client = await updateClient(id, clientData);
+    return sendJson(req, res, 200, { success: true, client });
+  }
+  if (req.method === "DELETE") {
+    const id = queryParams.id || body.id;
+    if (!id) return sendJson(req, res, 400, { success: false, message: "Client ID required" });
+    await deleteClient(id);
+    return sendJson(req, res, 200, { success: true, message: "Client deleted" });
+  }
+  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+}
+
+async function handleNotifications(req, res, action, queryParams, body) {
+  if (req.method === "GET") {
+    const limit = parseInt(queryParams.limit || "50", 10);
+    const notifications = await getNotifications(limit);
+    return sendJson(req, res, 200, { success: true, notifications, count: notifications.length });
+  }
+  if (req.method === "POST") {
+    if (action === "mark_read" && body.id) {
+      const notification = await markNotificationAsRead(body.id);
+      return sendJson(req, res, 200, { success: true, notification });
+    }
+    const newNotification = await createNotification(body);
+    return sendJson(req, res, 201, { success: true, notification: newNotification });
+  }
+  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+}
+
+async function handleAppointments(req, res, action, queryParams, body) {
+  if (req.method === "GET") {
+    const appointments = await getAppointments(queryParams.startDate, queryParams.endDate);
+    return sendJson(req, res, 200, { success: true, appointments, count: appointments.length });
+  }
+  if (req.method === "POST") {
+    const appointment = await createAppointment(body);
+    return sendJson(req, res, 201, { success: true, appointment });
+  }
+  if (req.method === "PUT" || req.method === "PATCH") {
+    const { id, ...appointmentData } = body;
+    if (!id) return sendJson(req, res, 400, { success: false, message: "Appointment ID required" });
+    const appointment = await updateAppointment(id, appointmentData);
+    return sendJson(req, res, 200, { success: true, appointment });
+  }
+  if (req.method === "DELETE") {
+    const id = queryParams.id || body.id;
+    if (!id) return sendJson(req, res, 400, { success: false, message: "Appointment ID required" });
+    await deleteAppointment(id);
+    return sendJson(req, res, 200, { success: true, message: "Appointment deleted" });
+  }
+  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+}
+
+async function handleReports(req, res, action, queryParams, body) {
+  if (req.method === "GET") {
+    const reports = await getReports();
+    return sendJson(req, res, 200, { success: true, reports, count: reports.length });
+  }
+  if (req.method === "POST") {
+    const report = await createReport(body);
+    return sendJson(req, res, 201, { success: true, report });
+  }
+  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+}
+
+async function handleSettings(req, res, action, queryParams, body) {
+  if (req.method === "GET") {
+    const settings = await getSettings();
+    return sendJson(req, res, 200, { success: true, settings });
+  }
+  if (req.method === "PUT" || req.method === "PATCH" || req.method === "POST") {
+    const settings = await updateSettings(body);
+    return sendJson(req, res, 200, { success: true, settings });
+  }
+  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+}
+
+// Email check handler
+async function handleEmailCheck(req, res) {
+  if (req.method !== "GET" && req.method !== "POST") {
+    return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+  }
+
+  const authHeader = req.headers.authorization;
+  const cronSecret = process.env.CRON_SECRET;
+  const isCronRequest = authHeader && (cronSecret ? authHeader === `Bearer ${cronSecret}` : true);
+
+  try {
+    console.log(`[EMAIL CHECK] ${isCronRequest ? "Cron" : "Manual"} email check started`);
+    const result = await checkEmailsForLeads();
+    console.log(`[EMAIL CHECK] Completed: ${result.message || "Success"}`);
+    return sendJson(req, res, 200, {
+      success: true,
+      ...result,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("[EMAIL CHECK] Error:", error);
+    return sendJson(req, res, 500, {
+      success: false,
+      message: error.message || "Internal server error",
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+// AI Monitoring handler
+async function handleAIMonitoring(req, res, action, queryParams, body) {
+  const act = action || queryParams.action || "alerts";
+
+  if (req.method === "GET") {
+    if (act === "alerts") {
+      const limit = parseInt(queryParams.limit || "100", 10);
+      const alerts = await getAlerts(limit);
+      const filtered = alerts.filter(
+        (a) => a.type !== "voltage" && a.type !== "device_state" && a.type !== "low_production"
+      );
+      return sendJson(req, res, 200, { success: true, alerts: filtered, count: filtered.length });
+    }
+    if (act === "error-codes") {
+      const errorCodes = await getAllErrorCodes();
+      return sendJson(req, res, 200, { success: true, errorCodes, count: errorCodes.length });
+    }
+    return sendJson(req, res, 400, { success: false, message: "Invalid action. Use 'alerts' or 'error-codes'" });
+  }
+
+  if (req.method === "POST") {
+    if (act === "trigger") {
+      const deyeCloudApi = new DeyeCloudApi();
+      const monitoringService = new MonitoringService(deyeCloudApi);
+      monitoringService.monitorDevices().catch((error) => {
+        console.error("Error in monitoring trigger:", error);
+      });
+      return sendJson(req, res, 200, { success: true, message: "Monitoring cycle triggered" });
+    }
+    if (act === "delete") {
+      const alertId = queryParams.id || body.id;
+      if (!alertId) return sendJson(req, res, 400, { success: false, message: "Alert ID required" });
+      const deleted = await deleteAlert(alertId);
+      if (deleted) {
+        return sendJson(req, res, 200, { success: true, message: "Alert deleted" });
+      }
+      return sendJson(req, res, 404, { success: false, message: "Alert not found" });
+    }
+  }
+
+  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+}
+
+// Deye handler
+async function handleDeye(req, res, pathParam, body) {
+  if (req.method !== "GET" && req.method !== "POST") {
+    return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+  }
+
+  try {
+    let path = "/";
+    if (pathParam) {
+      if (Array.isArray(pathParam)) {
+        path = "/" + pathParam.join("/");
+      } else {
+        path = "/" + decodeURIComponent(pathParam);
+      }
+    } else if (req.query.path) {
+      if (Array.isArray(req.query.path)) {
+        path = "/" + req.query.path.join("/");
+      } else {
+        path = "/" + decodeURIComponent(req.query.path);
+      }
+    } else {
+      const urlPath = req.url.replace("/api/deye", "") || "/";
+      path = urlPath.split("?")[0] || "/";
+    }
+
+    const deyeApi = new DeyeCloudApi();
+    let requestBody = body;
+    if (typeof requestBody === "string" && requestBody.length > 0) {
+      try {
+        requestBody = JSON.parse(requestBody);
+      } catch {
+        requestBody = requestBody || {};
+      }
+    }
+
+    const deyeResponse = await deyeApi.request(path, {
+      method: req.method,
+      body: requestBody,
+    });
+
+    return sendJson(req, res, 200, deyeResponse);
+  } catch (error) {
+    console.error("Deye API error:", error);
+    return sendJson(req, res, 500, {
+      success: false,
+      message: error.message || "Deye API request failed",
+    });
+  }
+}
+
+// Cron handler
+async function handleCron(req, res, pathParam, body) {
+  const path = pathParam || req.query.path || "";
+  
+  if (path === "monitor") {
+    // Verify cron request
+    const authHeader = req.headers.authorization;
+    const cronSecret = process.env.CRON_SECRET;
+    
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      return sendJson(req, res, 401, { success: false, error: "Unauthorized" });
+    }
+
+    try {
+      console.log(`[Cron] Monitoring job started at ${new Date().toISOString()}`);
+      const deyeCloudApi = new DeyeCloudApi();
+      const monitoringService = new MonitoringService(deyeCloudApi);
+      await monitoringService.monitorDevices();
+      console.log(`[Cron] Monitoring job completed at ${new Date().toISOString()}`);
+      return sendJson(req, res, 200, {
+        success: true,
+        message: "Monitoring cycle completed",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("[Cron] Monitoring job failed:", error);
+      return sendJson(req, res, 500, {
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  return sendJson(req, res, 404, {
+    success: false,
+    message: "Cron endpoint not found",
+  });
+}
+
