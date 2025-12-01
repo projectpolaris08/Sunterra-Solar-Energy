@@ -27,12 +27,22 @@ interface AdminProps {
   currentPage?: string;
 }
 
+interface Activity {
+  id: string;
+  action: string;
+  user: string;
+  time: string;
+  type: "lead" | "appointment" | "expense" | "client" | "payment" | "project" | "notification";
+  timestamp: Date;
+}
+
 export default function Admin({
   onNavigate,
   currentPage = "admin",
 }: AdminProps) {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
 
   // Fetch expenses data
   useEffect(() => {
@@ -67,6 +77,238 @@ export default function Admin({
 
     fetchExpenses();
   }, []);
+
+  // Fetch and update recent activities
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        if (!supabase) return;
+
+        const activities: Activity[] = [];
+
+        // Fetch recent leads
+        const { data: leadsData } = await supabase
+          .from("leads")
+          .select("id, name, source, status, created_at")
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        if (leadsData) {
+          leadsData.forEach((lead: any) => {
+            activities.push({
+              id: `lead-${lead.id}`,
+              action: `New lead from ${lead.source || "email"}: ${lead.name}`,
+              user: lead.name,
+              time: formatTimeAgo(new Date(lead.created_at)),
+              type: "lead",
+              timestamp: new Date(lead.created_at),
+            });
+          });
+        }
+
+        // Fetch recent appointments
+        const { data: appointmentsData } = await supabase
+          .from("appointments")
+          .select("id, client_name, type, date, created_at")
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        if (appointmentsData) {
+          appointmentsData.forEach((apt: any) => {
+            activities.push({
+              id: `appointment-${apt.id}`,
+              action: `${apt.type} appointment scheduled for ${apt.client_name}`,
+              user: apt.client_name,
+              time: formatTimeAgo(new Date(apt.created_at)),
+              type: "appointment",
+              timestamp: new Date(apt.created_at),
+            });
+          });
+        }
+
+        // Fetch recent expenses
+        const { data: expensesData } = await supabase
+          .from("expenses")
+          .select("id, description, amount, category, created_at")
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        if (expensesData) {
+          expensesData.forEach((exp: any) => {
+            activities.push({
+              id: `expense-${exp.id}`,
+              action: `Expense added: ${exp.description || exp.category} - ₱${exp.amount?.toLocaleString() || 0}`,
+              user: "Admin",
+              time: formatTimeAgo(new Date(exp.created_at)),
+              type: "expense",
+              timestamp: new Date(exp.created_at),
+            });
+          });
+        }
+
+        // Fetch recent clients
+        const { data: clientsData } = await supabase
+          .from("clients")
+          .select("id, client_name, project_amount, join_date")
+          .order("join_date", { ascending: false })
+          .limit(5);
+
+        if (clientsData) {
+          clientsData.forEach((client: any) => {
+            activities.push({
+              id: `client-${client.id}`,
+              action: `New client added: ${client.client_name}${client.project_amount ? ` - ₱${client.project_amount.toLocaleString()}` : ""}`,
+              user: client.client_name,
+              time: formatTimeAgo(new Date(client.join_date)),
+              type: "client",
+              timestamp: new Date(client.join_date),
+            });
+          });
+        }
+
+        // Fetch recent notifications
+        const { data: notificationsData } = await supabase
+          .from("notifications")
+          .select("id, title, message, created_at")
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        if (notificationsData) {
+          notificationsData.forEach((notif: any) => {
+            activities.push({
+              id: `notification-${notif.id}`,
+              action: notif.title || notif.message || "New notification",
+              user: "System",
+              time: formatTimeAgo(new Date(notif.created_at)),
+              type: "notification",
+              timestamp: new Date(notif.created_at),
+            });
+          });
+        }
+
+        // Sort by timestamp (most recent first) and take top 10
+        activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+        setRecentActivities(activities.slice(0, 10));
+      } catch (error) {
+        console.error("Failed to fetch activities:", error);
+      }
+    };
+
+    fetchActivities();
+
+    // Set up real-time subscriptions
+    if (supabase) {
+      // Subscribe to leads changes
+      const leadsChannel = supabase
+        .channel("leads-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "leads",
+          },
+          () => {
+            fetchActivities();
+          }
+        )
+        .subscribe();
+
+      // Subscribe to appointments changes
+      const appointmentsChannel = supabase
+        .channel("appointments-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "appointments",
+          },
+          () => {
+            fetchActivities();
+          }
+        )
+        .subscribe();
+
+      // Subscribe to expenses changes
+      const expensesChannel = supabase
+        .channel("expenses-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "expenses",
+          },
+          () => {
+            fetchActivities();
+          }
+        )
+        .subscribe();
+
+      // Subscribe to clients changes
+      const clientsChannel = supabase
+        .channel("clients-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "clients",
+          },
+          () => {
+            fetchActivities();
+          }
+        )
+        .subscribe();
+
+      // Subscribe to notifications changes
+      const notificationsChannel = supabase
+        .channel("notifications-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "notifications",
+          },
+          () => {
+            fetchActivities();
+          }
+        )
+        .subscribe();
+
+      // Cleanup subscriptions on unmount
+      return () => {
+        supabase.removeChannel(leadsChannel);
+        supabase.removeChannel(appointmentsChannel);
+        supabase.removeChannel(expensesChannel);
+        supabase.removeChannel(clientsChannel);
+        supabase.removeChannel(notificationsChannel);
+      };
+    }
+  }, []);
+
+  // Helper function to format time ago
+  const formatTimeAgo = (date: Date): string => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) {
+      return "Just now";
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    } else if (diffInSeconds < 604800) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} day${days > 1 ? "s" : ""} ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
 
   // Sample data for charts - reflecting current business status
   const revenueData = [
@@ -334,40 +576,56 @@ export default function Admin({
 
       {/* Recent Activity */}
       <ChartCard title="Recent Activity" className="mb-6">
-        <div className="space-y-4">
-          {[
-            {
-              action: "Downpayment received",
-              user: "First Client",
-              time: "Recently",
-              type: "payment",
-            },
-            {
-              action: "Project pending - House construction in progress",
-              user: "First Client",
-              time: "Recently",
-              type: "project",
-            },
-          ].map((activity, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 backdrop-blur-sm border border-blue-400/30 hover:from-blue-700 hover:to-cyan-600 transition-all duration-200 shadow-lg shadow-blue-500/20"
-            >
-              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-semibold border-2 border-white/30">
-                {activity.user.charAt(0)}
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-white">{activity.action}</p>
-                <p className="text-sm text-white/80">
-                  {activity.user} • {activity.time}
-                </p>
-              </div>
-              <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-white/20 backdrop-blur-sm text-white border border-white/30">
-                {activity.type}
-              </span>
-            </div>
-          ))}
-        </div>
+        {recentActivities.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600 dark:text-gray-400">
+              No recent activity
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {recentActivities.map((activity) => {
+              const getTypeColor = (type: string) => {
+                switch (type) {
+                  case "lead":
+                    return "from-blue-600 to-cyan-500";
+                  case "appointment":
+                    return "from-purple-600 to-pink-500";
+                  case "expense":
+                    return "from-red-600 to-rose-500";
+                  case "client":
+                    return "from-emerald-600 to-teal-500";
+                  case "notification":
+                    return "from-amber-600 to-orange-500";
+                  default:
+                    return "from-gray-600 to-gray-500";
+                }
+              };
+
+              return (
+                <div
+                  key={activity.id}
+                  className={`flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r ${getTypeColor(
+                    activity.type
+                  )} backdrop-blur-sm border border-white/30 hover:opacity-90 transition-all duration-200 shadow-lg`}
+                >
+                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-semibold border-2 border-white/30">
+                    {activity.user.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-white">{activity.action}</p>
+                    <p className="text-sm text-white/80">
+                      {activity.user} • {activity.time}
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-white/20 backdrop-blur-sm text-white border border-white/30 capitalize">
+                    {activity.type}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </ChartCard>
     </AdminLayout>
   );
