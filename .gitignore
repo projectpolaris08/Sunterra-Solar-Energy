@@ -46,4 +46,6 @@ Thumbs.db
 
 .vercel
 
-.vercel
+# Documentation files (don't push to GitHub)
+*.md
+!README.md
