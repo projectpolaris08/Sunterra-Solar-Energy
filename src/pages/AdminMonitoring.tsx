@@ -455,11 +455,6 @@ export default function AdminMonitoring({
       if (alertsResponse.ok) {
         const alertsData = await alertsResponse.json();
         if (alertsData.success) {
-          console.log(
-            "AI Alerts received:",
-            alertsData.alerts.length,
-            alertsData.alerts
-          );
           // Filter to only show alerts for device 2310286498 or "no_production" type
           // Also exclude example alerts (voltage, device_state, low_production)
           const filteredAlerts = (alertsData.alerts || []).filter(
@@ -488,18 +483,15 @@ export default function AdminMonitoring({
           );
           setEmailAlerts(sentAlerts);
         } else {
-          console.log("AI Monitoring response not successful:", alertsData);
           setAiMonitoringAvailable(false);
         }
       } else {
-        console.log("AI Monitoring endpoint returned:", alertsResponse.status);
         setAiMonitoringAvailable(false);
       }
 
       // Note: Error codes endpoint is available but not currently used in UI
     } catch (error) {
       // AI monitoring service might not be available
-      console.log("AI Monitoring service not available:", error);
       setAiMonitoringAvailable(false);
       setAiAlerts([]);
       setEmailAlerts([]);
@@ -1448,28 +1440,8 @@ export default function AdminMonitoring({
                   );
                 }
 
-                // Debug logging for "No Power Generation" alerts
-                if (alert.title === "No Power Generation") {
-                  console.log(
-                    "🔍 Matching AI alert for 'No Power Generation':",
-                    {
-                      alertDeviceName: alert.deviceName,
-                      alertDeviceId: alert.deviceId,
-                      aiAlertsCount: aiAlerts.length,
-                      aiAlertDeviceSns: aiAlerts.map((a: any) => a.deviceSn),
-                      aiAlertTypes: aiAlerts.map((a: any) => a.type),
-                      foundMatch: !!matchingAiAlert,
-                      matchingAlert: matchingAiAlert
-                        ? {
-                            type: matchingAiAlert.type,
-                            deviceSn: matchingAiAlert.deviceSn,
-                            hasRecommendation:
-                              !!matchingAiAlert.aiRecommendation,
-                          }
-                        : null,
-                    }
-                  );
-                }
+                // Check for matching AI alert for "No Power Generation"
+                // (Debug logging removed for production)
 
                 return (
                   <div

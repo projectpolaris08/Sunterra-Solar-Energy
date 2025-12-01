@@ -2,14 +2,8 @@
 import { setCorsHeaders, handleOptions } from "../lib/cors.js";
 
 export default async function handler(req, res) {
-  console.log(`[DEYE TEST] Request received: ${req.method} ${req.url}`, {
-    origin: req.headers.origin,
-    method: req.method,
-  });
-
   // Handle OPTIONS
   if (req.method === "OPTIONS") {
-    console.log(`[DEYE TEST] OPTIONS request`);
     handleOptions(req, res);
     return;
   }
@@ -25,4 +19,3 @@ export default async function handler(req, res) {
     timestamp: new Date().toISOString(),
   });
 }
-

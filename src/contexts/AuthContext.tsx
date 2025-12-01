@@ -24,18 +24,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const [user, setUser] = useState<any>(null);
 
-  // Check if user is already logged in (Supabase session)
+  // Check if user is already logged in (Supabase session or localStorage)
   useEffect(() => {
+    // First, check localStorage for server-side auth
+    const storedAuth = localStorage.getItem("admin_authenticated") === "true";
+    if (storedAuth) {
+      setIsAuthenticated(true);
+    }
+
     if (!supabase) {
+      // If no Supabase, rely on localStorage only
       return;
     }
 
-    // Check existing session
+    // Check existing Supabase session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setIsAuthenticated(true);
         setUser(session.user);
         localStorage.setItem("admin_authenticated", "true");
+      } else if (storedAuth) {
+        // If localStorage says authenticated but no Supabase session,
+        // keep authenticated state (server-side auth)
+        setIsAuthenticated(true);
       }
     });
 
@@ -48,9 +59,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session.user);
         localStorage.setItem("admin_authenticated", "true");
       } else {
-        setIsAuthenticated(false);
-        setUser(null);
-        localStorage.removeItem("admin_authenticated");
+        // Only clear auth if localStorage also doesn't have it
+        // This prevents clearing server-side auth on Supabase session expiry
+        const hasStoredAuth =
+          localStorage.getItem("admin_authenticated") === "true";
+        if (!hasStoredAuth) {
+          setIsAuthenticated(false);
+          setUser(null);
+        }
       }
     });
 

@@ -14,36 +14,13 @@ function sendJson(res, statusCode, data) {
 }
 
 export default async function handler(req, res) {
-  // Log EVERY request immediately - this helps debug if requests are reaching the function
-  console.log(`[DEYE API] Request received: ${req.method} ${req.url}`, {
-    origin: req.headers.origin,
-    method: req.method,
-    path: req.query.path,
-    headers: {
-      origin: req.headers.origin,
-      "access-control-request-method":
-        req.headers["access-control-request-method"],
-      "access-control-request-headers":
-        req.headers["access-control-request-headers"],
-    },
-  });
-
   // CRITICAL: Handle OPTIONS preflight requests FIRST
   // This MUST return before any other code runs
   if (req.method === "OPTIONS") {
-    console.log(`[DEYE API] Processing OPTIONS preflight request`);
-
     // Use the standard handleOptions function (matches pattern from other working routes)
     handleOptions(req, res);
     return;
   }
-
-  // Log for debugging - check Vercel logs
-  console.log(`[DEYE API] ${req.method} ${req.url}`, {
-    origin: req.headers.origin,
-    method: req.method,
-    path: req.query.path,
-  });
 
   // Set CORS headers for all other requests
   setCorsHeaders(req, res);
@@ -76,8 +53,6 @@ export default async function handler(req, res) {
       // Remove query string if present
       path = urlPath.split("?")[0] || "/";
     }
-
-    console.log(`[DEYE API] Resolved path: ${path}`);
 
     // Initialize Deye Cloud API
     const deyeApi = new DeyeCloudApi();
