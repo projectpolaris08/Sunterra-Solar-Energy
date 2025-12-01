@@ -118,18 +118,35 @@ export default function AdminAnalytics({
     });
 
     const colors: { [key: string]: string } = {
-      email: "#ef4444",
-      website: "#3b82f6",
-      referral: "#06b6d4",
-      "social media": "#8b5cf6",
-      direct: "#f59e0b",
+      email: "#ef4444", // Red
+      website: "#3b82f6", // Blue
+      referral: "#06b6d4", // Cyan
+      "social media": "#8b5cf6", // Purple
+      direct: "#f59e0b", // Amber
+      manual: "#6b7280", // Gray
+      facebook: "#1877f2", // Facebook Blue
+      instagram: "#e4405f", // Instagram Pink
+      linkedin: "#0077b5", // LinkedIn Blue
+      tiktok: "#000000", // TikTok Black
+      reddit: "#ff4500", // Reddit Orange
+      twitter: "#1da1f2", // Twitter Blue
+      youtube: "#ff0000", // YouTube Red
+      google: "#4285f4", // Google Blue
     };
 
-    return Object.entries(sources).map(([name, value]) => ({
-      name: name.charAt(0).toUpperCase() + name.slice(1),
-      value,
-      color: colors[name.toLowerCase()] || "#6b7280",
-    }));
+    return Object.entries(sources).map(([name, value]) => {
+      // Format name for display (capitalize first letter, handle camelCase)
+      const displayName = name
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (str) => str.toUpperCase())
+        .trim();
+      
+      return {
+        name: displayName,
+        value,
+        color: colors[name.toLowerCase()] || "#6b7280",
+      };
+    });
   };
 
   const performanceData = getPerformanceData();
