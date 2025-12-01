@@ -13,10 +13,6 @@
     {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
-    },
-    {
-      "source": "/api/deye/:path*",
-      "destination": "/api/deye/[...path]"
     }
   ],
   "headers": [
