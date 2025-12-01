@@ -55,7 +55,7 @@ export default async function handler(req, res) {
     }
     
     const resource = req.query.resource;
-    const action = req.query.action || req.query.action; // Keep action from query
+    const action = req.query.action; // Get action from query
     const body = req.body || {};
 
     // Route to appropriate handler
