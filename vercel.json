@@ -4,10 +4,10 @@
             "path": "/api/cron/monitor",
             "schedule": "0 9 * * *"
           },
-          {
-            "path": "/api/cron/check-email",
-            "schedule": "*/30 * * * *"
-          }
+        {
+          "path": "/api/cron/check-email",
+          "schedule": "0 * * * *"
+        }
         ],
   "rewrites": [
     {
