@@ -65,22 +65,26 @@ export function handleOptions(req, res) {
     }
   }
 
-  // Build headers object
-  const headers = {
-    "Access-Control-Allow-Origin": allowOrigin,
-    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,PATCH",
-    "Access-Control-Allow-Headers":
-      "Content-Type,Authorization,X-Requested-With,Accept,Origin",
-    "Access-Control-Max-Age": "86400",
-  };
+  // Set headers individually (Vercel serverless functions work better with this)
+  res.setHeader("Access-Control-Allow-Origin", allowOrigin);
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type,Authorization,X-Requested-With,Accept,Origin"
+  );
+  res.setHeader("Access-Control-Max-Age", "86400");
 
   // Only add credentials header if we're using a specific origin (not *)
   if (allowCredentials) {
-    headers["Access-Control-Allow-Credentials"] = "true";
+    res.setHeader("Access-Control-Allow-Credentials", "true");
   }
 
-  // Use writeHead to ensure headers are sent
-  res.writeHead(200, headers);
+  // Return 204 No Content for OPTIONS (standard for preflight)
+  // Vercel serverless functions use statusCode property
+  res.statusCode = 204;
   res.end();
   return;
 }

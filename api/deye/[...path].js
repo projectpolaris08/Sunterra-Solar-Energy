@@ -14,13 +14,6 @@ function sendJson(res, statusCode, data) {
 }
 
 export default async function handler(req, res) {
-  // Log for debugging - check Vercel logs
-  console.log(`[DEYE API] ${req.method} ${req.url}`, {
-    origin: req.headers.origin,
-    method: req.method,
-    path: req.query.path,
-  });
-
   // CRITICAL: Handle OPTIONS preflight requests FIRST
   // This MUST return before any other code runs
   if (req.method === "OPTIONS") {
@@ -34,9 +27,16 @@ export default async function handler(req, res) {
         req.headers["access-control-request-headers"],
     });
 
-    // Use the standard handleOptions function which properly sets headers with writeHead
+    // Use the standard handleOptions function (matches pattern from other working routes)
     return handleOptions(req, res);
   }
+
+  // Log for debugging - check Vercel logs
+  console.log(`[DEYE API] ${req.method} ${req.url}`, {
+    origin: req.headers.origin,
+    method: req.method,
+    path: req.query.path,
+  });
 
   // Set CORS headers for all other requests
   setCorsHeaders(req, res);
