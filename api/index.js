@@ -42,9 +42,20 @@ export default async function handler(req, res) {
 
   try {
     // Extract endpoint from query or path
-    const endpoint = req.query.endpoint || req.url.split("/api/")[1]?.split("?")[0]?.split("/")[0];
+    // First check query parameter (from rewrite rules)
+    let endpoint = req.query.endpoint;
+    
+    // If not in query, extract from URL path
+    if (!endpoint) {
+      const urlPath = req.url.split("?")[0]; // Remove query string
+      const pathMatch = urlPath.match(/\/api\/([^\/\?]+)/);
+      if (pathMatch) {
+        endpoint = pathMatch[1];
+      }
+    }
+    
     const resource = req.query.resource;
-    const action = req.query.action;
+    const action = req.query.action || req.query.action; // Keep action from query
     const body = req.body || {};
 
     // Route to appropriate handler
@@ -417,21 +428,34 @@ async function handleDeye(req, res, pathParam, body) {
 
   try {
     let path = "/";
+    
+    // Try to get path from various sources
     if (pathParam) {
       if (Array.isArray(pathParam)) {
         path = "/" + pathParam.join("/");
-      } else {
+      } else if (typeof pathParam === "string") {
         path = "/" + decodeURIComponent(pathParam);
       }
     } else if (req.query.path) {
       if (Array.isArray(req.query.path)) {
         path = "/" + req.query.path.join("/");
-      } else {
+      } else if (typeof req.query.path === "string") {
         path = "/" + decodeURIComponent(req.query.path);
       }
     } else {
-      const urlPath = req.url.replace("/api/deye", "") || "/";
-      path = urlPath.split("?")[0] || "/";
+      // Extract from URL directly
+      const urlPath = req.url.split("?")[0]; // Remove query string
+      const deyeMatch = urlPath.match(/\/api\/deye(\/.*)?$/);
+      if (deyeMatch && deyeMatch[1]) {
+        path = deyeMatch[1];
+      } else {
+        path = "/";
+      }
+    }
+    
+    // Ensure path starts with /
+    if (!path.startsWith("/")) {
+      path = "/" + path;
     }
 
     const deyeApi = new DeyeCloudApi();

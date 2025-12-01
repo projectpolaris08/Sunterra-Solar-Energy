@@ -21,6 +21,14 @@
     {
       "source": "/api/cron/all",
       "destination": "/api?endpoint=cron&path=all"
+    },
+    {
+      "source": "/api/ai-monitoring",
+      "destination": "/api?endpoint=ai-monitoring"
+    },
+    {
+      "source": "/api/deye/:path*",
+      "destination": "/api?endpoint=deye&path=:path*"
     }
   ],
   "headers": [
