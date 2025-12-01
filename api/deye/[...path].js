@@ -59,8 +59,25 @@ export default async function handler(req, res) {
 
     // Get the path from the request
     // Vercel dynamic routes: [...path] gives us req.query.path as an array
-    const pathArray = req.query.path || [];
-    const path = "/" + pathArray.join("/");
+    // But with rewrite rules, it might come as a string in the query parameter
+    let path = "/";
+    if (req.query.path) {
+      if (Array.isArray(req.query.path)) {
+        // Normal catch-all route: path is an array
+        path = "/" + req.query.path.join("/");
+      } else {
+        // Rewrite rule: path is a string (URL encoded)
+        // Decode and use directly
+        path = "/" + decodeURIComponent(req.query.path);
+      }
+    } else {
+      // Fallback: extract from URL
+      const urlPath = req.url.replace("/api/deye", "") || "/";
+      // Remove query string if present
+      path = urlPath.split("?")[0] || "/";
+    }
+
+    console.log(`[DEYE API] Resolved path: ${path}`);
 
     // Initialize Deye Cloud API
     const deyeApi = new DeyeCloudApi();
