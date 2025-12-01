@@ -77,11 +77,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Option 1: Try server-side auth first (Vercel endpoint)
     // This is more reliable if Supabase user doesn't exist yet
     try {
+      // Use API_BASE_URL from config for consistency
       const apiUrl =
         import.meta.env.VITE_API_URL ||
         "https://sunterra-solar-energy.vercel.app";
 
       const response = await fetch(`${apiUrl}/api/auth/login`, {
+        mode: "cors",
+        credentials: "include",
         method: "POST",
         headers: {
           "Content-Type": "application/json",

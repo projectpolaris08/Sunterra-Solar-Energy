@@ -32,12 +32,12 @@ function sendJson(req, res, statusCode, data) {
 }
 
 export default async function handler(req, res) {
-  // Handle preflight OPTIONS requests
+  // Handle preflight OPTIONS requests FIRST - before any other logic
   if (req.method === "OPTIONS") {
     return handleOptions(req, res);
   }
 
-  // Set CORS headers
+  // Set CORS headers for all requests
   setCorsHeaders(req, res);
 
   try {

@@ -29,11 +29,19 @@
     {
       "source": "/api/deye/:path*",
       "destination": "/api?endpoint=deye&path=:path*"
+    },
+    {
+      "source": "/api/auth/login",
+      "destination": "/api?endpoint=auth"
+    },
+    {
+      "source": "/api/auth/:path*",
+      "destination": "/api?endpoint=auth"
     }
   ],
   "headers": [
     {
-      "source": "/api/deye/:path*",
+      "source": "/api/:path*",
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",

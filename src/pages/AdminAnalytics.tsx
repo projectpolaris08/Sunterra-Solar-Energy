@@ -137,7 +137,7 @@ export default function AdminAnalytics({
         .replace(/([A-Z])/g, " $1")
         .replace(/^./, (str) => str.toUpperCase())
         .trim();
-      
+
       return {
         name: displayName,
         value,
@@ -189,7 +189,6 @@ export default function AdminAnalytics({
       icon: Users,
     },
   ];
-
 
   return (
     <AdminLayout currentPage={currentPage} onNavigate={onNavigate}>
