@@ -130,12 +130,10 @@ export default function AdminCalendar({
 
   const handleDateClick = (day: number | null) => {
     if (day) {
-      const date = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        day
-      );
-      const dateStr = date.toISOString().split("T")[0];
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1; // getMonth() is 0-indexed
+      // Format as YYYY-MM-DD without timezone conversion
+      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       setFormData({ ...formData, date: dateStr });
       setIsModalOpen(true);
     }
@@ -418,12 +416,10 @@ export default function AdminCalendar({
                 return <div key={`empty-${index}`} className="aspect-square" />;
               }
 
-              const date = new Date(
-                currentDate.getFullYear(),
-                currentDate.getMonth(),
-                day
-              );
-              const dateStr = date.toISOString().split("T")[0];
+              // Format date as YYYY-MM-DD without timezone conversion
+              const year = currentDate.getFullYear();
+              const month = currentDate.getMonth() + 1; // getMonth() is 0-indexed
+              const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
               const dayAppointments = appointments.filter(
                 (apt) => apt.date === dateStr
               );
