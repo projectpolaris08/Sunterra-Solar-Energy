@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import AdminLayout from "../components/dashboard/AdminLayout";
 import ChartCard from "../components/dashboard/ChartCard";
 import { supabase } from "../lib/supabase";
+import { API_BASE_URL } from "../config/api";
 import {
   Bell,
   Check,
@@ -54,8 +55,10 @@ export default function AdminNotifications({
     const diffDays = Math.floor(diffMs / 86400000);
 
     if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    if (diffMins < 60)
+      return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
     if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
     return date.toLocaleDateString();
   };
@@ -70,17 +73,22 @@ export default function AdminNotifications({
         }
 
         // Fetch general notifications from notifications table
-        const { data: notificationsData, error: notificationsError } = await supabase
-          .from("notifications")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(100);
+        const { data: notificationsData, error: notificationsError } =
+          await supabase
+            .from("notifications")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(100);
 
         let generalNotifications: Notification[] = [];
         if (!notificationsError && notificationsData) {
           generalNotifications = notificationsData.map((n: any) => ({
             id: typeof n.id === "number" ? n.id : parseInt(n.id) || n.id, // Ensure numeric ID for system notifications
-            type: (n.type || "info") as "info" | "success" | "warning" | "error",
+            type: (n.type || "info") as
+              | "info"
+              | "success"
+              | "warning"
+              | "error",
             title: n.title,
             message: n.message,
             timestamp: n.created_at || n.timestamp,
@@ -117,11 +125,17 @@ export default function AdminNotifications({
               : new Date();
 
             return {
-              id: `monitoring-${alert.id || alert.device_sn || Date.now()}-${alert.created_at}`,
+              id: `monitoring-${alert.id || alert.device_sn || Date.now()}-${
+                alert.created_at
+              }`,
               type,
-              title: alert.message || `Device Alert: ${alert.device_sn || "Unknown"}`,
+              title:
+                alert.message ||
+                `Device Alert: ${alert.device_sn || "Unknown"}`,
               message: alert.ai_recommendation
-                ? `${alert.message || "System alert"}. ${alert.ai_recommendation}`
+                ? `${alert.message || "System alert"}. ${
+                    alert.ai_recommendation
+                  }`
                 : alert.message || "System monitoring alert",
               timestamp: alertDate.toISOString(),
               read: false,
@@ -237,7 +251,10 @@ export default function AdminNotifications({
     const newDismissed = new Set(dismissedIds);
     newDismissed.add(id);
     setDismissedIds(newDismissed);
-    localStorage.setItem("dismissed_notifications", JSON.stringify(Array.from(newDismissed)));
+    localStorage.setItem(
+      "dismissed_notifications",
+      JSON.stringify(Array.from(newDismissed))
+    );
 
     // Set deleting state for animation
     setDeletingId(id);
@@ -275,19 +292,60 @@ export default function AdminNotifications({
             <button
               onClick={async () => {
                 try {
-                  const response = await fetch("/api/email/check", {
-                    method: "POST",
-                  });
+                  const response = await fetch(
+                    `${API_BASE_URL}/api/email/check`,
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                    }
+                  );
+
+                  const contentType = response.headers.get("content-type");
+                  if (
+                    !contentType ||
+                    !contentType.includes("application/json")
+                  ) {
+                    const text = await response.text();
+                    console.error("Non-JSON response:", text.substring(0, 200));
+                    throw new Error(
+                      `Server returned ${response.status}. The email check endpoint may not be available.`
+                    );
+                  }
+
+                  if (!response.ok) {
+                    const errorData = await response
+                      .json()
+                      .catch(() => ({ message: `HTTP ${response.status}` }));
+                    throw new Error(
+                      errorData.message || `HTTP ${response.status}`
+                    );
+                  }
+
                   const result = await response.json();
                   if (result.success) {
+                    alert(
+                      `Email check completed! ${
+                        result.leads?.length || 0
+                      } new lead(s) found.`
+                    );
                     // Refresh notifications after checking emails
-                    window.location.reload();
+                    setTimeout(() => {
+                      window.location.reload();
+                    }, 1000);
                   } else {
-                    alert(result.message || "Failed to check emails");
+                    alert(result.message || "No new emails found.");
                   }
                 } catch (error) {
                   console.error("Failed to check emails:", error);
-                  alert("Failed to check emails. Please try again.");
+                  alert(
+                    `Failed to check emails: ${
+                      error instanceof Error
+                        ? error.message
+                        : "Please try again."
+                    }`
+                  );
                 }
               }}
               className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-medium hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 flex items-center gap-2"
@@ -378,7 +436,9 @@ export default function AdminNotifications({
           {loading ? (
             <div className="text-center py-12">
               <Bell className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4 animate-pulse" />
-              <p className="text-gray-600 dark:text-gray-400">Loading notifications...</p>
+              <p className="text-gray-600 dark:text-gray-400">
+                Loading notifications...
+              </p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="text-center py-12">
@@ -393,93 +453,92 @@ export default function AdminNotifications({
           ) : (
             <div className="space-y-3">
               {notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`group relative flex items-start gap-4 p-5 rounded-2xl border transition-all duration-300 hover:shadow-lg ${
-                  deletingId === notification.id
-                    ? "opacity-0 scale-95 -translate-x-4 pointer-events-none"
-                    : notification.read
-                    ? "bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border-white/20 dark:border-gray-700/30"
-                    : "bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-blue-200/50 dark:border-blue-700/50 shadow-md"
-                }`}
-              >
-                {/* Unread Indicator */}
-                {!notification.read && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-cyan-400 rounded-l-2xl"></div>
-                )}
-
-                {/* Icon */}
                 <div
-                  className={`flex-shrink-0 p-3 rounded-xl ${getBgColor(
-                    notification.type
-                  )}`}
+                  key={notification.id}
+                  className={`group relative flex items-start gap-4 p-5 rounded-2xl border transition-all duration-300 hover:shadow-lg ${
+                    deletingId === notification.id
+                      ? "opacity-0 scale-95 -translate-x-4 pointer-events-none"
+                      : notification.read
+                      ? "bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border-white/20 dark:border-gray-700/30"
+                      : "bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-blue-200/50 dark:border-blue-700/50 shadow-md"
+                  }`}
                 >
-                  {getIcon(notification.type)}
-                </div>
+                  {/* Unread Indicator */}
+                  {!notification.read && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-cyan-400 rounded-l-2xl"></div>
+                  )}
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <div className="flex items-center gap-2 flex-1">
-                      <h3
-                        className={`font-bold text-base ${
-                          notification.read
-                            ? "text-gray-700 dark:text-gray-300"
-                            : "text-gray-900 dark:text-white"
-                        }`}
-                      >
-                        {notification.title}
-                      </h3>
-                      {!notification.read && (
-                        <span className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse"></span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      {!notification.read && (
+                  {/* Icon */}
+                  <div
+                    className={`flex-shrink-0 p-3 rounded-xl ${getBgColor(
+                      notification.type
+                    )}`}
+                  >
+                    {getIcon(notification.type)}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2 flex-1">
+                        <h3
+                          className={`font-bold text-base ${
+                            notification.read
+                              ? "text-gray-700 dark:text-gray-300"
+                              : "text-gray-900 dark:text-white"
+                          }`}
+                        >
+                          {notification.title}
+                        </h3>
+                        {!notification.read && (
+                          <span className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-pulse"></span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {!notification.read && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markAsRead(notification.id);
+                            }}
+                            className="p-2 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition-all duration-200 opacity-0 group-hover:opacity-100"
+                            title="Mark as read"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            markAsRead(notification.id);
+                            e.preventDefault();
+                            dismissNotification(notification.id);
                           }}
-                          className="p-2 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 transition-all duration-200 opacity-0 group-hover:opacity-100"
-                          title="Mark as read"
+                          className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all duration-200 opacity-70 hover:opacity-100 hover:scale-110 active:scale-95"
+                          title="Dismiss notification"
                         >
-                          <Check className="w-4 h-4" />
+                          <X className="w-4 h-4" />
                         </button>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-2">
+                      {notification.message}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-500">
+                        {formatTimeAgo(new Date(notification.timestamp))}
+                      </p>
+                      {notification.source === "monitoring" && (
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                          Monitoring
+                        </span>
                       )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          dismissNotification(notification.id);
-                        }}
-                        className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all duration-200 opacity-70 hover:opacity-100 hover:scale-110 active:scale-95"
-                        title="Dismiss notification"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-2">
-                    {notification.message}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-500">
-                      {formatTimeAgo(new Date(notification.timestamp))}
-                    </p>
-                    {notification.source === "monitoring" && (
-                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                        Monitoring
-                      </span>
-                    )}
-                  </div>
                 </div>
-              </div>
               ))}
             </div>
           )}
         </ChartCard>
-
       </div>
     </AdminLayout>
   );
