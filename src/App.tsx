@@ -17,6 +17,7 @@ import AdminLeads from "./pages/AdminLeads";
 import AdminExpenses from "./pages/AdminExpenses";
 import AdminCalendar from "./pages/AdminCalendar";
 import AdminMonitoring from "./pages/AdminMonitoring";
+import AdminSolarDesigner from "./pages/AdminSolarDesigner";
 import AdminReports from "./pages/AdminReports";
 import AdminNotifications from "./pages/AdminNotifications";
 import AdminSettings from "./pages/AdminSettings";
@@ -179,6 +180,13 @@ function App() {
         case "admin-monitoring":
           return (
             <AdminMonitoring
+              onNavigate={handleNavigate}
+              currentPage={currentPage}
+            />
+          );
+        case "admin-solar-designer":
+          return (
+            <AdminSolarDesigner
               onNavigate={handleNavigate}
               currentPage={currentPage}
             />
