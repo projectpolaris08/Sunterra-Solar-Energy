@@ -39,6 +39,16 @@ export default function AdminNotifications({
     new Set(JSON.parse(localStorage.getItem("dismissed_notifications") || "[]"))
   );
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
+  const [emailCheckModal, setEmailCheckModal] = useState<{
+    isOpen: boolean;
+    message: string;
+    leadsCount: number;
+    error?: string;
+  }>({
+    isOpen: false,
+    message: "",
+    leadsCount: 0,
+  });
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const todayCount = notifications.filter((n) => {
@@ -325,27 +335,34 @@ export default function AdminNotifications({
 
                   const result = await response.json();
                   if (result.success) {
-                    alert(
-                      `Email check completed! ${
-                        result.leads?.length || 0
-                      } new lead(s) found.`
-                    );
+                    const leadsCount = result.leads?.length || 0;
+                    setEmailCheckModal({
+                      isOpen: true,
+                      message: `Email check completed! ${leadsCount} new lead(s) found.`,
+                      leadsCount: leadsCount,
+                    });
                     // Refresh notifications after checking emails
                     setTimeout(() => {
                       window.location.reload();
-                    }, 1000);
+                    }, 2000);
                   } else {
-                    alert(result.message || "No new emails found.");
+                    setEmailCheckModal({
+                      isOpen: true,
+                      message: result.message || "No new emails found.",
+                      leadsCount: 0,
+                    });
                   }
                 } catch (error) {
                   console.error("Failed to check emails:", error);
-                  alert(
-                    `Failed to check emails: ${
+                  setEmailCheckModal({
+                    isOpen: true,
+                    message: "",
+                    leadsCount: 0,
+                    error:
                       error instanceof Error
                         ? error.message
-                        : "Please try again."
-                    }`
-                  );
+                        : "Please try again.",
+                  });
                 }
               }}
               className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-medium hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 flex items-center gap-2"
@@ -540,6 +557,55 @@ export default function AdminNotifications({
           )}
         </ChartCard>
       </div>
+
+      {/* Email Check Result Modal */}
+      {emailCheckModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/20 shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-center justify-center mb-4">
+                {emailCheckModal.error ? (
+                  <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+                  </div>
+                ) : emailCheckModal.leadsCount > 0 ? (
+                  <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <Info className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  </div>
+                )}
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">
+                {emailCheckModal.error
+                  ? "Email Check Failed"
+                  : "Email Check Completed"}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
+                {emailCheckModal.error ||
+                  emailCheckModal.message ||
+                  "No new emails found."}
+              </p>
+              <div className="flex justify-end">
+                <button
+                  onClick={() =>
+                    setEmailCheckModal({
+                      isOpen: false,
+                      message: "",
+                      leadsCount: 0,
+                    })
+                  }
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }
