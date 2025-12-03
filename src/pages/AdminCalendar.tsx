@@ -47,12 +47,10 @@ export default function AdminCalendar({
   });
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Fetch appointments directly from Supabase on mount
   useEffect(() => {
     const fetchAppointments = async () => {
-      setLoading(true);
       try {
         if (!supabase) {
           throw new Error("Supabase not configured");
@@ -88,8 +86,6 @@ export default function AdminCalendar({
         } catch (e) {
           console.error("Failed to load from localStorage:", e);
         }
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -133,7 +129,9 @@ export default function AdminCalendar({
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1; // getMonth() is 0-indexed
       // Format as YYYY-MM-DD without timezone conversion
-      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(
+        day
+      ).padStart(2, "0")}`;
       setFormData({ ...formData, date: dateStr });
       setIsModalOpen(true);
     }
@@ -175,8 +173,12 @@ export default function AdminCalendar({
       setAppointments([...appointments, newAppointment]);
     } catch (error) {
       console.error("Failed to add appointment:", error);
-      alert(`Failed to save to database: ${error instanceof Error ? error.message : "Unknown error"}. Saving locally as backup.`);
-      
+      alert(
+        `Failed to save to database: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }. Saving locally as backup.`
+      );
+
       // Fallback: add to local state
       const newAppointment: Appointment = {
         id:
@@ -191,7 +193,10 @@ export default function AdminCalendar({
         type: formData.type,
       };
       setAppointments([...appointments, newAppointment]);
-      localStorage.setItem("sunterra_appointments", JSON.stringify([...appointments, newAppointment]));
+      localStorage.setItem(
+        "sunterra_appointments",
+        JSON.stringify([...appointments, newAppointment])
+      );
     }
 
     setFormData({
@@ -222,10 +227,17 @@ export default function AdminCalendar({
         setAppointments(appointments.filter((a) => a.id !== id));
       } catch (error) {
         console.error("Failed to delete appointment:", error);
-        alert(`Failed to delete from database: ${error instanceof Error ? error.message : "Unknown error"}. Removing from local view.`);
+        alert(
+          `Failed to delete from database: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }. Removing from local view.`
+        );
         // Fallback: delete from local state
         setAppointments(appointments.filter((a) => a.id !== id));
-        localStorage.setItem("sunterra_appointments", JSON.stringify(appointments.filter((a) => a.id !== id)));
+        localStorage.setItem(
+          "sunterra_appointments",
+          JSON.stringify(appointments.filter((a) => a.id !== id))
+        );
       }
     }
   };
@@ -419,7 +431,10 @@ export default function AdminCalendar({
               // Format date as YYYY-MM-DD without timezone conversion
               const year = currentDate.getFullYear();
               const month = currentDate.getMonth() + 1; // getMonth() is 0-indexed
-              const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+              const dateStr = `${year}-${String(month).padStart(
+                2,
+                "0"
+              )}-${String(day).padStart(2, "0")}`;
               const dayAppointments = appointments.filter(
                 (apt) => apt.date === dateStr
               );
@@ -452,7 +467,9 @@ export default function AdminCalendar({
                           className={`text-xs px-1.5 py-1 rounded-md ${getTypeColor(
                             apt.type
                           )} flex flex-col gap-0.5 relative group`}
-                          title={`${apt.clientName} - ${apt.type} - ${apt.location}${apt.notes ? ` - ${apt.notes}` : ""}`}
+                          title={`${apt.clientName} - ${apt.type} - ${
+                            apt.location
+                          }${apt.notes ? ` - ${apt.notes}` : ""}`}
                         >
                           <button
                             onClick={(e) => {

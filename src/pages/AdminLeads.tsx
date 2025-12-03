@@ -554,15 +554,22 @@ export default function AdminLeads({
                         </td>
                         <td className="py-4 px-4">
                           <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                              <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                              {lead.email}
-                            </div>
+                            {lead.email && (
+                              <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                                <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                {lead.email}
+                              </div>
+                            )}
                             {lead.phone && (
                               <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                 <Phone className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                                 {lead.phone}
                               </div>
+                            )}
+                            {!lead.email && !lead.phone && (
+                              <span className="text-sm text-gray-400 dark:text-gray-500">
+                                No contact info
+                              </span>
                             )}
                           </div>
                         </td>
@@ -678,11 +685,10 @@ export default function AdminLeads({
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Email Address *
+                    Email Address
                   </label>
                   <input
                     type="email"
-                    required
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })

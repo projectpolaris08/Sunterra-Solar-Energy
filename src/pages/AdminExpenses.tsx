@@ -13,6 +13,8 @@ interface Expense {
   id: number;
   description: string;
   amount: number;
+  quantity?: number;
+  unit_price?: number;
   category: string;
   date: string;
   vendor?: string;
@@ -22,10 +24,13 @@ interface Expense {
 
 const categoryColors: Record<string, string> = {
   equipment: "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
-  materials: "bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
+  materials:
+    "bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
   labor: "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400",
-  transportation: "bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400",
-  utilities: "bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
+  transportation:
+    "bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400",
+  utilities:
+    "bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
   marketing: "bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400",
   office: "bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400",
   other: "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400",
@@ -38,9 +43,14 @@ export default function AdminExpenses({
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [amountInput, setAmountInput] = useState<string>("");
+  const [quantityInput, setQuantityInput] = useState<string>("");
+  const [unitPriceInput, setUnitPriceInput] = useState<string>("");
   const [formData, setFormData] = useState({
     description: "",
     amount: 0,
+    quantity: 0,
+    unit_price: 0,
     category: "other",
     date: new Date().toISOString().split("T")[0],
     vendor: "",
@@ -70,6 +80,8 @@ export default function AdminExpenses({
           id: expense.id,
           description: expense.description,
           amount: expense.amount || 0,
+          quantity: expense.quantity || undefined,
+          unit_price: expense.unit_price || undefined,
           category: expense.category || "other",
           date: expense.date || expense.created_at,
           vendor: expense.vendor || "",
@@ -100,7 +112,9 @@ export default function AdminExpenses({
       (expense.description?.toLowerCase() || "").includes(
         searchTerm.toLowerCase()
       ) ||
-      (expense.vendor?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (expense.vendor?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
       (expense.notes?.toLowerCase() || "").includes(searchTerm.toLowerCase());
 
     const matchesCategory =
@@ -129,6 +143,14 @@ export default function AdminExpenses({
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
+    const quantityValue = parseFloat(quantityInput) || 0;
+    const unitPriceValue = parseFloat(unitPriceInput) || 0;
+    // Calculate amount from quantity * unit_price if both are provided, otherwise use amountInput
+    const calculatedAmount =
+      quantityValue > 0 && unitPriceValue > 0
+        ? quantityValue * unitPriceValue
+        : parseFloat(amountInput) || 0;
+
     try {
       if (!supabase) {
         throw new Error("Supabase not configured");
@@ -136,7 +158,9 @@ export default function AdminExpenses({
 
       const expenseData = {
         description: formData.description,
-        amount: formData.amount,
+        amount: calculatedAmount,
+        quantity: quantityValue > 0 ? quantityValue : null,
+        unit_price: unitPriceValue > 0 ? unitPriceValue : null,
         category: formData.category,
         date: formData.date,
         vendor: formData.vendor,
@@ -156,6 +180,8 @@ export default function AdminExpenses({
         id: data.id,
         description: data.description,
         amount: data.amount || 0,
+        quantity: data.quantity || undefined,
+        unit_price: data.unit_price || undefined,
         category: data.category || "other",
         date: data.date || data.created_at,
         vendor: data.vendor || "",
@@ -167,14 +193,19 @@ export default function AdminExpenses({
     } catch (error) {
       console.error("Failed to add expense:", error);
       alert(
-        `Failed to save to database: ${error instanceof Error ? error.message : "Unknown error"}. Saving locally as backup.`
+        `Failed to save to database: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }. Saving locally as backup.`
       );
 
       // Fallback: add to local state
       const newExpense: Expense = {
-        id: expenses.length > 0 ? Math.max(...expenses.map((e) => e.id)) + 1 : 1,
+        id:
+          expenses.length > 0 ? Math.max(...expenses.map((e) => e.id)) + 1 : 1,
         description: formData.description,
-        amount: formData.amount,
+        amount: calculatedAmount,
+        quantity: quantityValue > 0 ? quantityValue : undefined,
+        unit_price: unitPriceValue > 0 ? unitPriceValue : undefined,
         category: formData.category,
         date: formData.date,
         vendor: formData.vendor,
@@ -191,11 +222,16 @@ export default function AdminExpenses({
     setFormData({
       description: "",
       amount: 0,
+      quantity: 0,
+      unit_price: 0,
       category: "other",
       date: new Date().toISOString().split("T")[0],
       vendor: "",
       notes: "",
     });
+    setAmountInput("");
+    setQuantityInput("");
+    setUnitPriceInput("");
     setIsModalOpen(false);
     setEditingExpense(null);
   };
@@ -215,7 +251,9 @@ export default function AdminExpenses({
       } catch (error) {
         console.error("Failed to delete expense:", error);
         alert(
-          `Failed to delete from database: ${error instanceof Error ? error.message : "Unknown error"}. Removing from local view.`
+          `Failed to delete from database: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }. Removing from local view.`
         );
         // Fallback: delete from local state
         setExpenses(expenses.filter((e) => e.id !== id));
@@ -232,17 +270,30 @@ export default function AdminExpenses({
     setFormData({
       description: expense.description,
       amount: expense.amount,
+      quantity: expense.quantity || 0,
+      unit_price: expense.unit_price || 0,
       category: expense.category,
       date: expense.date,
       vendor: expense.vendor || "",
       notes: expense.notes || "",
     });
+    setAmountInput(expense.amount.toFixed(2));
+    setQuantityInput(expense.quantity ? expense.quantity.toString() : "");
+    setUnitPriceInput(expense.unit_price ? expense.unit_price.toFixed(2) : "");
     setIsModalOpen(true);
   };
 
   const handleUpdateExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingExpense) return;
+
+    const quantityValue = parseFloat(quantityInput) || 0;
+    const unitPriceValue = parseFloat(unitPriceInput) || 0;
+    // Calculate amount from quantity * unit_price if both are provided, otherwise use amountInput
+    const calculatedAmount =
+      quantityValue > 0 && unitPriceValue > 0
+        ? quantityValue * unitPriceValue
+        : parseFloat(amountInput) || 0;
 
     try {
       if (!supabase) {
@@ -253,7 +304,9 @@ export default function AdminExpenses({
         .from("expenses")
         .update({
           description: formData.description,
-          amount: formData.amount,
+          amount: calculatedAmount,
+          quantity: quantityValue > 0 ? quantityValue : null,
+          unit_price: unitPriceValue > 0 ? unitPriceValue : null,
           category: formData.category,
           date: formData.date,
           vendor: formData.vendor,
@@ -270,7 +323,9 @@ export default function AdminExpenses({
             ? {
                 ...expense,
                 description: formData.description,
-                amount: formData.amount,
+                amount: calculatedAmount,
+                quantity: quantityValue > 0 ? quantityValue : undefined,
+                unit_price: unitPriceValue > 0 ? unitPriceValue : undefined,
                 category: formData.category,
                 date: formData.date,
                 vendor: formData.vendor,
@@ -282,7 +337,9 @@ export default function AdminExpenses({
     } catch (error) {
       console.error("Failed to update expense:", error);
       alert(
-        `Failed to update: ${error instanceof Error ? error.message : "Unknown error"}. Updating locally.`
+        `Failed to update: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }. Updating locally.`
       );
       // Fallback: update local state
       setExpenses(
@@ -291,7 +348,9 @@ export default function AdminExpenses({
             ? {
                 ...expense,
                 description: formData.description,
-                amount: formData.amount,
+                amount: calculatedAmount,
+                quantity: quantityValue > 0 ? quantityValue : undefined,
+                unit_price: unitPriceValue > 0 ? unitPriceValue : undefined,
                 category: formData.category,
                 date: formData.date,
                 vendor: formData.vendor,
@@ -308,7 +367,9 @@ export default function AdminExpenses({
               ? {
                   ...expense,
                   description: formData.description,
-                  amount: formData.amount,
+                  amount: calculatedAmount,
+                  quantity: quantityValue > 0 ? quantityValue : undefined,
+                  unit_price: unitPriceValue > 0 ? unitPriceValue : undefined,
                   category: formData.category,
                   date: formData.date,
                   vendor: formData.vendor,
@@ -323,11 +384,16 @@ export default function AdminExpenses({
     setFormData({
       description: "",
       amount: 0,
+      quantity: 0,
+      unit_price: 0,
       category: "other",
       date: new Date().toISOString().split("T")[0],
       vendor: "",
       notes: "",
     });
+    setAmountInput("");
+    setQuantityInput("");
+    setUnitPriceInput("");
     setIsModalOpen(false);
     setEditingExpense(null);
   };
@@ -350,11 +416,16 @@ export default function AdminExpenses({
               setFormData({
                 description: "",
                 amount: 0,
+                quantity: 0,
+                unit_price: 0,
                 category: "other",
                 date: new Date().toISOString().split("T")[0],
                 vendor: "",
                 notes: "",
               });
+              setAmountInput("");
+              setQuantityInput("");
+              setUnitPriceInput("");
               setIsModalOpen(true);
             }}
             className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-500 text-white font-semibold shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 transition-all duration-300 flex items-center gap-2"
@@ -373,7 +444,11 @@ export default function AdminExpenses({
                   Total Expenses
                 </p>
                 <p className="text-3xl font-bold text-red-600 dark:text-red-400">
-                  ₱{stats.total.toLocaleString()}
+                  ₱
+                  {stats.total.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
               <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/30">
@@ -388,7 +463,11 @@ export default function AdminExpenses({
                   This Month
                 </p>
                 <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-                  ₱{stats.thisMonth.toLocaleString()}
+                  ₱
+                  {stats.thisMonth.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
               <div className="p-3 rounded-xl bg-orange-50 dark:bg-orange-900/30">
@@ -452,6 +531,12 @@ export default function AdminExpenses({
                     Description
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Quantity
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Unit Price
+                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
                     Amount
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -472,7 +557,7 @@ export default function AdminExpenses({
                 {filteredExpenses.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={8}
                       className="py-8 text-center text-gray-500 dark:text-gray-400"
                     >
                       No expenses found
@@ -497,8 +582,29 @@ export default function AdminExpenses({
                         </div>
                       </td>
                       <td className="py-4 px-4">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                          {expense.quantity
+                            ? expense.quantity.toLocaleString()
+                            : "—"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                          {expense.unit_price
+                            ? `₱${expense.unit_price.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}`
+                            : "—"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
                         <span className="text-lg font-bold text-red-600 dark:text-red-400">
-                          ₱{expense.amount.toLocaleString()}
+                          ₱
+                          {expense.amount.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </span>
                       </td>
                       <td className="py-4 px-4">
@@ -562,11 +668,16 @@ export default function AdminExpenses({
                   setFormData({
                     description: "",
                     amount: 0,
+                    quantity: 0,
+                    unit_price: 0,
                     category: "other",
                     date: new Date().toISOString().split("T")[0],
                     vendor: "",
                     notes: "",
                   });
+                  setAmountInput("");
+                  setQuantityInput("");
+                  setUnitPriceInput("");
                 }}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
               >
@@ -597,20 +708,94 @@ export default function AdminExpenses({
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Quantity
+                  </label>
+                  <input
+                    type="text"
+                    value={quantityInput}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow empty string, numbers, and decimal point
+                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                        setQuantityInput(value);
+                        // Auto-calculate amount if both quantity and unit_price are provided
+                        const qty = parseFloat(value) || 0;
+                        const unitPrice = parseFloat(unitPriceInput) || 0;
+                        if (qty > 0 && unitPrice > 0) {
+                          setAmountInput((qty * unitPrice).toFixed(2));
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const numValue = parseFloat(e.target.value);
+                      if (!isNaN(numValue) && numValue > 0) {
+                        setQuantityInput(numValue.toString());
+                      } else if (e.target.value === "") {
+                        setQuantityInput("");
+                      }
+                    }}
+                    className="w-full px-4 py-3 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 text-gray-900 dark:text-gray-100"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Unit Price (₱)
+                  </label>
+                  <input
+                    type="text"
+                    value={unitPriceInput}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow empty string, numbers, and decimal point
+                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                        setUnitPriceInput(value);
+                        // Auto-calculate amount if both quantity and unit_price are provided
+                        const qty = parseFloat(quantityInput) || 0;
+                        const unitPrice = parseFloat(value) || 0;
+                        if (qty > 0 && unitPrice > 0) {
+                          setAmountInput((qty * unitPrice).toFixed(2));
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const numValue = parseFloat(e.target.value);
+                      if (!isNaN(numValue)) {
+                        setUnitPriceInput(numValue.toFixed(2));
+                      } else if (e.target.value === "") {
+                        setUnitPriceInput("");
+                      }
+                    }}
+                    className="w-full px-4 py-3 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 text-gray-900 dark:text-gray-100"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Amount (₱) *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     required
-                    min="0"
-                    step="0.01"
-                    value={formData.amount}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        amount: parseFloat(e.target.value) || 0,
-                      })
-                    }
+                    value={amountInput}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow empty string, numbers, and decimal point
+                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                        setAmountInput(value);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // Format to 2 decimal places on blur
+                      const numValue = parseFloat(e.target.value);
+                      if (!isNaN(numValue)) {
+                        setAmountInput(numValue.toFixed(2));
+                      } else if (e.target.value === "") {
+                        setAmountInput("");
+                      }
+                    }}
                     className="w-full px-4 py-3 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 text-gray-900 dark:text-gray-100"
                     placeholder="0.00"
                   />
@@ -693,11 +878,16 @@ export default function AdminExpenses({
                     setFormData({
                       description: "",
                       amount: 0,
+                      quantity: 0,
+                      unit_price: 0,
                       category: "other",
                       date: new Date().toISOString().split("T")[0],
                       vendor: "",
                       notes: "",
                     });
+                    setAmountInput("");
+                    setQuantityInput("");
+                    setUnitPriceInput("");
                   }}
                   className="px-6 py-3 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 text-gray-700 dark:text-gray-300 font-semibold hover:bg-white/80 dark:hover:bg-gray-700/80 transition-all duration-300"
                 >
@@ -718,4 +908,3 @@ export default function AdminExpenses({
     </AdminLayout>
   );
 }
-

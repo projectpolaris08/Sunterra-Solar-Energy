@@ -32,7 +32,14 @@ interface Activity {
   action: string;
   user: string;
   time: string;
-  type: "lead" | "appointment" | "expense" | "client" | "payment" | "project" | "notification";
+  type:
+    | "lead"
+    | "appointment"
+    | "expense"
+    | "client"
+    | "payment"
+    | "project"
+    | "notification";
   timestamp: Date;
 }
 
@@ -137,7 +144,9 @@ export default function Admin({
           expensesData.forEach((exp: any) => {
             activities.push({
               id: `expense-${exp.id}`,
-              action: `Expense added: ${exp.description || exp.category} - ₱${exp.amount?.toLocaleString() || 0}`,
+              action: `Expense added: ${exp.description || exp.category} - ₱${
+                exp.amount?.toLocaleString() || 0
+              }`,
               user: "Admin",
               time: formatTimeAgo(new Date(exp.created_at)),
               type: "expense",
@@ -157,7 +166,11 @@ export default function Admin({
           clientsData.forEach((client: any) => {
             activities.push({
               id: `client-${client.id}`,
-              action: `New client added: ${client.client_name}${client.project_amount ? ` - ₱${client.project_amount.toLocaleString()}` : ""}`,
+              action: `New client added: ${client.client_name}${
+                client.project_amount
+                  ? ` - ₱${client.project_amount.toLocaleString()}`
+                  : ""
+              }`,
               user: client.client_name,
               time: formatTimeAgo(new Date(client.join_date)),
               type: "client",
@@ -187,7 +200,9 @@ export default function Admin({
         }
 
         // Sort by timestamp (most recent first) and take top 10
-        activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+        activities.sort(
+          (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+        );
         setRecentActivities(activities.slice(0, 10));
       } catch (error) {
         console.error("Failed to fetch activities:", error);
@@ -280,11 +295,13 @@ export default function Admin({
 
       // Cleanup subscriptions on unmount
       return () => {
-        supabase.removeChannel(leadsChannel);
-        supabase.removeChannel(appointmentsChannel);
-        supabase.removeChannel(expensesChannel);
-        supabase.removeChannel(clientsChannel);
-        supabase.removeChannel(notificationsChannel);
+        if (supabase) {
+          supabase.removeChannel(leadsChannel);
+          supabase.removeChannel(appointmentsChannel);
+          supabase.removeChannel(expensesChannel);
+          supabase.removeChannel(clientsChannel);
+          supabase.removeChannel(notificationsChannel);
+        }
       };
     }
   }, []);
@@ -613,7 +630,9 @@ export default function Admin({
                     {activity.user.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-white">{activity.action}</p>
+                    <p className="font-semibold text-white">
+                      {activity.action}
+                    </p>
                     <p className="text-sm text-white/80">
                       {activity.user} • {activity.time}
                     </p>
