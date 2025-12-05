@@ -11,7 +11,7 @@ Disallow: /login
 Allow: /
 
 # Sitemap location
-Sitemap: https://sunterrasolar.ph/sitemap.xml
+Sitemap: https://sunterrasolarenergy.com/sitemap.xml
 
 # Crawl-delay (optional - helps prevent server overload)
 # Crawl-delay: 1
