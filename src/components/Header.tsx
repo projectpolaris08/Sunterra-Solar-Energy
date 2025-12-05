@@ -27,6 +27,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
     { name: "Services", path: "services" },
     { name: "Projects", path: "projects" },
     { name: "Blog", path: "blog" },
+    { name: "Calculator", path: "calculator" },
     { name: "FAQ", path: "faq" },
     { name: "Contact", path: "contact" },
   ];

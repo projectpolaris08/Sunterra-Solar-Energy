@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import { trackPageView } from "./utils/analytics";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Services from "./pages/Services";
@@ -10,6 +11,7 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
+import Calculator from "./pages/Calculator";
 import Admin from "./pages/Admin";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminUsers from "./pages/AdminUsers";
@@ -32,6 +34,7 @@ const pathToPage: Record<string, string> = {
   "/services": "services",
   "/projects": "projects",
   "/blog": "blog",
+  "/calculator": "calculator",
   "/faq": "faq",
   "/contact": "contact",
   "/login": "login",
@@ -45,6 +48,7 @@ const pageToPath: Record<string, string> = {
   services: "/services",
   projects: "/projects",
   blog: "/blog",
+  calculator: "/calculator",
   faq: "/faq",
   contact: "/contact",
   login: "/login",
@@ -85,11 +89,19 @@ function App() {
   // Sync URL with page state on initial load and browser back/forward
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentPage(getPageFromPath());
+      const page = getPageFromPath();
+      setCurrentPage(page);
+      // Track page view on browser back/forward
+      trackPageView(window.location.pathname);
     };
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // Track initial page view
+  useEffect(() => {
+    trackPageView(window.location.pathname);
   }, []);
 
   const handleNavigate = (page: string) => {
@@ -113,6 +125,9 @@ function App() {
 
     // Update browser URL without page reload
     window.history.pushState({ page }, "", newPath);
+
+    // Track page view in Google Analytics
+    trackPageView(newPath);
   };
 
   const renderPage = () => {
@@ -230,6 +245,8 @@ function App() {
         return <Projects onNavigate={handleNavigate} />;
       case "blog":
         return <Blog onNavigate={handleNavigate} />;
+      case "calculator":
+        return <Calculator onNavigate={handleNavigate} />;
       case "faq":
         return <FAQ onNavigate={handleNavigate} />;
       case "contact":
