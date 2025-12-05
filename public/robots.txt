@@ -1,0 +1,18 @@
+# robots.txt for Sunterra Solar Energy Philippines
+# This file tells search engines which pages they can crawl
+
+User-agent: *
+
+# Disallow admin and login pages (private areas)
+Disallow: /admin
+Disallow: /login
+
+# Allow all other pages
+Allow: /
+
+# Sitemap location
+Sitemap: https://sunterrasolar.ph/sitemap.xml
+
+# Crawl-delay (optional - helps prevent server overload)
+# Crawl-delay: 1
+
