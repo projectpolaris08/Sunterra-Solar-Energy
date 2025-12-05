@@ -1,49 +1,28 @@
 // Google Analytics utility
-// Replace 'G-XXXXXXXXXX' with your actual Google Analytics Measurement ID
+// The Google tag is initialized in index.html
+// This file provides utilities for tracking page views and events in the SPA
 
-const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX';
+const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-B0PFBQQRR2';
 
-// Initialize Google Analytics
-export const initGA = () => {
-  if (GA_MEASUREMENT_ID === 'G-XXXXXXXXXX' || !GA_MEASUREMENT_ID) {
-    console.warn('Google Analytics Measurement ID not configured');
-    return;
-  }
-
-  // Load gtag script
-  const script1 = document.createElement('script');
-  script1.async = true;
-  script1.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-  document.head.appendChild(script1);
-
-  // Initialize dataLayer and gtag
-  window.dataLayer = window.dataLayer || [];
-  function gtag(...args: any[]) {
-    window.dataLayer.push(args);
-  }
-  (window as any).gtag = gtag;
-  gtag('js', new Date());
-  gtag('config', GA_MEASUREMENT_ID);
-};
-
-// Track page views
+// Track page views (needed for SPA route changes)
+// The HTML tag only tracks the initial page load, so we track route changes manually
 export const trackPageView = (path: string) => {
-  if (typeof (window as any).gtag !== 'undefined') {
-    (window as any).gtag('config', GA_MEASUREMENT_ID, {
+  if (typeof window.gtag !== 'undefined') {
+    window.gtag('config', GA_MEASUREMENT_ID, {
       page_path: path,
     });
   }
 };
 
-// Track custom events
+// Track custom events (button clicks, form submissions, etc.)
 export const trackEvent = (
   action: string,
   category: string,
   label?: string,
   value?: number
 ) => {
-  if (typeof (window as any).gtag !== 'undefined') {
-    (window as any).gtag('event', action, {
+  if (typeof window.gtag !== 'undefined') {
+    window.gtag('event', action, {
       event_category: category,
       event_label: label,
       value: value,
