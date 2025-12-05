@@ -10,6 +10,8 @@ interface MapViewProps {
   onRoofPolygonsChange: (polygons: RoofPolygon[]) => void;
   isDrawing: boolean;
   onDrawingChange: (drawing: boolean) => void;
+  onMapReady?: (map: mapboxgl.Map) => void;
+  address?: string; // Address label to display on marker
 }
 
 // Mapbox token - set VITE_MAPBOX_TOKEN in your .env file
@@ -23,11 +25,14 @@ export default function MapView({
   onRoofPolygonsChange,
   isDrawing,
   onDrawingChange,
+  onMapReady,
+  address,
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const currentPolygon = useRef<RoofPolygon | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
+  const popup = useRef<mapboxgl.Popup | null>(null);
   const [pointCount, setPointCount] = useState<number>(0);
 
   useEffect(() => {
@@ -52,6 +57,11 @@ export default function MapView({
 
       // Wait for map to load
       map.current.on("load", () => {
+        // Notify parent that map is ready
+        if (onMapReady && map.current) {
+          onMapReady(map.current);
+        }
+
         // Add navigation controls
         if (!map.current?.hasControl(new mapboxgl.NavigationControl())) {
           map.current?.addControl(
@@ -60,14 +70,33 @@ export default function MapView({
           );
         }
 
-        // Add marker for center point
-        const marker = new mapboxgl.Marker({ draggable: true })
+        // Add marker for center point with popup
+        const marker = new mapboxgl.Marker({
+          draggable: true,
+          color: "#3b82f6", // Blue color for better visibility
+        })
           .setLngLat(coordinates)
           .addTo(map.current!);
+
+        // Create popup for the marker
+        if (address) {
+          popup.current = new mapboxgl.Popup({ offset: 25 })
+            .setHTML(
+              `<div class="p-2"><strong class="text-sm font-semibold">${address}</strong></div>`
+            )
+            .setLngLat(coordinates)
+            .addTo(map.current!);
+
+          marker.setPopup(popup.current);
+        }
 
         marker.on("dragend", () => {
           const lngLat = marker.getLngLat();
           onCoordinatesChange([lngLat.lng, lngLat.lat]);
+          // Update popup position if it exists
+          if (popup.current) {
+            popup.current.setLngLat([lngLat.lng, lngLat.lat]);
+          }
         });
 
         markers.current.push(marker);
@@ -82,6 +111,15 @@ export default function MapView({
     }
 
     return () => {
+      // Clean up popup
+      if (popup.current) {
+        popup.current.remove();
+        popup.current = null;
+      }
+      // Clean up markers
+      markers.current.forEach((marker) => marker.remove());
+      markers.current = [];
+      // Clean up map
       if (map.current) {
         map.current.remove();
         map.current = null;
@@ -99,6 +137,10 @@ export default function MapView({
       if (markers.current[0]) {
         markers.current[0].setLngLat(coordinates);
       }
+      // Update popup position
+      if (popup.current) {
+        popup.current.setLngLat(coordinates);
+      }
     } else if (map.current && coordinates) {
       // If map not loaded yet, wait for it
       map.current.once("load", () => {
@@ -110,10 +152,42 @@ export default function MapView({
           if (markers.current[0]) {
             markers.current[0].setLngLat(coordinates);
           }
+          // Update popup position
+          if (popup.current) {
+            popup.current.setLngLat(coordinates);
+          }
         }
       });
     }
   }, [coordinates]);
+
+  // Update popup content when address changes
+  useEffect(() => {
+    if (map.current && map.current.loaded() && markers.current[0]) {
+      if (address) {
+        // Remove existing popup if any
+        if (popup.current) {
+          popup.current.remove();
+        }
+        // Create new popup with address
+        popup.current = new mapboxgl.Popup({ offset: 25 })
+          .setHTML(
+            `<div class="p-2"><strong class="text-sm font-semibold">${address}</strong></div>`
+          )
+          .setLngLat(coordinates)
+          .addTo(map.current!);
+
+        markers.current[0].setPopup(popup.current);
+      } else {
+        // Remove popup if no address
+        if (popup.current) {
+          popup.current.remove();
+          popup.current = null;
+        }
+        markers.current[0].setPopup(null);
+      }
+    }
+  }, [address, coordinates]);
 
   // Update polygons on map
   const updatePolygonsOnMap = () => {
@@ -259,7 +333,15 @@ export default function MapView({
     if (!map.current) return;
 
     const handleMapClick = (e: mapboxgl.MapMouseEvent) => {
+      // Only handle clicks when actively drawing
+      // This allows PanelPlacer to handle clicks when not drawing
       if (isDrawing && map.current) {
+        // Stop propagation to prevent PanelPlacer from handling this click
+        e.preventDefault?.();
+        if (e.originalEvent) {
+          e.originalEvent.stopPropagation();
+        }
+
         const point: [number, number] = [e.lngLat.lng, e.lngLat.lat];
 
         if (!currentPolygon.current) {
@@ -300,6 +382,7 @@ export default function MapView({
       }
     };
 
+    // Use capture phase to handle drawing clicks first, but only when isDrawing is true
     map.current.on("click", handleMapClick);
     window.addEventListener("keydown", handleKeyPress);
 

@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
+    "@mapbox/search-js-react": "^1.5.0",
     "@supabase/supabase-js": "^2.57.4",
     "@types/mapbox-gl": "^3.4.1",
     "cors": "^2.8.5",

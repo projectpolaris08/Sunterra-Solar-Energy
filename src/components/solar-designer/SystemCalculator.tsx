@@ -1,17 +1,23 @@
 import { useState, useEffect } from "react";
-import { RoofPolygon, SystemCalculation } from "../../types/solar-design";
+import {
+  RoofPolygon,
+  SystemCalculation,
+  SolarPanel,
+} from "../../types/solar-design";
 import { Calculator, Zap, TrendingUp } from "lucide-react";
 
 interface SystemCalculatorProps {
   roofPolygons: RoofPolygon[];
   coordinates: [number, number];
   onCalculationChange: (calculation: SystemCalculation | null) => void;
+  panels?: SolarPanel[];
 }
 
 export default function SystemCalculator({
   roofPolygons,
   coordinates,
   onCalculationChange,
+  panels = [],
 }: SystemCalculatorProps) {
   const [monthlyBill, setMonthlyBill] = useState<number>(5000);
   const [calculation, setCalculation] = useState<SystemCalculation | null>(
@@ -25,15 +31,65 @@ export default function SystemCalculator({
   );
 
   useEffect(() => {
-    if (totalRoofArea > 0) {
+    if (totalRoofArea > 0 || panels.length > 0) {
       calculateSystem();
     } else {
       setCalculation(null);
       onCalculationChange(null);
     }
-  }, [totalRoofArea, monthlyBill, coordinates]);
+  }, [totalRoofArea, monthlyBill, coordinates, panels]);
 
   const calculateSystem = () => {
+    // If panels are placed, use actual panel count
+    if (panels.length > 0) {
+      const actualPanelCount = panels.length;
+      const actualSystemSizeKw = actualPanelCount * 0.62; // 620W per panel
+
+      // Estimate production based on Philippines average
+      const peakSunHours = 4.3;
+      const systemEfficiency = 0.78;
+
+      const estimatedDailyProduction =
+        actualSystemSizeKw * peakSunHours * systemEfficiency;
+      const estimatedMonthlyProduction = estimatedDailyProduction * 30;
+      const estimatedYearlyProduction = estimatedDailyProduction * 365;
+
+      // Calculate savings
+      const estimatedMonthlyConsumption = Math.max(monthlyBill / 10, 200);
+      const electricityRate = monthlyBill / estimatedMonthlyConsumption;
+      const selfConsumptionRate = Math.min(
+        estimatedMonthlyProduction / estimatedMonthlyConsumption,
+        0.9
+      );
+      const gridExportRate = 0.8;
+      const selfConsumed = estimatedMonthlyProduction * selfConsumptionRate;
+      const exported = estimatedMonthlyProduction * (1 - selfConsumptionRate);
+      const monthlySavings =
+        selfConsumed * electricityRate +
+        exported * electricityRate * gridExportRate;
+      const systemCost = actualSystemSizeKw * 60000;
+      const paybackMonths =
+        monthlySavings > 0 ? Math.round(systemCost / monthlySavings) : 0;
+
+      const calc: SystemCalculation = {
+        roofArea: totalRoofArea,
+        systemSizeKw: Math.round(actualSystemSizeKw * 10) / 10,
+        panelCount: actualPanelCount,
+        estimatedDailyProduction:
+          Math.round(estimatedDailyProduction * 10) / 10,
+        estimatedMonthlyProduction: Math.round(estimatedMonthlyProduction),
+        estimatedYearlyProduction: Math.round(estimatedYearlyProduction),
+      };
+
+      (calc as any).monthlySavings = Math.round(monthlySavings);
+      (calc as any).paybackMonths = paybackMonths;
+      (calc as any).electricityRate = Math.round(electricityRate * 100) / 100;
+
+      setCalculation(calc);
+      onCalculationChange(calc);
+      return;
+    }
+
     if (totalRoofArea === 0) return;
 
     // Modern panel specifications (2024-2025 standards)
