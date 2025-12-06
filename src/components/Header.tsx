@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import Button from "./Button";
 
@@ -97,18 +97,26 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
           </div>
 
           <div className="flex items-center space-x-4">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors cursor-pointer relative z-50"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? (
-                <Sun className="w-6 h-6 text-gray-700 dark:text-yellow-400" />
-              ) : (
-                <Moon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-              )}
-            </button>
+            <div className="theme-toggle-wrapper">
+              <label className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={theme === "dark"}
+                  onChange={toggleTheme}
+                  aria-label="Toggle theme"
+                />
+                <span className="slider">
+                  <div className="clouds">
+                    <svg viewBox="0 0 100 100" className="cloud cloud1">
+                      <path d="M30,45 Q35,25 50,25 Q65,25 70,45 Q80,45 85,50 Q90,55 85,60 Q80,65 75,60 Q65,60 60,65 Q55,70 50,65 Q45,70 40,65 Q35,60 25,60 Q20,65 15,60 Q10,55 15,50 Q20,45 30,45"></path>
+                    </svg>
+                    <svg viewBox="0 0 100 100" className="cloud cloud2">
+                      <path d="M30,45 Q35,25 50,25 Q65,25 70,45 Q80,45 85,50 Q90,55 85,60 Q80,65 75,60 Q65,60 60,65 Q55,70 50,65 Q45,70 40,65 Q35,60 25,60 Q20,65 15,60 Q10,55 15,50 Q20,45 30,45"></path>
+                    </svg>
+                  </div>
+                </span>
+              </label>
+            </div>
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
