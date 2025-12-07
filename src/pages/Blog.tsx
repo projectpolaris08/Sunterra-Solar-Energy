@@ -1,5 +1,13 @@
-import { useState } from "react";
-import { Calendar, Clock, User, ArrowRight, Search, Tag } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Calendar,
+  Clock,
+  User,
+  ArrowRight,
+  Search,
+  Tag,
+  Sun,
+} from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import SEO from "../components/SEO";
@@ -12,6 +20,54 @@ interface BlogProps {
 export default function Blog({ onNavigate }: BlogProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(
+    new Set()
+  );
+  const [scrollY, setScrollY] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -100px 0px",
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setVisibleSections((prev) => new Set(prev).add(entry.target.id));
+        }
+      });
+    }, observerOptions);
+
+    const sections = document.querySelectorAll("[data-scroll-section]");
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+    };
+  }, []);
+
+  // Parallax scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Mouse position tracking for 3D effects
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   const categories = [
     "All",
@@ -84,12 +140,51 @@ export default function Blog({ onNavigate }: BlogProps) {
         }}
       />
 
-      <section className="pt-32 pb-20 bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              Solar Energy Blog
-            </h1>
+      <section
+        id="blog-hero-section"
+        data-scroll-section
+        className="pt-32 pb-20 bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-visible"
+      >
+        {/* Animated background particles */}
+        <div className="absolute inset-0 opacity-20">
+          <div
+            className="absolute top-20 left-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse parallax-slow"
+            style={{
+              transform: `translate(${mousePosition.x * 20}px, ${
+                mousePosition.y * 20 + scrollY * 0.3
+              }px)`,
+            }}
+          ></div>
+          <div
+            className="absolute top-40 right-10 w-72 h-72 bg-amber-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-700 parallax-medium"
+            style={{
+              transform: `translate(${mousePosition.x * -15}px, ${
+                mousePosition.y * -15 + scrollY * 0.2
+              }px)`,
+            }}
+          ></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10 overflow-visible">
+          <div
+            className={`max-w-4xl mx-auto text-center mb-16 transition-all duration-1000 overflow-visible ${
+              visibleSections.has("blog-hero-section")
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+          >
+            <div className="overflow-visible pb-2">
+              <h1
+                className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 gradient-text leading-[1.5] overflow-visible"
+                style={{
+                  paddingBottom: "1rem",
+                  lineHeight: "1.5",
+                  display: "inline-block",
+                }}
+              >
+                Solar Energy Blog
+              </h1>
+            </div>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed">
               Expert insights, guides, and tips about solar energy in the
               Philippines
@@ -129,13 +224,21 @@ export default function Blog({ onNavigate }: BlogProps) {
 
           {/* Blog Posts Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {filteredPosts.map((post) => (
+            {filteredPosts.map((post, index) => (
               <article
                 key={post.id}
                 itemScope
                 itemType="https://schema.org/BlogPosting"
+                className={`transition-all duration-700 ease-out ${
+                  visibleSections.has("blog-hero-section")
+                    ? "opacity-100 translate-y-0 scale-100"
+                    : "opacity-0 translate-y-12 scale-95"
+                }`}
+                style={{
+                  transitionDelay: `${index * 100}ms`,
+                }}
               >
-                <Card className="h-full flex flex-col overflow-hidden">
+                <Card className="h-full flex flex-col overflow-hidden card-3d immersive-hover depth-3">
                   {post.image ? (
                     <div className="h-48 -mx-6 -mt-6 mb-6 overflow-hidden">
                       <img
@@ -229,27 +332,43 @@ export default function Blog({ onNavigate }: BlogProps) {
         </div>
       </section>
 
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section
+        id="cta-section"
+        data-scroll-section
+        className="py-20 bg-gradient-to-br from-amber-50 to-blue-50 dark:from-gray-800 dark:to-gray-900"
+      >
         <div className="container mx-auto px-4">
-          <Card className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <Card
+            className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${
+              visibleSections.has("cta-section")
+                ? "opacity-100 translate-y-0 scale-100"
+                : "opacity-0 translate-y-12 scale-95"
+            }`}
+          >
+            <Sun className="w-16 h-16 text-amber-500 dark:text-amber-400 mx-auto mb-6 animate-spin-slow" />
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 gradient-text">
               Stay Updated with Solar News
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               Subscribe to our newsletter for the latest solar energy tips,
               guides, and industry updates
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" onClick={() => onNavigate("contact")}>
-                Subscribe to Newsletter
-                <ArrowRight className="ml-2 w-5 h-5" />
+              <Button
+                size="lg"
+                onClick={() => onNavigate("contact")}
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700 hover:scale-105 hover:shadow-xl transition-all duration-300 group flex items-center justify-center"
+              >
+                Schedule Free Assessment
+                <ArrowRight className="ml-2 w-5 h-5 text-white group-hover:translate-x-1 transition-transform duration-300" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => onNavigate("services")}
+                onClick={() => onNavigate("faq")}
+                className="w-full sm:w-auto bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 hover:scale-105 hover:shadow-xl transition-all duration-300"
               >
-                View Services
+                View FAQ
               </Button>
             </div>
           </Card>

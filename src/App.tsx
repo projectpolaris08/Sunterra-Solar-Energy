@@ -85,6 +85,8 @@ function App() {
   };
 
   const [currentPage, setCurrentPage] = useState(getPageFromPath);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [prevPage, setPrevPage] = useState<string | null>(null);
 
   // Sync URL with page state on initial load and browser back/forward
   useEffect(() => {
@@ -105,7 +107,17 @@ function App() {
   }, []);
 
   const handleNavigate = (page: string) => {
-    setCurrentPage(page);
+    if (page === currentPage) return;
+    
+    setIsTransitioning(true);
+    setPrevPage(currentPage);
+    
+    // Smooth transition effect
+    setTimeout(() => {
+      setCurrentPage(page);
+      setIsTransitioning(false);
+      setPrevPage(null);
+    }, 300);
 
     // Update URL based on page
     let newPath = "/";
@@ -262,9 +274,25 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 transition-colors duration-300 relative overflow-hidden">
+      {/* Animated background particles */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-amber-50/50 dark:from-blue-900/20 dark:via-transparent dark:to-amber-900/20"></div>
+        <div className="particles-container"></div>
+      </div>
+
       <Header currentPage={currentPage} onNavigate={handleNavigate} />
-      <main className="flex-grow pt-20">{renderPage()}</main>
+      <main className="flex-grow pt-20 relative z-10">
+        <div
+          className={`transition-all duration-500 ease-in-out ${
+            isTransitioning
+              ? "opacity-0 translate-y-4 scale-95"
+              : "opacity-100 translate-y-0 scale-100"
+          }`}
+        >
+          {renderPage()}
+        </div>
+      </main>
       <Footer onNavigate={handleNavigate} />
     </div>
   );

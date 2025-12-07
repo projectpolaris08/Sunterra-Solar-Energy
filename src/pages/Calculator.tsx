@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Calculator as CalculatorIcon,
   Zap,
@@ -16,6 +16,54 @@ export default function Calculator({ onNavigate }: CalculatorProps) {
   const [roofArea, setRoofArea] = useState<string>("100");
   const [systemSize, setSystemSize] = useState<number>(0);
   const [calculation, setCalculation] = useState<any>(null);
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(
+    new Set()
+  );
+  const [scrollY, setScrollY] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -100px 0px",
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setVisibleSections((prev) => new Set(prev).add(entry.target.id));
+        }
+      });
+    }, observerOptions);
+
+    const sections = document.querySelectorAll("[data-scroll-section]");
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+    };
+  }, []);
+
+  // Parallax scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Mouse position tracking for 3D effects
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   const calculateSystem = () => {
     // Convert string inputs to numbers
@@ -132,17 +180,46 @@ export default function Calculator({ onNavigate }: CalculatorProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-20">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-20 relative overflow-hidden">
+      {/* Animated background particles */}
+      <div className="absolute inset-0 opacity-20">
+        <div
+          className="absolute top-20 left-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse parallax-slow"
+          style={{
+            transform: `translate(${mousePosition.x * 20}px, ${mousePosition.y * 20 + scrollY * 0.3}px)`,
+          }}
+        ></div>
+        <div
+          className="absolute top-40 right-10 w-72 h-72 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-700 parallax-medium"
+          style={{
+            transform: `translate(${mousePosition.x * -15}px, ${mousePosition.y * -15 + scrollY * 0.2}px)`,
+          }}
+        ></div>
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-12">
+          <div
+            id="calculator-header"
+            data-scroll-section
+            className={`text-center mb-12 transition-all duration-1000 ${
+              visibleSections.has("calculator-header")
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+          >
             <div className="flex justify-center mb-4">
-              <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                <CalculatorIcon className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+              <div
+                className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full group-hover:scale-110 transition-transform duration-300"
+                style={{
+                  transform: `perspective(1000px) rotateY(${mousePosition.x * 5}deg) rotateX(${mousePosition.y * -5}deg)`,
+                }}
+              >
+                <CalculatorIcon className="w-12 h-12 text-blue-600 dark:text-blue-400 animate-[icon-float_3s_ease-in-out_infinite]" />
               </div>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 gradient-text">
               Solar System Calculator
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
@@ -153,7 +230,16 @@ export default function Calculator({ onNavigate }: CalculatorProps) {
           </div>
 
           {/* Calculator Form */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8">
+          <div
+            id="calculator-form"
+            data-scroll-section
+            className={`bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8 glass depth-3 transition-all duration-1000 ${
+              visibleSections.has("calculator-form")
+                ? "opacity-100 translate-y-0 scale-100"
+                : "opacity-0 translate-y-12 scale-95"
+            }`}
+            style={{ transitionDelay: "200ms" }}
+          >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -213,7 +299,7 @@ export default function Calculator({ onNavigate }: CalculatorProps) {
 
             <button
               onClick={handleCalculate}
-              className="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full md:w-auto px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 magnetic immersive-hover"
             >
               <CalculatorIcon className="w-5 h-5" />
               Calculate System
@@ -222,9 +308,20 @@ export default function Calculator({ onNavigate }: CalculatorProps) {
 
           {/* Results */}
           {calculation && (
-            <div className="space-y-6">
+            <div
+              id="calculator-results"
+              data-scroll-section
+              className="space-y-6"
+            >
               {/* System Overview */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+              <div
+                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 glass depth-3 transition-all duration-1000 ${
+                  visibleSections.has("calculator-results")
+                    ? "opacity-100 translate-y-0 scale-100"
+                    : "opacity-0 translate-y-12 scale-95"
+                }`}
+                style={{ transitionDelay: "100ms" }}
+              >
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                   <Zap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   System Overview
@@ -314,7 +411,14 @@ export default function Calculator({ onNavigate }: CalculatorProps) {
               </div>
 
               {/* Call to Action */}
-              <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl shadow-xl p-8 text-white text-center">
+              <div
+                className={`bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl shadow-xl p-8 text-white text-center glass-dark depth-4 transition-all duration-1000 shimmer ${
+                  visibleSections.has("calculator-results")
+                    ? "opacity-100 translate-y-0 scale-100"
+                    : "opacity-0 translate-y-12 scale-95"
+                }`}
+                style={{ transitionDelay: "300ms" }}
+              >
                 <h3 className="text-2xl font-bold mb-4">Ready to Go Solar?</h3>
                 <p className="text-blue-100 mb-6">
                   Get a personalized quote and professional installation from
@@ -322,7 +426,7 @@ export default function Calculator({ onNavigate }: CalculatorProps) {
                 </p>
                 <button
                   onClick={() => onNavigate("contact")}
-                  className="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors"
+                  className="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-all magnetic immersive-hover"
                 >
                   Get a Free Quote
                 </button>
@@ -332,7 +436,16 @@ export default function Calculator({ onNavigate }: CalculatorProps) {
 
           {/* Info Section */}
           {!calculation && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800">
+            <div
+              id="calculator-info"
+              data-scroll-section
+              className={`bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800 glass depth-3 transition-all duration-1000 ${
+                visibleSections.has("calculator-info")
+                  ? "opacity-100 translate-y-0 scale-100"
+                  : "opacity-0 translate-y-12 scale-95"
+              }`}
+              style={{ transitionDelay: "400ms" }}
+            >
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 How It Works
               </h3>
@@ -375,6 +488,17 @@ export default function Calculator({ onNavigate }: CalculatorProps) {
           )}
         </div>
       </div>
+
+      <style>{`
+        @keyframes icon-float {
+          0%, 100% {
+            transform: translateY(0px) scale(1);
+          }
+          50% {
+            transform: translateY(-10px) scale(1.05);
+          }
+        }
+      `}</style>
     </div>
   );
 }

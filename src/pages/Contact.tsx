@@ -1,5 +1,13 @@
-import { useState } from "react";
-import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  Send,
+  Sun,
+  ArrowRight,
+} from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import SEO from "../components/SEO";
@@ -21,6 +29,54 @@ export default function Contact({ onNavigate }: ContactProps) {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(
+    new Set()
+  );
+  const [scrollY, setScrollY] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -100px 0px",
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setVisibleSections((prev) => new Set(prev).add(entry.target.id));
+        }
+      });
+    }, observerOptions);
+
+    const sections = document.querySelectorAll("[data-scroll-section]");
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+    };
+  }, []);
+
+  // Parallax scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Mouse position tracking for 3D effects
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,10 +199,40 @@ export default function Contact({ onNavigate }: ContactProps) {
         keywords="contact solar installer Philippines, free solar assessment, solar consultation Manila, Sunterra Solar contact"
       />
 
-      <section className="pt-32 pb-20 bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+      <section
+        id="contact-hero-section"
+        data-scroll-section
+        className="pt-32 pb-20 bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden"
+      >
+        {/* Animated background particles */}
+        <div className="absolute inset-0 opacity-20">
+          <div
+            className="absolute top-20 left-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse parallax-slow"
+            style={{
+              transform: `translate(${mousePosition.x * 20}px, ${
+                mousePosition.y * 20 + scrollY * 0.3
+              }px)`,
+            }}
+          ></div>
+          <div
+            className="absolute top-40 right-10 w-72 h-72 bg-amber-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-700 parallax-medium"
+            style={{
+              transform: `translate(${mousePosition.x * -15}px, ${
+                mousePosition.y * -15 + scrollY * 0.2
+              }px)`,
+            }}
+          ></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div
+            className={`max-w-4xl mx-auto text-center mb-16 transition-all duration-1000 ${
+              visibleSections.has("contact-hero-section")
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+          >
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 gradient-text">
               Let's Start Your Solar Journey
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed">
@@ -157,29 +243,57 @@ export default function Contact({ onNavigate }: ContactProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {contactInfo.map((info, index) => (
-              <Card key={index}>
-                <div
-                  className={`bg-gradient-to-br ${info.color} p-3 rounded-xl inline-block mb-4`}
-                >
-                  <info.icon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  {info.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  {info.detail}
-                </p>
-              </Card>
+              <div
+                key={index}
+                className={`transition-all duration-700 ease-out ${
+                  visibleSections.has("contact-hero-section")
+                    ? "opacity-100 translate-y-0 scale-100"
+                    : "opacity-0 translate-y-12 scale-95"
+                }`}
+                style={{
+                  transitionDelay: `${index * 100}ms`,
+                }}
+              >
+                <Card className="card-3d immersive-hover depth-3 h-full text-center">
+                  <div
+                    className={`bg-gradient-to-br ${info.color} p-3 rounded-xl inline-block mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}
+                    style={{
+                      transform: `perspective(1000px) rotateY(${
+                        mousePosition.x * 5
+                      }deg) rotateX(${mousePosition.y * -5}deg)`,
+                    }}
+                  >
+                    <info.icon className="w-6 h-6 text-white animate-[icon-float_3s_ease-in-out_infinite]" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                    {info.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    {info.detail}
+                  </p>
+                </Card>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section
+        id="contact-form-section"
+        data-scroll-section
+        className="py-20 bg-white dark:bg-gray-900"
+      >
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
+            <div
+              className={`transition-all duration-1000 ${
+                visibleSections.has("contact-form-section")
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-12"
+              }`}
+              style={{ transitionDelay: "200ms" }}
+            >
+              <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6 gradient-text">
                 Request a Free Site Assessment
               </h2>
               <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
@@ -360,191 +474,222 @@ export default function Contact({ onNavigate }: ContactProps) {
               </div>
             </div>
 
-            <Card>
-              {submitted ? (
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Send className="w-10 h-10 text-green-600 dark:text-green-400" />
+            <div
+              className={`transition-all duration-1000 ${
+                visibleSections.has("contact-form-section")
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 translate-x-12"
+              }`}
+              style={{ transitionDelay: "400ms" }}
+            >
+              <Card className="card-3d immersive-hover depth-3">
+                {submitted ? (
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6 animate-[icon-pulse_2s_ease-in-out_infinite]">
+                      <Send className="w-10 h-10 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                      Thank You!
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Your message has been received. We'll contact you within
+                      24 hours.
+                    </p>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                    Thank You!
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    Your message has been received. We'll contact you within 24
-                    hours.
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                    >
-                      Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      required
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
-                      placeholder="Juan dela Cruz"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                       <label
-                        htmlFor="email"
+                        htmlFor="name"
                         className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                       >
-                        Email *
+                        Full Name *
                       </label>
                       <input
-                        type="email"
-                        id="email"
-                        name="email"
+                        type="text"
+                        id="name"
+                        name="name"
                         required
-                        value={formData.email}
+                        value={formData.name}
                         onChange={handleChange}
                         className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
-                        placeholder="juan@email.com"
+                        placeholder="Juan dela Cruz"
                       />
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="email"
+                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        >
+                          Email *
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          required
+                          value={formData.email}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                          placeholder="juan@email.com"
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="phone"
+                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        >
+                          Phone Number *
+                        </label>
+                        <input
+                          type="tel"
+                          id="phone"
+                          name="phone"
+                          required
+                          value={formData.phone}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                          placeholder="+63 917 123 4567"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="propertyType"
+                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        >
+                          Property Type *
+                        </label>
+                        <select
+                          id="propertyType"
+                          name="propertyType"
+                          required
+                          value={formData.propertyType}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                        >
+                          <option value="">Select type</option>
+                          <option value="residential">Residential</option>
+                          <option value="commercial">Commercial</option>
+                          <option value="industrial">Industrial</option>
+                          <option value="agricultural">Agricultural</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="systemType"
+                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        >
+                          System Interest *
+                        </label>
+                        <select
+                          id="systemType"
+                          name="systemType"
+                          required
+                          value={formData.systemType}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                        >
+                          <option value="">Select system</option>
+                          <option value="grid-tie">Grid-Tie Solar</option>
+                          <option value="hybrid">Hybrid Solar</option>
+                          <option value="off-grid">Off-Grid Solar</option>
+                          <option value="not-sure">Not Sure</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div>
                       <label
-                        htmlFor="phone"
+                        htmlFor="message"
                         className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                       >
-                        Phone Number *
+                        Message
                       </label>
-                      <input
-                        type="tel"
-                        id="phone"
-                        name="phone"
-                        required
-                        value={formData.phone}
+                      <textarea
+                        id="message"
+                        name="message"
+                        rows={4}
+                        value={formData.message}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
-                        placeholder="+63 917 123 4567"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all resize-none"
+                        placeholder="Tell us about your energy needs, monthly consumption, or any specific questions..."
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        htmlFor="propertyType"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                      >
-                        Property Type *
-                      </label>
-                      <select
-                        id="propertyType"
-                        name="propertyType"
-                        required
-                        value={formData.propertyType}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
-                      >
-                        <option value="">Select type</option>
-                        <option value="residential">Residential</option>
-                        <option value="commercial">Commercial</option>
-                        <option value="industrial">Industrial</option>
-                        <option value="agricultural">Agricultural</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="systemType"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                      >
-                        System Interest *
-                      </label>
-                      <select
-                        id="systemType"
-                        name="systemType"
-                        required
-                        value={formData.systemType}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
-                      >
-                        <option value="">Select system</option>
-                        <option value="grid-tie">Grid-Tie Solar</option>
-                        <option value="hybrid">Hybrid Solar</option>
-                        <option value="off-grid">Off-Grid Solar</option>
-                        <option value="not-sure">Not Sure</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="message"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                    >
-                      Message
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows={4}
-                      value={formData.message}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all resize-none"
-                      placeholder="Tell us about your energy needs, monthly consumption, or any specific questions..."
-                    />
-                  </div>
-
-                  {error && (
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                      <p className="text-sm text-red-600 dark:text-red-400">
-                        {error}
-                      </p>
-                    </div>
-                  )}
-
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="w-full"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <span className="inline-block animate-spin mr-2">
-                          ⏳
-                        </span>
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        Submit Request
-                        <Send className="ml-2 w-5 h-5" />
-                      </>
+                    {error && (
+                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                        <p className="text-sm text-red-600 dark:text-red-400">
+                          {error}
+                        </p>
+                      </div>
                     )}
-                  </Button>
 
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    By submitting this form, you agree to be contacted by
-                    Sunterra Solar Energy
-                  </p>
-                </form>
-              )}
-            </Card>
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="w-full"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <span className="inline-block animate-spin mr-2">
+                            ⏳
+                          </span>
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          Submit Request
+                          <Send className="ml-2 w-5 h-5" />
+                        </>
+                      )}
+                    </Button>
+
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                      By submitting this form, you agree to be contacted by
+                      Sunterra Solar Energy
+                    </p>
+                  </form>
+                )}
+              </Card>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+      <section
+        id="map-section"
+        data-scroll-section
+        className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 relative overflow-hidden"
+      >
+        {/* Animated background */}
+        <div className="absolute inset-0 opacity-10">
+          <div
+            className="absolute top-20 left-10 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl animate-pulse parallax-slow"
+            style={{
+              transform: `translate(${mousePosition.x * 25}px, ${
+                mousePosition.y * 25 + scrollY * 0.2
+              }px)`,
+            }}
+          ></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div
+            className={`text-center mb-12 transition-all duration-1000 ${
+              visibleSections.has("map-section")
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+          >
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4 gradient-text">
               Visit Our Office
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300">
@@ -554,49 +699,69 @@ export default function Contact({ onNavigate }: ContactProps) {
           </div>
 
           <div className="max-w-5xl mx-auto">
-            <Card className="overflow-hidden">
-              <div className="h-96 relative">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3850.5!2d121.0!3d14.8!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTTCsDQ4JzAwLjAiTiAxMjHCsDAwJzAwLjAiRQ!5e0!3m2!1sen!2sph!4v1234567890123!5m2!1sen!2sph"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="absolute inset-0"
-                  title="Sunterra Solar Energy Office Location"
-                ></iframe>
-                <div className="absolute bottom-4 left-4 right-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                    Sunterra Solar Energy
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    San Jose del Monte, Bulacan, Philippines
-                  </p>
-                  <a
-                    href="https://maps.app.goo.gl/xDhxzYJPqjCxVVV7A"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                  >
-                    <MapPin className="w-4 h-4 mr-1" />
-                    Open in Google Maps
-                  </a>
+            <div
+              className={`transition-all duration-1000 ${
+                visibleSections.has("map-section")
+                  ? "opacity-100 translate-y-0 scale-100"
+                  : "opacity-0 translate-y-12 scale-95"
+              }`}
+              style={{ transitionDelay: "200ms" }}
+            >
+              <Card className="overflow-hidden card-3d immersive-hover depth-4">
+                <div className="h-96 relative">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3850.5!2d121.0!3d14.8!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTTCsDQ4JzAwLjAiTiAxMjHCsDAwJzAwLjAiRQ!5e0!3m2!1sen!2sph!4v1234567890123!5m2!1sen!2sph"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="absolute inset-0"
+                    title="Sunterra Solar Energy Office Location"
+                  ></iframe>
+                  <div className="absolute bottom-4 left-4 right-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg p-4 shadow-lg">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                      Sunterra Solar Energy
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      San Jose del Monte, Bulacan, Philippines
+                    </p>
+                    <a
+                      href="https://maps.app.goo.gl/xDhxzYJPqjCxVVV7A"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                    >
+                      <MapPin className="w-4 h-4 mr-1" />
+                      Open in Google Maps
+                    </a>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section
+        id="cta-section"
+        data-scroll-section
+        className="py-20 bg-gradient-to-br from-amber-50 to-blue-50 dark:from-gray-800 dark:to-gray-900"
+      >
         <div className="container mx-auto px-4">
-          <Card className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <Card
+            className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${
+              visibleSections.has("cta-section")
+                ? "opacity-100 translate-y-0 scale-100"
+                : "opacity-0 translate-y-12 scale-95"
+            }`}
+          >
+            <Sun className="w-16 h-16 text-amber-500 dark:text-amber-400 mx-auto mb-6 animate-spin-slow" />
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 gradient-text">
               Ready to Make the Switch?
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               Join hundreds of satisfied customers saving money and the
               environment
             </p>
@@ -604,21 +769,45 @@ export default function Contact({ onNavigate }: ContactProps) {
               <Button
                 size="lg"
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700 hover:scale-105 hover:shadow-xl transition-all duration-300 group flex items-center justify-center"
               >
-                Request Assessment
+                Schedule Free Assessment
+                <ArrowRight className="ml-2 w-5 h-5 text-white group-hover:translate-x-1 transition-transform duration-300" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => onNavigate("projects")}
-                className="bg-white text-blue-600 hover:bg-gray-50 border-white"
+                onClick={() => onNavigate("faq")}
+                className="w-full sm:w-auto bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 hover:scale-105 hover:shadow-xl transition-all duration-300"
               >
-                View Projects
+                View FAQ
               </Button>
             </div>
           </Card>
         </div>
       </section>
+
+      <style>{`
+        @keyframes icon-float {
+          0%, 100% {
+            transform: translateY(0px) scale(1);
+          }
+          50% {
+            transform: translateY(-10px) scale(1.05);
+          }
+        }
+
+        @keyframes icon-pulse {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.1);
+            opacity: 0.9;
+          }
+        }
+      `}</style>
     </>
   );
 }

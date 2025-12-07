@@ -8,16 +8,108 @@ import {
   Leaf,
   Wrench,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import Button from "../components/Button";
+import AnimatedButton from "../components/AnimatedButton";
 import Card from "../components/Card";
 import SEO from "../components/SEO";
 import HeroImage from "../assets/images/solarpanels.jpg";
+import CanadianSolar from "../assets/images/CanadianSolar.png";
+import Deye from "../assets/images/Deye.png";
+import Dyness from "../assets/images/Dyness.png";
+import Aesolar from "../assets/images/Aesolar.png";
+import Lvtopsun from "../assets/images/Lvtopsun.png";
+import GridTieImage from "../assets/images/Grid-tie.png";
+import HybridImage from "../assets/images/Hybrid.png";
+import OffGridImage from "../assets/images/Off-grid.png";
 
 interface HomeProps {
   onNavigate: (page: string) => void;
 }
 
 export default function Home({ onNavigate }: HomeProps) {
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(
+    new Set()
+  );
+  const [scrollY, setScrollY] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -100px 0px",
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setVisibleSections((prev) => new Set(prev).add(entry.target.id));
+        }
+      });
+    }, observerOptions);
+
+    const sections = document.querySelectorAll("[data-scroll-section]");
+    sections.forEach((section) => observer.observe(section));
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section));
+    };
+  }, []);
+
+  // Parallax scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Mouse position tracking for 3D effects
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  // Initialize particles
+  useEffect(() => {
+    const particlesContainer = document.querySelector(".particles-container");
+    if (!particlesContainer) return;
+
+    // Create additional floating particles
+    for (let i = 0; i < 5; i++) {
+      const particle = document.createElement("div");
+      particle.className = "particle";
+      particle.style.cssText = `
+        position: absolute;
+        width: ${Math.random() * 100 + 50}px;
+        height: ${Math.random() * 100 + 50}px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(59, 130, 246, ${
+          Math.random() * 0.1 + 0.05
+        }) 0%, transparent 70%);
+        top: ${Math.random() * 100}%;
+        left: ${Math.random() * 100}%;
+        animation: float-particle ${
+          Math.random() * 20 + 15
+        }s infinite ease-in-out;
+        animation-delay: ${Math.random() * 5}s;
+      `;
+      particlesContainer.appendChild(particle);
+    }
+
+    return () => {
+      const particles = particlesContainer.querySelectorAll(".particle");
+      particles.forEach((p) => p.remove());
+    };
+  }, []);
+
   const features = [
     {
       icon: Zap,
@@ -57,9 +149,9 @@ export default function Home({ onNavigate }: HomeProps) {
     },
     {
       icon: TrendingUp,
-      title: "Increased Home Value",
+      title: "Protection from Rate Hikes",
       description:
-        "Solar installations can increase your property value by an average of 4% according to recent studies.",
+        "Lock in your energy costs and protect yourself from rising electricity rates. Solar power provides predictable, stable energy pricing for decades.",
       iconColor: "text-blue-600 dark:text-blue-400",
       bgColor: "bg-blue-50 dark:bg-blue-900/20",
       borderColor: "border-blue-400 dark:border-blue-500",
@@ -81,21 +173,27 @@ export default function Home({ onNavigate }: HomeProps) {
       description:
         "Connect to the grid and sell excess energy back. Perfect for urban homes and businesses.",
       icon: Zap,
+      image: GridTieImage,
       color: "from-blue-500 to-blue-600",
+      animation: "animate-icon-float",
     },
     {
       title: "Hybrid Solar",
       description:
         "Best of both worlds with battery backup and grid connection for uninterrupted power.",
       icon: Sun,
-      color: "from-amber-500 to-amber-600",
+      image: HybridImage,
+      color: "from-cyan-500 to-cyan-600",
+      animation: "animate-icon-pulse",
     },
     {
       title: "Off-Grid Solar",
       description:
         "Complete energy independence for remote locations and properties.",
       icon: Shield,
+      image: OffGridImage,
       color: "from-green-500 to-green-600",
+      animation: "animate-battery-charge",
     },
   ];
 
@@ -109,26 +207,55 @@ export default function Home({ onNavigate }: HomeProps) {
       />
 
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Animated background image */}
+        {/* Parallax background image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat animate-[kenBurns_20s_ease-in-out_infinite_alternate]"
           style={{
             backgroundImage: `url(${HeroImage})`,
+            transform: `translateY(${scrollY * 0.5}px) scale(1.1)`,
+            willChange: "transform",
           }}
         />
 
         {/* Overlay for better text readability - neutral dark overlay */}
         <div className="absolute inset-0 bg-black/30"></div>
 
+        {/* Enhanced animated gradient orbs with parallax */}
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-40 right-10 w-72 h-72 bg-amber-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-700"></div>
-          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div
+            className="absolute top-20 left-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse parallax-slow"
+            style={{
+              transform: `translate(${mousePosition.x * 20}px, ${
+                mousePosition.y * 20 + scrollY * 0.3
+              }px)`,
+            }}
+          ></div>
+          <div
+            className="absolute top-40 right-10 w-72 h-72 bg-amber-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-700 parallax-medium"
+            style={{
+              transform: `translate(${mousePosition.x * -15}px, ${
+                mousePosition.y * -15 + scrollY * 0.2
+              }px)`,
+            }}
+          ></div>
+          <div
+            className="absolute -bottom-8 left-1/2 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000 parallax-fast"
+            style={{
+              transform: `translate(${mousePosition.x * 10}px, ${
+                mousePosition.y * 10 + scrollY * 0.4
+              }px)`,
+            }}
+          ></div>
         </div>
 
         <div className="container mx-auto px-4 py-32 relative z-10 overflow-visible">
-          <div className="max-w-4xl mx-auto text-center overflow-visible">
-            <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-md animate-[fadeInDown_0.8s_ease-out]">
+          <div
+            className="max-w-4xl mx-auto text-center overflow-visible"
+            style={{
+              transform: `translateY(${scrollY * 0.2}px)`,
+            }}
+          >
+            <div className="inline-flex items-center space-x-2 glass px-4 py-2 rounded-full mb-6 shadow-md animate-[fadeInDown_0.8s_ease-out] shimmer">
               <Sun className="w-5 h-5 text-amber-500 dark:text-amber-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Powering the Future of the Philippines
@@ -137,7 +264,7 @@ export default function Home({ onNavigate }: HomeProps) {
 
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-relaxed overflow-visible drop-shadow-lg animate-[fadeInUp_1s_ease-out_0.2s_both]">
               Your Road to Energy Independence
-              <span className="block mt-2 bg-gradient-to-r from-blue-300 via-blue-400 to-amber-300 bg-clip-text text-transparent pb-3 animate-[fadeInUp_1s_ease-out_0.4s_both]">
+              <span className="block mt-2 gradient-text pb-3 animate-[fadeInUp_1s_ease-out_0.4s_both]">
                 Begins with Sunterra
               </span>
             </h1>
@@ -148,22 +275,18 @@ export default function Home({ onNavigate }: HomeProps) {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-[fadeInUp_1s_ease-out_0.8s_both]">
-              <Button
-                size="lg"
+              <AnimatedButton
+                text="Get Quote"
                 onClick={() => onNavigate("contact")}
-                className="w-full sm:w-auto hover:scale-105 transition-transform duration-300"
-              >
-                Get Quote
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
+                size="medium"
+                className="w-full sm:w-auto magnetic immersive-hover"
+              />
+              <AnimatedButton
+                text="Get Started"
                 onClick={() => onNavigate("services")}
-                className="w-full sm:w-auto hover:scale-105 transition-transform duration-300"
-              >
-                Explore Services
-              </Button>
+                size="medium"
+                className="w-full sm:w-auto magnetic immersive-hover"
+              />
             </div>
 
             {/* Stats section - hidden for now */}
@@ -219,13 +342,140 @@ export default function Home({ onNavigate }: HomeProps) {
               transform: translateY(0);
             }
           }
+
+          @keyframes float {
+            0%, 100% {
+              transform: translateY(0px);
+            }
+            50% {
+              transform: translateY(-20px);
+            }
+          }
+
+          @keyframes spin-slow {
+            from {
+              transform: rotate(0deg);
+            }
+            to {
+              transform: rotate(360deg);
+            }
+          }
+
+          .animate-spin-slow {
+            animation: spin-slow 20s linear infinite;
+          }
+
+          .animate-float {
+            animation: float 6s ease-in-out infinite;
+          }
+
+          @keyframes icon-float {
+            0%, 100% {
+              transform: translateY(0px) scale(1);
+            }
+            50% {
+              transform: translateY(-10px) scale(1.05);
+            }
+          }
+
+          @keyframes icon-bounce {
+            0%, 100% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-12px);
+            }
+          }
+
+          .animate-icon-float {
+            animation: icon-float 3s ease-in-out infinite;
+          }
+
+          .animate-icon-bounce {
+            animation: icon-bounce 2s ease-in-out infinite;
+          }
+
+          @keyframes icon-pulse {
+            0%, 100% {
+              transform: scale(1);
+              opacity: 1;
+            }
+            50% {
+              transform: scale(1.1);
+              opacity: 0.9;
+            }
+          }
+
+          .animate-icon-pulse {
+            animation: icon-pulse 2s ease-in-out infinite;
+          }
+
+          @keyframes battery-charge {
+            0% {
+              transform: translateY(0) scale(1);
+              filter: brightness(1);
+            }
+            25% {
+              transform: translateY(-5px) scale(1.05);
+              filter: brightness(1.2);
+            }
+            50% {
+              transform: translateY(-10px) scale(1.1);
+              filter: brightness(1.4);
+            }
+            75% {
+              transform: translateY(-5px) scale(1.05);
+              filter: brightness(1.2);
+            }
+            100% {
+              transform: translateY(0) scale(1);
+              filter: brightness(1);
+            }
+          }
+
+          .animate-battery-charge {
+            animation: battery-charge 2s ease-in-out infinite;
+          }
+
+          @keyframes scroll {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-50%);
+            }
+          }
+
+          .animate-scroll {
+            animation: scroll 30s linear infinite;
+            width: fit-content;
+            display: flex;
+          }
+
+          .animate-scroll:hover {
+            animation-play-state: paused;
+          }
+
+          [data-scroll-section] {
+            will-change: transform, opacity;
+          }
         `}</style>
       </section>
 
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section
+        id="features-section"
+        data-scroll-section
+        className="py-20 bg-white dark:bg-gray-900"
+      >
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+          <div
+            className={`text-center mb-16 transition-all duration-1000 ${
+              visibleSections.has("features-section")
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 gradient-text">
               Why Choose Sunterra Solar?
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
@@ -236,30 +486,63 @@ export default function Home({ onNavigate }: HomeProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index}>
-                <div className="flex flex-col">
-                  <div
-                    className={`${feature.bgColor} border ${feature.borderColor} p-3 rounded-lg w-fit mb-4`}
-                  >
-                    <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
+              <div
+                key={index}
+                className={`transition-all duration-700 ease-out h-full ${
+                  visibleSections.has("features-section")
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-12"
+                }`}
+                style={{
+                  transitionDelay: `${index * 100}ms`,
+                }}
+              >
+                <Card className="group card-3d immersive-hover cursor-pointer depth-3 h-full flex flex-col">
+                  <div className="flex flex-col h-full">
+                    <div
+                      className={`${feature.bgColor} border ${feature.borderColor} p-3 rounded-lg w-fit mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}
+                      style={{
+                        transform: `perspective(1000px) rotateY(${
+                          mousePosition.x * 5
+                        }deg) rotateX(${mousePosition.y * -5}deg)`,
+                      }}
+                    >
+                      <feature.icon
+                        className={`w-6 h-6 ${
+                          feature.iconColor
+                        } group-hover:scale-110 transition-transform duration-300 ${
+                          (feature as any).iconAnimation || ""
+                        }`}
+                      />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-left flex-grow">
+                      {feature.description}
+                    </p>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-left">
-                    {feature.description}
-                  </p>
-                </div>
-              </Card>
+                </Card>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
+      <section
+        id="services-section"
+        data-scroll-section
+        className="py-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900"
+      >
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+          <div
+            className={`text-center mb-16 transition-all duration-1000 ${
+              visibleSections.has("services-section")
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 gradient-text">
               Our Solar Solutions
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
@@ -270,41 +553,72 @@ export default function Home({ onNavigate }: HomeProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
             {services.map((service, index) => (
-              <Card
+              <div
                 key={index}
-                className="overflow-hidden h-full flex flex-col"
+                className={`transition-all duration-700 ease-out ${
+                  visibleSections.has("services-section")
+                    ? "opacity-100 translate-y-0 scale-100"
+                    : "opacity-0 translate-y-12 scale-95"
+                }`}
+                style={{
+                  transitionDelay: `${index * 150}ms`,
+                }}
               >
-                <div
-                  className={`bg-gradient-to-br ${service.color} p-6 -mx-6 -mt-6 mb-6`}
-                >
-                  <service.icon className="w-12 h-12 text-white mb-4" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                  {service.title}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-                  {service.description}
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onNavigate("services")}
-                  className="w-full mt-auto"
-                >
-                  Learn More
-                </Button>
-              </Card>
+                <Card className="overflow-hidden h-full flex flex-col group card-3d immersive-hover cursor-pointer relative depth-4">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-blue-500/10 transition-all duration-500 rounded-lg"></div>
+                  <div
+                    className={`bg-gradient-to-br ${service.color} p-6 -mx-6 -mt-6 mb-6 group-hover:scale-110 transition-transform duration-500 flex items-center justify-center relative overflow-hidden shimmer`}
+                    style={{
+                      transform: `perspective(1000px) rotateY(${
+                        mousePosition.x * 3
+                      }deg) rotateX(${mousePosition.y * -3}deg)`,
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-500"></div>
+                    <img
+                      src={service.image}
+                      alt={service.title}
+                      className={`h-32 w-auto object-contain group-hover:scale-110 transition-transform duration-300 relative z-10 ${
+                        service.animation || "animate-icon-float"
+                      }`}
+                    />
+                  </div>
+                  <div className="relative z-10 flex flex-col flex-grow">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-2 transition-all duration-300">
+                      {service.title}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300">
+                      {service.description}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onNavigate("services")}
+                      className="w-full mt-auto group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 group-hover:scale-105 group-hover:shadow-lg transition-all duration-300"
+                    >
+                      Learn More
+                    </Button>
+                  </div>
+                </Card>
+              </div>
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div
+            className={`text-center mt-12 transition-all duration-1000 delay-500 ${
+              visibleSections.has("services-section")
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+          >
             <Button
               variant="primary"
               size="lg"
               onClick={() => onNavigate("services")}
+              className="hover:scale-110 hover:shadow-xl transition-all duration-300"
             >
               View All Services
-              <ArrowRight className="ml-2 w-5 h-5" />
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
             </Button>
           </div>
         </div>
@@ -433,11 +747,95 @@ export default function Home({ onNavigate }: HomeProps) {
         </div>
       </section> */}
 
-      <section className="py-20 bg-gradient-to-br from-amber-50 to-blue-50 dark:from-gray-800 dark:to-gray-900">
+      <section
+        id="partners-section"
+        data-scroll-section
+        className="py-20 bg-white dark:bg-gray-900"
+      >
         <div className="container mx-auto px-4">
-          <Card className="max-w-4xl mx-auto text-center">
-            <Sun className="w-16 h-16 text-amber-500 dark:text-amber-400 mx-auto mb-6" />
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <div
+            className={`text-center mb-16 transition-all duration-1000 ${
+              visibleSections.has("partners-section")
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 gradient-text">
+              Trusted Partners
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              We work with industry-leading manufacturers to bring you the best
+              solar solutions
+            </p>
+          </div>
+
+          <div className="relative overflow-hidden">
+            <div className="flex animate-scroll gap-12 items-center justify-center">
+              {[
+                { name: "Canadian Solar", logo: CanadianSolar },
+                { name: "Deye", logo: Deye },
+                { name: "Dyness", logo: Dyness },
+                { name: "Aesolar", logo: Aesolar },
+                { name: "Lvtopsun", logo: Lvtopsun },
+              ].map((partner, index) => (
+                <div
+                  key={index}
+                  className={`flex-shrink-0 transition-all duration-700 ease-out ${
+                    visibleSections.has("partners-section")
+                      ? "opacity-100 translate-y-0 scale-100"
+                      : "opacity-0 translate-y-12 scale-95"
+                  }`}
+                  style={{
+                    transitionDelay: `${index * 100}ms`,
+                  }}
+                >
+                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-110 border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                    <img
+                      src={partner.logo}
+                      alt={partner.name}
+                      className="h-20 w-32 object-contain"
+                    />
+                  </div>
+                </div>
+              ))}
+              {/* Duplicate for seamless loop */}
+              {[
+                { name: "Canadian Solar", logo: CanadianSolar },
+                { name: "Deye", logo: Deye },
+                { name: "Dyness", logo: Dyness },
+                { name: "Aesolar", logo: Aesolar },
+                { name: "Lvtopsun", logo: Lvtopsun },
+              ].map((partner, index) => (
+                <div key={`duplicate-${index}`} className="flex-shrink-0">
+                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                    <img
+                      src={partner.logo}
+                      alt={partner.name}
+                      className="h-20 w-32 object-contain"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="cta-section"
+        data-scroll-section
+        className="py-20 bg-gradient-to-br from-amber-50 to-blue-50 dark:from-gray-800 dark:to-gray-900"
+      >
+        <div className="container mx-auto px-4">
+          <Card
+            className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${
+              visibleSections.has("cta-section")
+                ? "opacity-100 translate-y-0 scale-100"
+                : "opacity-0 translate-y-12 scale-95"
+            }`}
+          >
+            <Sun className="w-16 h-16 text-amber-500 dark:text-amber-400 mx-auto mb-6 animate-spin-slow" />
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 gradient-text">
               Ready to Go Solar?
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
@@ -449,16 +847,16 @@ export default function Home({ onNavigate }: HomeProps) {
               <Button
                 size="lg"
                 onClick={() => onNavigate("contact")}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto hover:scale-110 hover:shadow-xl transition-all duration-300 group"
               >
                 Schedule Free Assessment
-                <ArrowRight className="ml-2 w-5 h-5" />
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 onClick={() => onNavigate("faq")}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto hover:scale-110 hover:shadow-xl transition-all duration-300"
               >
                 View FAQ
               </Button>

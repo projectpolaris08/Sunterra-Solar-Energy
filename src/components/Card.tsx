@@ -16,7 +16,7 @@ export default function Card({
   return (
     <div
       onClick={onClick}
-      className={`bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-700 border-2 border-blue-100 dark:border-gray-700 rounded-2xl shadow-md dark:shadow-gray-900/50 p-6 ${
+      className={`bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-700 border-2 border-blue-100 dark:border-gray-700 rounded-2xl shadow-md dark:shadow-gray-900/50 p-6 backdrop-blur-sm ${
         hover
           ? "transition-all duration-300 hover:shadow-xl dark:hover:shadow-gray-900 hover:-translate-y-1"
           : ""
