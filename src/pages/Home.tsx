@@ -20,6 +20,7 @@ import Lvtopsun from "../assets/images/LVTOPSUN.png";
 import GridTieImage from "../assets/images/Grid-tie.png";
 import HybridImage from "../assets/images/Hybrid.png";
 import OffGridImage from "../assets/images/Off-grid.png";
+import SolarPanelsImage from "../assets/images/solarpanels.jpg";
 
 interface HomeProps {
   onNavigate: (page: string) => void;
@@ -31,7 +32,6 @@ export default function Home({ onNavigate }: HomeProps) {
   );
   const [scrollY, setScrollY] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     const observerOptions = {
@@ -206,30 +206,23 @@ export default function Home({ onNavigate }: HomeProps) {
       />
 
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Hero video background */}
-        <video
-          autoPlay
-          loop
-          playsInline
-          muted
-          preload="auto"
-          className="absolute inset-0 w-full h-full object-cover"
-          onError={(e) => {
-            console.error("Video failed to load:", e);
-            console.error("Attempted path: /videos/NewHero.mp4");
-            setVideoError(true);
-          }}
-          onLoadedData={() => {
-            console.log("Video loaded successfully");
-            setVideoError(false);
+        {/* Hero image background with parallax and subtle movement */}
+        <div
+          className="absolute inset-0 w-full h-full overflow-hidden"
+          style={{
+            transform: `translateY(${scrollY * 0.5}px)`,
+            willChange: "transform",
           }}
         >
-          <source src="/videos/NewHero.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-        {videoError && (
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"></div>
-        )}
+          <div
+            className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url(${SolarPanelsImage})`,
+              animation: "kenBurns 25s ease-in-out infinite alternate",
+              willChange: "transform",
+            }}
+          />
+        </div>
 
         {/* Overlay for better text readability - neutral dark overlay */}
         <div className="absolute inset-0 bg-black/30"></div>
@@ -263,27 +256,32 @@ export default function Home({ onNavigate }: HomeProps) {
         </div>
 
         <div className="container mx-auto px-4 py-32 relative z-10 overflow-visible">
-          <div className="max-w-4xl mx-auto text-center overflow-visible">
-            <div className="inline-flex items-center space-x-2 glass px-4 py-2 rounded-full mb-6 shadow-md animate-[fadeInDown_0.8s_ease-out] shimmer">
-              <Sun className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+          <div
+            className="max-w-4xl mx-auto text-center overflow-visible transition-transform duration-300 ease-out"
+            style={{
+              transform: `translateY(${scrollY * 0.1}px)`,
+            }}
+          >
+            <div className="inline-flex items-center space-x-2 glass px-4 py-2 rounded-full mb-6 shadow-md animate-[fadeInDown_0.8s_ease-out,float_6s_ease-in-out_infinite] shimmer">
+              <Sun className="w-5 h-5 text-amber-500 dark:text-amber-400 animate-[spin-slow_20s_linear_infinite]" />
               <span className="text-sm font-medium text-white drop-shadow-lg">
                 Powering the Future of the Philippines
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-relaxed overflow-visible drop-shadow-lg animate-[fadeInUp_1s_ease-out_0.2s_both]">
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-relaxed overflow-visible drop-shadow-lg animate-[fadeInUp_1s_ease-out_0.2s_both,slideInLeft_1.2s_ease-out_0.2s_both]">
               Your Road to Energy Independence
-              <span className="block mt-2 gradient-text pb-3 animate-[fadeInUp_1s_ease-out_0.4s_both]">
+              <span className="block mt-2 gradient-text pb-3 animate-[fadeInUp_1s_ease-out_0.4s_both,slideInRight_1.2s_ease-out_0.4s_both]">
                 Begins with Sunterra
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-white/95 mb-10 leading-relaxed max-w-3xl mx-auto drop-shadow-md animate-[fadeInUp_1s_ease-out_0.6s_both]">
+            <p className="text-xl md:text-2xl text-white/95 mb-10 leading-relaxed max-w-3xl mx-auto drop-shadow-md animate-[fadeInUp_1s_ease-out_0.6s_both,slideInUp_1s_ease-out_0.6s_both]">
               Imagine a life where your home runs on your own sunlight. No fear
               of the next billing cycle, just steady, dependable energy.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-[fadeInUp_1s_ease-out_0.8s_both]">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-[fadeInUp_1s_ease-out_0.8s_both,bounceIn_1s_ease-out_0.8s_both]">
               <AnimatedButton
                 text="Get Quote"
                 onClick={() => onNavigate("contact")}
@@ -297,36 +295,102 @@ export default function Home({ onNavigate }: HomeProps) {
                 className="w-full sm:w-auto magnetic immersive-hover"
               />
             </div>
+          </div>
 
-            {/* Stats section - hidden for now */}
-            {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {stats.map((stat, index) => (
-                <div
-                  key={index}
-                  className="bg-white/20 dark:bg-gray-900/20 backdrop-blur-md border border-white/30 dark:border-white/10 rounded-2xl p-6 shadow-xl hover:scale-105 transition-all duration-300 hover:bg-white/30 dark:hover:bg-gray-900/30"
-                  style={{
-                    animation: `fadeInUp 1s ease-out ${1 + index * 0.2}s both`,
-                  }}
-                >
-                  <div className="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2 drop-shadow-lg">
-                    {stat.number}
-                  </div>
-                  <div className="text-sm text-gray-900 dark:text-white font-semibold drop-shadow-lg">
-                    {stat.label}
-                  </div>
+          {/* Hero Features Section */}
+          <div className="max-w-6xl mx-auto mt-24 md:mt-32 animate-[fadeInUp_1s_ease-out_1s_both]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
+              {/* Backup Energy Storage */}
+              <div className="flex flex-col items-center text-center transition-all duration-500 hover:scale-110 hover:-translate-y-2 animate-[fadeInUp_1s_ease-out_1.2s_both,float_6s_ease-in-out_infinite] hover:animate-none">
+                <div className="w-16 h-16 mb-4 flex items-center justify-center animate-[pulse_3s_ease-in-out_infinite] hover:animate-none">
+                  <img
+                    src="/images/battery.png"
+                    alt="Battery"
+                    className="w-full h-full object-contain transition-transform duration-500 hover:rotate-12"
+                  />
                 </div>
-              ))}
-            </div> */}
+                <h3 className="text-white text-lg font-semibold leading-tight transition-all duration-300 hover:text-amber-400">
+                  Backup Energy Storage
+                </h3>
+              </div>
+
+              {/* 24/7 Outage Protection */}
+              <div className="flex flex-col items-center text-center transition-all duration-500 hover:scale-110 hover:-translate-y-2 animate-[fadeInUp_1s_ease-out_1.4s_both,float_6s_ease-in-out_infinite_0.5s] hover:animate-none">
+                <div className="mb-4 animate-[pulse_2s_ease-in-out_infinite] hover:animate-none">
+                  <span className="text-4xl font-bold gradient-text transition-all duration-300 hover:scale-110 inline-block">
+                    24/7
+                  </span>
+                </div>
+                <h3 className="text-white text-lg font-semibold leading-tight transition-all duration-300 hover:text-amber-400">
+                  Outage Protection
+                </h3>
+              </div>
+
+              {/* Energy Independence */}
+              <div className="flex flex-col items-center text-center transition-all duration-500 hover:scale-110 hover:-translate-y-2 animate-[fadeInUp_1s_ease-out_1.6s_both,float_6s_ease-in-out_infinite_1s] hover:animate-none">
+                <div className="w-16 h-16 mb-4 flex items-center justify-center animate-[pulse_3s_ease-in-out_infinite] hover:animate-none">
+                  <img
+                    src="/images/electric.png"
+                    alt="Electric"
+                    className="w-full h-full object-contain transition-transform duration-500 hover:rotate-12"
+                  />
+                </div>
+                <h3 className="text-white text-lg font-semibold leading-tight transition-all duration-300 hover:text-amber-400">
+                  Energy Independence
+                </h3>
+              </div>
+
+              {/* EV Charging */}
+              <div className="flex flex-col items-center text-center transition-all duration-500 hover:scale-110 hover:-translate-y-2 animate-[fadeInUp_1s_ease-out_1.8s_both,float_6s_ease-in-out_infinite_1.5s] hover:animate-none">
+                <div className="w-16 h-16 mb-4 flex items-center justify-center animate-[pulse_3s_ease-in-out_infinite] hover:animate-none">
+                  <img
+                    src="/images/EV.png"
+                    alt="EV Charging"
+                    className="w-full h-full object-contain transition-transform duration-500 hover:rotate-12"
+                  />
+                </div>
+                <h3 className="text-white text-lg font-semibold leading-tight transition-all duration-300 hover:text-amber-400">
+                  EV Charging
+                </h3>
+              </div>
+            </div>
           </div>
         </div>
 
-        <style>{`
+        {/* Stats section - hidden for now */}
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {stats.map((stat, index) => (
+            <div
+              key={index}
+              className="bg-white/20 dark:bg-gray-900/20 backdrop-blur-md border border-white/30 dark:border-white/10 rounded-2xl p-6 shadow-xl hover:scale-105 transition-all duration-300 hover:bg-white/30 dark:hover:bg-gray-900/30"
+              style={{
+                animation: `fadeInUp 1s ease-out ${1 + index * 0.2}s both`,
+              }}
+            >
+              <div className="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2 drop-shadow-lg">
+                {stat.number}
+              </div>
+              <div className="text-sm text-gray-900 dark:text-white font-semibold drop-shadow-lg">
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </div> */}
+      </section>
+
+      <style>{`
           @keyframes kenBurns {
             0% {
-              transform: scale(1) translate(0, 0);
+              transform: scale(1.1) translate(0, 0);
+            }
+            33% {
+              transform: scale(1.12) translate(-1.5%, -1%);
+            }
+            66% {
+              transform: scale(1.14) translate(-2%, -1.5%);
             }
             100% {
-              transform: scale(1.1) translate(-2%, -2%);
+              transform: scale(1.1) translate(-0.5%, -0.5%);
             }
           }
           
@@ -367,6 +431,67 @@ export default function Home({ onNavigate }: HomeProps) {
             }
             to {
               transform: rotate(360deg);
+            }
+          }
+
+          @keyframes slideInLeft {
+            from {
+              opacity: 0;
+              transform: translateX(-50px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          @keyframes slideInRight {
+            from {
+              opacity: 0;
+              transform: translateX(50px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          @keyframes slideInUp {
+            from {
+              opacity: 0;
+              transform: translateY(40px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes bounceIn {
+            0% {
+              opacity: 0;
+              transform: scale(0.3) translateY(50px);
+            }
+            50% {
+              opacity: 1;
+              transform: scale(1.05);
+            }
+            70% {
+              transform: scale(0.9);
+            }
+            100% {
+              transform: scale(1) translateY(0);
+            }
+          }
+
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+            50% {
+              opacity: 0.8;
+              transform: scale(1.05);
             }
           }
 
@@ -469,7 +594,6 @@ export default function Home({ onNavigate }: HomeProps) {
             will-change: transform, opacity;
           }
         `}</style>
-      </section>
 
       <section
         id="features-section"
