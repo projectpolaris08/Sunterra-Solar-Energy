@@ -13,12 +13,10 @@ import Button from "../components/Button";
 import AnimatedButton from "../components/AnimatedButton";
 import Card from "../components/Card";
 import SEO from "../components/SEO";
-import HeroImage from "../assets/images/solarpanels.jpg";
-import CanadianSolar from "../assets/images/CanadianSolar.png";
-import Deye from "../assets/images/Deye.png";
-import Dyness from "../assets/images/Dyness.png";
-import Aesolar from "../assets/images/Aesolar.png";
-import Lvtopsun from "../assets/images/Lvtopsun.png";
+import Deye from "../assets/images/DEYE.png";
+import Dyness from "../assets/images/DYNESS.png";
+import Aesolar from "../assets/images/AESOLAR.png";
+import Lvtopsun from "../assets/images/LVTOPSUN.png";
 import GridTieImage from "../assets/images/Grid-tie.png";
 import HybridImage from "../assets/images/Hybrid.png";
 import OffGridImage from "../assets/images/Off-grid.png";
@@ -207,15 +205,15 @@ export default function Home({ onNavigate }: HomeProps) {
       />
 
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Parallax background image */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat animate-[kenBurns_20s_ease-in-out_infinite_alternate]"
-          style={{
-            backgroundImage: `url(${HeroImage})`,
-            transform: `translateY(${scrollY * 0.5}px) scale(1.1)`,
-            willChange: "transform",
-          }}
-        />
+        {/* Hero video background */}
+        <video
+          autoPlay
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/videos/NewHero.mp4" type="video/mp4" />
+        </video>
 
         {/* Overlay for better text readability - neutral dark overlay */}
         <div className="absolute inset-0 bg-black/30"></div>
@@ -249,15 +247,10 @@ export default function Home({ onNavigate }: HomeProps) {
         </div>
 
         <div className="container mx-auto px-4 py-32 relative z-10 overflow-visible">
-          <div
-            className="max-w-4xl mx-auto text-center overflow-visible"
-            style={{
-              transform: `translateY(${scrollY * 0.2}px)`,
-            }}
-          >
+          <div className="max-w-4xl mx-auto text-center overflow-visible">
             <div className="inline-flex items-center space-x-2 glass px-4 py-2 rounded-full mb-6 shadow-md animate-[fadeInDown_0.8s_ease-out] shimmer">
               <Sun className="w-5 h-5 text-amber-500 dark:text-amber-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-white drop-shadow-lg">
                 Powering the Future of the Philippines
               </span>
             </div>
@@ -772,11 +765,10 @@ export default function Home({ onNavigate }: HomeProps) {
           <div className="relative overflow-hidden">
             <div className="flex animate-scroll gap-12 items-center justify-center">
               {[
-                { name: "Canadian Solar", logo: CanadianSolar },
+                { name: "Lvtopsun", logo: Lvtopsun },
+                { name: "Aesolar", logo: Aesolar },
                 { name: "Deye", logo: Deye },
                 { name: "Dyness", logo: Dyness },
-                { name: "Aesolar", logo: Aesolar },
-                { name: "Lvtopsun", logo: Lvtopsun },
               ].map((partner, index) => (
                 <div
                   key={index}
@@ -789,29 +781,28 @@ export default function Home({ onNavigate }: HomeProps) {
                     transitionDelay: `${index * 100}ms`,
                   }}
                 >
-                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-110 border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                  <div className="bg-transparent p-6 rounded-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center">
                     <img
                       src={partner.logo}
                       alt={partner.name}
-                      className="h-20 w-32 object-contain"
+                      className="h-28 w-44 object-contain"
                     />
                   </div>
                 </div>
               ))}
               {/* Duplicate for seamless loop */}
               {[
-                { name: "Canadian Solar", logo: CanadianSolar },
+                { name: "Lvtopsun", logo: Lvtopsun },
+                { name: "Aesolar", logo: Aesolar },
                 { name: "Deye", logo: Deye },
                 { name: "Dyness", logo: Dyness },
-                { name: "Aesolar", logo: Aesolar },
-                { name: "Lvtopsun", logo: Lvtopsun },
               ].map((partner, index) => (
                 <div key={`duplicate-${index}`} className="flex-shrink-0">
-                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                  <div className="bg-transparent p-6 rounded-xl flex items-center justify-center">
                     <img
                       src={partner.logo}
                       alt={partner.name}
-                      className="h-20 w-32 object-contain"
+                      className="h-28 w-44 object-contain"
                     />
                   </div>
                 </div>
