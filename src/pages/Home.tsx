@@ -31,6 +31,7 @@ export default function Home({ onNavigate }: HomeProps) {
   );
   const [scrollY, setScrollY] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     const observerOptions = {
@@ -210,10 +211,25 @@ export default function Home({ onNavigate }: HomeProps) {
           autoPlay
           loop
           playsInline
+          muted
+          preload="auto"
           className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => {
+            console.error("Video failed to load:", e);
+            console.error("Attempted path: /videos/NewHero.mp4");
+            setVideoError(true);
+          }}
+          onLoadedData={() => {
+            console.log("Video loaded successfully");
+            setVideoError(false);
+          }}
         >
           <source src="/videos/NewHero.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
         </video>
+        {videoError && (
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"></div>
+        )}
 
         {/* Overlay for better text readability - neutral dark overlay */}
         <div className="absolute inset-0 bg-black/30"></div>
