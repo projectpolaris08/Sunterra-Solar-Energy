@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { Calendar, Clock, User, ArrowLeft, Tag, Sun } from "lucide-react";
 import { blogPosts } from "../data/blogPosts";
 import type { BlogPost } from "../data/blogPosts";
@@ -12,9 +12,34 @@ interface BlogPostProps {
 }
 
 export default function BlogPost({ onNavigate, slug }: BlogPostProps) {
+  const contentRef = useRef<HTMLDivElement>(null);
   const post = useMemo(() => {
     return blogPosts.find((p) => p.slug === slug);
   }, [slug]);
+
+  // Handle clicks on links with data-navigate attribute
+  useEffect(() => {
+    const handleLinkClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a[data-navigate]');
+      if (link) {
+        e.preventDefault();
+        const page = link.getAttribute('data-navigate');
+        if (page) {
+          onNavigate(page);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
+    };
+
+    const contentElement = contentRef.current;
+    if (contentElement) {
+      contentElement.addEventListener('click', handleLinkClick);
+      return () => {
+        contentElement.removeEventListener('click', handleLinkClick);
+      };
+    }
+  }, [onNavigate]);
 
   if (!post) {
     return (
@@ -161,6 +186,7 @@ export default function BlogPost({ onNavigate, slug }: BlogPostProps) {
               >
                 {post.fullContent ? (
                   <div
+                    ref={contentRef}
                     dangerouslySetInnerHTML={{ __html: post.fullContent }}
                     className="text-gray-700 dark:text-gray-300 leading-relaxed space-y-6"
                   />
