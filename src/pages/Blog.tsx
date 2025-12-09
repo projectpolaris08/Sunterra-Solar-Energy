@@ -7,6 +7,8 @@ import {
   Search,
   Tag,
   Sun,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -17,9 +19,12 @@ interface BlogProps {
   onNavigate: (page: string) => void;
 }
 
+const POSTS_PER_PAGE = 6; // 3x2 grid
+
 export default function Blog({ onNavigate }: BlogProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
   const [visibleSections, setVisibleSections] = useState<Set<string>>(
     new Set()
   );
@@ -85,6 +90,36 @@ export default function Blog({ onNavigate }: BlogProps) {
       selectedCategory === "All" || post.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
+
+  // Scroll to top when filters change (after reset to page 1)
+  useEffect(() => {
+    if (currentPage === 1 && (searchTerm || selectedCategory !== "All")) {
+      // Small delay to ensure content has updated
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 100);
+    }
+  }, [searchTerm, selectedCategory, currentPage]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+  const endIndex = startIndex + POSTS_PER_PAGE;
+  const currentPosts = filteredPosts.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   // Generate structured data for Blog
   const blogStructuredData = {
@@ -224,7 +259,7 @@ export default function Blog({ onNavigate }: BlogProps) {
 
           {/* Blog Posts Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {filteredPosts.map((post, index) => (
+            {currentPosts.map((post, index) => (
               <article
                 key={post.id}
                 itemScope
@@ -326,6 +361,84 @@ export default function Blog({ onNavigate }: BlogProps) {
             <div className="text-center py-12">
               <p className="text-gray-600 dark:text-gray-300 text-lg">
                 No articles found. Try a different search term or category.
+              </p>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {filteredPosts.length > POSTS_PER_PAGE && (
+            <div className="mt-12 flex flex-col items-center">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`p-2 rounded-lg transition-all ${
+                    currentPage === 1
+                      ? "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-400"
+                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 shadow-md"
+                  }`}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => {
+                      // Show first page, last page, current page, and pages around current
+                      if (
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`min-w-[40px] px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                              currentPage === page
+                                ? "bg-blue-600 text-white shadow-lg"
+                                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 shadow-md"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      } else if (
+                        page === currentPage - 2 ||
+                        page === currentPage + 2
+                      ) {
+                        return (
+                          <span
+                            key={page}
+                            className="text-gray-400 dark:text-gray-600 px-1"
+                          >
+                            ...
+                          </span>
+                        );
+                      }
+                      return null;
+                    }
+                  )}
+                </div>
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`p-2 rounded-lg transition-all ${
+                    currentPage === totalPages
+                      ? "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-400"
+                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 shadow-md"
+                  }`}
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                Showing {startIndex + 1} to {Math.min(endIndex, filteredPosts.length)} of{" "}
+                {filteredPosts.length} articles
               </p>
             </div>
           )}
