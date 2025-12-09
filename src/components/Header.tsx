@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowRight } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
-import AnimatedButton from "./AnimatedButton";
+import Button from "./Button";
 
 interface HeaderProps {
   currentPage: string;
@@ -91,11 +91,13 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
-            <AnimatedButton
-              text="Get Quote"
+            <Button
               onClick={() => handleNavClick("contact")}
-              size="small"
-            />
+              className="magnetic immersive-hover group flex items-center justify-center px-5 py-2.5 text-sm w-auto whitespace-nowrap"
+            >
+              Get a Quote
+              <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+            </Button>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -149,12 +151,13 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
               </button>
             ))}
             <div className="mt-4 px-4">
-              <AnimatedButton
-                text="Get Quote"
+              <Button
                 onClick={() => handleNavClick("contact")}
-                size="small"
-                className="w-full"
-              />
+                className="w-full magnetic immersive-hover group flex items-center justify-center"
+              >
+                Get a Quote
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </Button>
             </div>
           </nav>
         )}

@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "../components/Button";
-import AnimatedButton from "../components/AnimatedButton";
 import Card from "../components/Card";
 import SEO from "../components/SEO";
 import Deye from "../assets/images/DEYE.png";
@@ -282,24 +281,26 @@ export default function Home({ onNavigate }: HomeProps) {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-[fadeInUp_1s_ease-out_0.8s_both,bounceIn_1s_ease-out_0.8s_both]">
-              <AnimatedButton
-                text="Get Quote"
+              <Button
                 onClick={() => onNavigate("contact")}
-                size="medium"
-                className="w-full sm:w-auto magnetic immersive-hover"
-              />
-              <AnimatedButton
-                text="Get Started"
+                className="w-44 whitespace-nowrap magnetic immersive-hover group flex items-center justify-center"
+              >
+                Get a Quote
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </Button>
+              <Button
                 onClick={() => onNavigate("services")}
-                size="medium"
-                className="w-full sm:w-auto magnetic immersive-hover"
-              />
+                className="w-44 whitespace-nowrap magnetic immersive-hover group flex items-center justify-center"
+              >
+                Explore More
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </Button>
             </div>
           </div>
 
           {/* Hero Features Section */}
           <div className="max-w-6xl mx-auto mt-24 md:mt-32 animate-[fadeInUp_1s_ease-out_1s_both]">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
               {/* Backup Energy Storage */}
               <div className="flex flex-col items-center text-center transition-all duration-500 hover:scale-110 hover:-translate-y-2 animate-[fadeInUp_1s_ease-out_1.2s_both,float_6s_ease-in-out_infinite] hover:animate-none">
                 <div className="w-16 h-16 mb-4 flex items-center justify-center animate-[pulse_3s_ease-in-out_infinite] hover:animate-none">
