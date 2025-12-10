@@ -138,39 +138,215 @@ export const blogPosts: BlogPost[] = [
   },
   {
     id: 2,
-    title: "Complete Guide to Solar Panel Installation in the Philippines",
-    slug: "complete-guide-solar-panel-installation-philippines",
+    title:
+      "Complete Solar Energy System Maintenance Guide: From Panels to Breakers",
+    slug: "complete-solar-energy-system-maintenance-guide-panels-breakers",
     excerpt:
-      "Everything you need to know about installing solar panels in the Philippines, from permits to ROI calculations. Learn about grid-tie, hybrid, and off-grid systems.",
+      "Learn how to maintain every component of your solar energy system for peak efficiency. This comprehensive guide covers solar panels, inverters, batteries, ATS, and circuit breakers with detailed maintenance schedules and professional tips.",
     content:
-      "Installing solar panels in the Philippines has become increasingly popular as electricity costs continue to rise. This comprehensive guide covers everything from choosing the right system to understanding net metering and maximizing your return on investment.",
+      "Investing in a solar energy system is a smart decision, but proper maintenance is essential to ensure your system operates at peak efficiency for decades. This comprehensive guide covers everything you need to know about maintaining every component of your solar energy system, from solar panels to inverters, batteries, automatic transfer switches, and circuit breakers.",
     fullContent: `
-      <h2>Introduction to Solar Panel Installation</h2>
-      <p>Installing solar panels in the Philippines has become increasingly popular as electricity costs continue to rise. This comprehensive guide covers everything from choosing the right system to understanding net metering and maximizing your return on investment.</p>
+      <p>Investing in a solar energy system is a smart decision for both your wallet and the environment. However, like any significant investment, proper maintenance is essential to ensure your system operates at peak efficiency for decades to come. This comprehensive guide covers everything you need to know about maintaining every component of your solar energy system, from solar panels to inverters, batteries, automatic transfer switches (ATS), and circuit breakers.</p>
       
-      <h2>Types of Solar Systems</h2>
-      <h3>Grid-Tie Systems</h3>
-      <p>Grid-tie solar systems are connected to the utility grid and allow you to sell excess electricity back to the power company through net metering. This is the most cost-effective option for homes and businesses with reliable grid access.</p>
+      <h2>Why Solar System Maintenance Matters</h2>
+      <p>Regular maintenance of your solar energy system isn't just recommended, it's essential. Proper maintenance can increase energy production by around 15%, while neglecting it can lead to premature equipment failure, reduced efficiency, and costly repairs. Research has shown that dust buildup alone can cause efficiency reductions of up to 25% on solar panels. By implementing a proactive maintenance schedule, you can protect your investment and maximize your return.</p>
       
-      <h3>Hybrid Systems</h3>
-      <p>Hybrid systems combine solar panels with battery storage and grid connection. They provide backup power during outages while still allowing you to benefit from net metering when the grid is available.</p>
+      <h2>Solar Panel Maintenance: Keeping Your Energy Source Clean</h2>
+      <p>Solar panels are the workhorses of your system, and keeping them clean is the single most important maintenance task you can perform.</p>
       
-      <h3>Off-Grid Systems</h3>
-      <p>Off-grid systems are completely independent from the utility grid, making them perfect for remote locations, farms, and island properties. They require battery storage to provide power 24/7.</p>
+      <h3>Cleaning Schedule</h3>
+      <p>The general recommendation is to clean your panels at least twice a year, but your specific schedule depends on your environment:</p>
       
-      <h2>Permits and Requirements</h2>
-      <p>Before installing solar panels in the Philippines, you'll need to obtain the necessary permits from your local government unit (LGU) and the Department of Energy (DOE). Your solar installer will typically handle this process for you.</p>
+      <ul>
+        <li><strong>Standard conditions:</strong> Every 6 months</li>
+        <li><strong>Dusty or urban areas:</strong> Every 3-4 months</li>
+        <li><strong>Areas with heavy tree coverage:</strong> More frequently, especially during fall</li>
+        <li><strong>High humidity or pollution:</strong> Monthly inspections with cleaning as needed</li>
+      </ul>
       
-      <h2>ROI and Savings</h2>
-      <p>Most solar panel systems in the Philippines pay for themselves within 4-6 years, with savings continuing for the system's 25-30 year lifespan. The exact ROI depends on your electricity consumption, system size, and local electricity rates.</p>
+      <h3>Safe Cleaning Methods</h3>
+      <p>When cleaning your solar panels, follow these best practices:</p>
+      
+      <ul>
+        <li><strong>Timing matters:</strong> Clean panels early in the morning before they heat up. Cold water and hot panels do not mix and can cause cracking</li>
+        <li><strong>Use gentle tools:</strong> A soft-bristled brush or microfiber cloth with mild soapy water works best</li>
+        <li><strong>Avoid harsh chemicals:</strong> Never use abrasive cleaners that could scratch the glass surface</li>
+        <li><strong>Safety first:</strong> If panels are on a steep roof, hire professionals rather than risk injury</li>
+      </ul>
+      
+      <h3>Visual Inspections</h3>
+      <p>During cleaning, inspect panels for:</p>
+      
+      <ul>
+        <li>Cracks or chips in the glass</li>
+        <li>Frame damage or corrosion</li>
+        <li>Burn marks or discoloration</li>
+        <li>Loose or damaged wiring connections</li>
+        <li>Signs of animal nesting underneath</li>
+      </ul>
+      
+      <h2>Inverter Maintenance: Protecting Your System's Brain</h2>
+      <p>The average lifespan of string, central and hybrid inverters for solar panels is around 10-15 years, making the inverter often the first component that will need replacement. Proper maintenance can help you maximize this lifespan.</p>
+      
+      <h3>Maintenance Schedule</h3>
+      <p>It is advisable to perform routine maintenance at least every six months, with additional checks after extreme weather events.</p>
+      
+      <h3>Key Inverter Maintenance Tasks</h3>
+      
+      <ul>
+        <li><strong>Keep it clean:</strong> Check for any loose connections between the inverter and energy storage system terminals, and wipe down the exterior with a soft, dry cloth</li>
+        <li><strong>Ensure proper ventilation:</strong> Remove dust and debris from cooling vents to prevent overheating</li>
+        <li><strong>Monitor performance:</strong> Use your inverter's monitoring system or app to track energy production</li>
+        <li><strong>Check for warning signs:</strong> Look for unusual noises, error codes, discoloration, or burn marks</li>
+        <li><strong>Update firmware:</strong> Install manufacturer updates to improve performance and fix bugs</li>
+        <li><strong>Verify connections:</strong> Ensure all electrical connections are secure and check for frayed or damaged wiring</li>
+      </ul>
+      
+      <h3>Professional Inspections</h3>
+      <p>Schedule an annual professional inspection to perform comprehensive checks of internal components and overall system health.</p>
+      
+      <h2>Battery Maintenance: Maximizing Storage Lifespan</h2>
+      <p>Battery maintenance varies significantly depending on whether you have lithium-ion or lead-acid batteries.</p>
+      
+      <h3>Lithium-Ion Batteries</h3>
+      <p>Modern lithium-ion batteries require minimal maintenance:</p>
+      
+      <ul>
+        <li>Lithium-ion battery technologies require very little or no maintenance</li>
+        <li>Keep batteries within manufacturer's recommended temperature range (typically 32°F to 95°F)</li>
+        <li>Avoid discharging below 20% to extend lifespan</li>
+        <li>Monitor State of Charge (SOC) regularly through your battery management system</li>
+        <li>Inspect terminals for corrosion every 6 months</li>
+      </ul>
+      
+      <h3>Lead-Acid Batteries</h3>
+      <p>Lead-acid batteries require more hands-on maintenance:</p>
+      
+      <ul>
+        <li>Refill with distilled water every two weeks</li>
+        <li>Maintain electrolyte levels just above the plates, never let them become exposed to air</li>
+        <li>Lead-acid batteries should be charged as soon as an opportunity presents itself to prevent sulfation</li>
+        <li>Clean terminals with a baking soda and distilled water mixture</li>
+        <li>Ensure proper ventilation as batteries produce hydrogen gas during charging</li>
+        <li>Rotate batteries within the bank regularly for even charging</li>
+      </ul>
+      
+      <h3>General Battery Care</h3>
+      <p>Regardless of battery type:</p>
+      
+      <ul>
+        <li>Store in a cool, dry, well-ventilated location</li>
+        <li>Keep away from direct sunlight and heat sources</li>
+        <li>Inspect connections regularly for tightness and corrosion</li>
+        <li>Maintain detailed records of performance and maintenance activities</li>
+      </ul>
+      
+      <h2>Automatic Transfer Switch (ATS) Maintenance</h2>
+      <p>Your ATS ensures seamless power transitions between grid, solar, and backup sources. While designed for reliability, it still requires periodic attention.</p>
+      
+      <h3>ATS Maintenance Tasks</h3>
+      <p>Regular maintenance should include inspecting mechanical components like contactors and relays for smooth and reliable operation, cleaning the internal circuitry and wiring terminals to prevent dust and debris buildup, and testing the automatic transfer functionality by simulating a power outage.</p>
+      
+      <p>Additional maintenance includes:</p>
+      
+      <ul>
+        <li>Verify all electrical connections are secure</li>
+        <li>Check for physical damage, cracks, or corrosion</li>
+        <li>Ensure proper ventilation around the unit</li>
+        <li>Test transfer speeds meet specifications (typically 15 milliseconds or less for modern units)</li>
+        <li>Maintain detailed logs of operations and transfers</li>
+      </ul>
+      
+      <p>Inspect your ATS twice yearly, or immediately after severe weather events or if you notice unusual sounds or delayed switching.</p>
+      
+      <h2>Circuit Breaker Maintenance: Your System's First Line of Defense</h2>
+      <p>Circuit breakers protect your entire solar system from overcurrent, short circuits, and electrical faults.</p>
+      
+      <h3>Why Breakers Matter</h3>
+      <p>Circuit breakers reduce nuisance tripping by up to 40% in modern systems, and they provide critical safety functions including fire prevention and equipment protection.</p>
+      
+      <h3>Breaker Maintenance Guidelines</h3>
+      
+      <ul>
+        <li><strong>Regular inspections:</strong> Routine inspections should be conducted to ensure that circuit breakers are free from dust, debris, and corrosion</li>
+        <li><strong>Test functionality:</strong> Manually test breakers quarterly to ensure they trip and reset properly</li>
+        <li><strong>Check for heat:</strong> Feel for excessive warmth which could indicate loose connections or overloading</li>
+        <li><strong>Verify proper sizing:</strong> Ensure breakers are correctly rated for your system</li>
+        <li><strong>Look for damage:</strong> Check for cracks, discoloration, or signs of arcing</li>
+        <li><strong>Maintain clearances:</strong> Keep areas around breakers clear for access and ventilation</li>
+      </ul>
+      
+      <h3>When to Call a Professional</h3>
+      <p>Contact a certified electrician if you notice:</p>
+      
+      <ul>
+        <li>Breakers that trip frequently</li>
+        <li>Burning smells or visible damage</li>
+        <li>Breakers that won't reset</li>
+        <li>Any signs of overheating</li>
+      </ul>
+      
+      <h2>Creating Your Maintenance Schedule</h2>
+      <p>For optimal system performance, follow this maintenance calendar:</p>
+      
+      <h3>Monthly:</h3>
+      <ul>
+        <li>Check inverter display for error codes</li>
+        <li>Monitor system performance through monitoring apps</li>
+        <li>Visual inspection of accessible components</li>
+      </ul>
+      
+      <h3>Quarterly:</h3>
+      <ul>
+        <li>Clean solar panels (or more frequently in dusty areas)</li>
+        <li>Test circuit breakers</li>
+        <li>Check battery state of charge</li>
+      </ul>
+      
+      <h3>Semi-Annually:</h3>
+      <ul>
+        <li>Comprehensive system inspection</li>
+        <li>Clean inverter and check connections</li>
+        <li>Inspect ATS functionality</li>
+        <li>Check battery terminals and electrolyte levels (if applicable)</li>
+      </ul>
+      
+      <h3>Annually:</h3>
+      <ul>
+        <li>Professional system inspection</li>
+        <li>Firmware updates</li>
+        <li>Detailed performance analysis</li>
+        <li>Review warranty status and documentation</li>
+      </ul>
+      
+      <h2>Conclusion</h2>
+      <p>Maintaining your solar energy system doesn't require extensive technical knowledge, but it does demand consistent attention. By following the maintenance schedules outlined in this guide and addressing issues promptly, you can ensure your solar investment delivers reliable, efficient power for 25 years or more. Remember, preventive maintenance is always more cost-effective than reactive repairs.</p>
+      
+      <h2>Need Professional Solar Maintenance or Planning to Go Solar?</h2>
+      <p>At <a href="/contact" data-navigate="contact" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline font-bold bg-yellow-200 dark:bg-yellow-900/30 px-2 py-1 rounded transition-all hover:bg-yellow-300 dark:hover:bg-yellow-900/50">Sunterra Solar Energy</a>, we understand that your solar investment deserves expert care and attention. Whether you're looking to maintain your existing system or considering making the switch to clean, renewable energy, our team of certified solar professionals is here to help. <a href="/contact" data-navigate="contact" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline font-bold bg-yellow-200 dark:bg-yellow-900/30 px-2 py-1 rounded transition-all hover:bg-yellow-300 dark:hover:bg-yellow-900/50">Contact us today</a> to schedule a maintenance inspection or get a free consultation for your solar energy needs.</p>
     `,
     author: "Sunterra Solar Team",
-    publishDate: "2025-11-01",
-    readTime: "8 min read",
-    category: "Installation",
-    tags: ["solar installation", "Philippines", "guide", "grid-tie"],
-    image:
-      "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=800&h=600&fit=crop&auto=format",
+    publishDate: "2025-12-10",
+    readTime: "18 min read",
+    category: "Maintenance",
+    tags: [
+      "solar maintenance",
+      "solar panels",
+      "inverter maintenance",
+      "battery maintenance",
+      "ATS",
+      "circuit breakers",
+      "solar system care",
+      "preventive maintenance",
+      "solar efficiency",
+      "Philippines",
+      "solar energy",
+      "system maintenance",
+      "lead-acid batteries",
+      "lithium-ion batteries",
+      "automatic transfer switch",
+    ],
+    image: "/images/solar-cleaning.jpg",
   },
   {
     id: 3,
