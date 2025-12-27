@@ -62,10 +62,10 @@ function App() {
   const getPageFromPath = (): string => {
     const path = window.location.pathname;
 
-    // Handle project detail URLs (e.g., /projects/1)
+    // Handle project detail URLs (e.g., /projects/batasan-quezon-city-16kw-hybrid-solar)
     if (path.startsWith("/projects/") && path !== "/projects") {
-      const projectId = path.replace("/projects/", "");
-      return `project-detail:${projectId}`;
+      const slug = path.replace("/projects/", "");
+      return `project-detail:${slug}`;
     }
 
     // Handle blog post URLs (e.g., /blog/post-slug)
@@ -123,8 +123,8 @@ function App() {
     let newPath = "/";
 
     if (page.startsWith("project-detail:")) {
-      const projectId = page.replace("project-detail:", "");
-      newPath = `/projects/${projectId}`;
+      const slug = page.replace("project-detail:", "");
+      newPath = `/projects/${slug}`;
     } else if (page.startsWith("blog-post:")) {
       const slug = page.replace("blog-post:", "");
       newPath = `/blog/${slug}`;
@@ -145,10 +145,8 @@ function App() {
   const renderPage = () => {
     // Handle project detail pages
     if (currentPage.startsWith("project-detail:")) {
-      const projectId = currentPage.replace("project-detail:", "");
-      return (
-        <ProjectDetail onNavigate={handleNavigate} projectId={projectId} />
-      );
+      const slug = currentPage.replace("project-detail:", "");
+      return <ProjectDetail onNavigate={handleNavigate} projectId={slug} />;
     }
 
     // Handle blog post pages

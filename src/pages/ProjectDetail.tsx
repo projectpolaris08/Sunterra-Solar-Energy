@@ -23,162 +23,7 @@ interface ProjectDetailProps {
 const allProjectsData = [
   {
     id: 1,
-    title: "Residential Hybrid Solar Installation",
-    location: "Cubao, Quezon City",
-    systemType: "Hybrid Solar",
-    capacity: "12kW",
-    installDate: "January 2025",
-    description:
-      "Premium hybrid installation for large homes. Modern design with high-efficiency panels and advanced battery storage. Reduced electricity costs by 85% while ensuring power reliability during outages.",
-    color: "from-blue-400 to-blue-600",
-    savings: "₱15,000/month",
-    category: "Residential",
-    image: "/images/12kW-Hybrid.jpg",
-    status: "completed",
-    details: {
-      panels: "24pcs 620W Solar Panels",
-      inverter: "Deye Hybrid Inverter 12kW",
-      battery: "30.72kWh Battery Storage",
-      roofArea: "65 sqm",
-      installationTime: "1 day",
-      warranty:
-        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
-      environmentalImpact: "Reduces CO₂ by 9.5 tons annually",
-      paybackPeriod: "3-4 years",
-    },
-  },
-  {
-    id: 2,
-    title: "Residential Hybrid Solar Installation",
-    location: "Lagro, Quezon City",
-    systemType: "Hybrid Solar",
-    capacity: "12kW",
-    installDate: "February 2025",
-    description:
-      "Ideal hybrid system for medium to large-sized homes with higher energy consumption. Battery storage ensures uninterrupted power supply during outages. Provides excellent ROI and covers most household energy requirements.",
-    color: "from-cyan-400 to-cyan-600",
-    savings: "₱15,000/month",
-    category: "Residential",
-    image: "/images/12kW.jpg",
-    status: "completed",
-    details: {
-      panels: "24pcs 620W Solar Panels",
-      inverter: "Deye Hybrid Inverter 12kW",
-      battery: "30.72kWh Battery Storage",
-      roofArea: "65 sqm",
-      installationTime: "1 day",
-      warranty:
-        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
-      environmentalImpact: "Reduces CO₂ by 9.5 tons annually",
-      paybackPeriod: "3-4 years",
-    },
-  },
-  {
-    id: 3,
-    title: "Residential Hybrid Solar Installation",
-    location: "Batasan, Quezon City",
-    systemType: "Hybrid Solar",
-    capacity: "12kW",
-    installDate: "March 2025",
-    description:
-      "Perfect hybrid system installation for residential property. Includes battery backup for power reliability during outages. Covers daily energy needs and significantly reduces monthly electricity bills with smart energy management.",
-    color: "from-amber-400 to-amber-600",
-    savings: "₱15,000/month",
-    category: "Residential",
-    image: "/images/12kW-Hybrid-Solar.jpg",
-    status: "completed",
-    details: {
-      panels: "24pcs 620W Solar Panels",
-      inverter: "Deye Hybrid Inverter 12kW",
-      battery: "30.72kWh Battery Storage",
-      roofArea: "65 sqm",
-      installationTime: "1 day",
-      warranty:
-        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
-      environmentalImpact: "Reduces CO₂ by 9.5 tons annually",
-      paybackPeriod: "3-4 years",
-    },
-  },
-  {
-    id: 4,
-    title: "Residential Hybrid Solar Installation",
-    location: "Cabanatuan, Nueva Ecija",
-    systemType: "Hybrid Solar",
-    capacity: "16kW",
-    installDate: "April 2025",
-    description:
-      "Comprehensive hybrid system with battery backup for a large family home. Ensures power reliability during outages and maximizes energy independence. Perfect for properties requiring high energy capacity.",
-    color: "from-green-400 to-green-600",
-    savings: "₱20,000/month",
-    category: "Residential",
-    image: "/images/16kW.jpg",
-    status: "completed",
-    details: {
-      panels: "27pcs 620W Solar Panels",
-      inverter: "Deye Hybrid Inverter 16kW",
-      battery: "30.72kWh Battery Storage",
-      roofArea: "85 sqm",
-      installationTime: "1 day",
-      warranty:
-        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
-      environmentalImpact: "Reduces CO₂ by 12.5 tons annually",
-      paybackPeriod: "3-4 years",
-    },
-  },
-  {
-    id: 5,
-    title: "Residential Hybrid Solar Installation",
-    location: "Gen. Trias, Cavite",
-    systemType: "Hybrid Solar",
-    capacity: "8kW",
-    installDate: "May 2025",
-    description:
-      "Ideal hybrid system for medium-sized homes with higher energy consumption. Battery storage ensures uninterrupted power supply during outages. Provides excellent ROI and covers most household energy requirements.",
-    color: "from-purple-400 to-purple-600",
-    savings: "₱11,000/month",
-    category: "Residential",
-    image: "/images/8kW-Hybrid-Solar.jpg",
-    status: "completed",
-    details: {
-      panels: "16pcs 620W Solar Panels",
-      inverter: "Deye Hybrid Inverter 8kW",
-      battery: "15kWh Battery Storage",
-      roofArea: "45 sqm",
-      installationTime: "1 day",
-      warranty:
-        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
-      environmentalImpact: "Reduces CO₂ by 6.5 tons annually",
-      paybackPeriod: "3-4 years",
-    },
-  },
-  {
-    id: 6,
-    title: "Residential Hybrid Solar Installation",
-    location: "Marilao, Bulacan",
-    systemType: "Hybrid Solar",
-    capacity: "8kW",
-    installDate: "June 2025",
-    description:
-      "Perfect hybrid system installation for residential property. Includes battery backup for power reliability during outages. Covers daily energy needs and significantly reduces monthly electricity bills with smart energy management.",
-    color: "from-emerald-400 to-emerald-600",
-    savings: "₱11,000/month",
-    category: "Residential",
-    image: "/images/8kW-Hybrid.jpg",
-    status: "completed",
-    details: {
-      panels: "16pcs 620W Solar Panels",
-      inverter: "Deye Hybrid Inverter 8kW",
-      battery: "15kWh Battery Storage",
-      roofArea: "45 sqm",
-      installationTime: "1 day",
-      warranty:
-        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
-      environmentalImpact: "Reduces CO₂ by 6.5 tons annually",
-      paybackPeriod: "3-4 years",
-    },
-  },
-  {
-    id: 7,
+    slug: "batasan-quezon-city-16kw-hybrid-solar",
     title: "Residential Hybrid Solar Installation",
     location: "Batasan, Quezon City",
     systemType: "Hybrid Solar",
@@ -219,7 +64,10 @@ export default function ProjectDetail({
   projectId,
 }: ProjectDetailProps) {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
-  const project = allProjectsData.find((p) => p.id.toString() === projectId);
+  // Support both slug and ID for backward compatibility
+  const project = allProjectsData.find(
+    (p) => (p as any).slug === projectId || p.id.toString() === projectId
+  );
 
   if (!project) {
     return (
@@ -475,7 +323,8 @@ export default function ProjectDetail({
                         >
                           {project.status === "ongoing"
                             ? (project as any).estimatedSavings
-                            : project.savings}
+                            : (project as any).savings ||
+                              (project as any).estimatedSavings}
                         </dd>
                       </div>
                       <div>

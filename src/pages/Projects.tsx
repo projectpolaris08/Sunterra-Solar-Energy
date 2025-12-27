@@ -94,9 +94,10 @@ export default function Projects({ onNavigate }: ProjectsProps) {
 
   const ongoingProjects = [
     {
-      id: 7,
+      id: 1,
+      slug: "batasan-quezon-city-16kw-hybrid-solar",
       title: "Residential Hybrid Solar Installation",
-      location: "TBD",
+      location: "Batasan, Quezon City",
       systemType: "Hybrid Solar",
       capacity: "16kW",
       installDate: "Final Phase - Near Completion",
@@ -249,7 +250,13 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                 >
                   <Card
                     className="overflow-hidden cursor-pointer depth-4 h-full"
-                    onClick={() => onNavigate(`project-detail:${project.id}`)}
+                    onClick={() =>
+                      onNavigate(
+                        `project-detail:${
+                          (project as any).slug || project.id.toString()
+                        }`
+                      )
+                    }
                   >
                     <div className="h-48 -mx-6 -mt-6 mb-6 flex flex-col items-center justify-center relative overflow-hidden">
                       {project.image ? (
