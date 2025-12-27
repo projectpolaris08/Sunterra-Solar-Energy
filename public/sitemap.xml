@@ -3,54 +3,60 @@
   <!-- Main Pages -->
   <url>
     <loc>https://sunterrasolarenergy.com/</loc>
-    <lastmod>2025-12-10</lastmod>
+    <lastmod>2025-12-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://sunterrasolarenergy.com/about</loc>
-    <lastmod>2025-12-10</lastmod>
+    <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://sunterrasolarenergy.com/services</loc>
-    <lastmod>2025-12-10</lastmod>
+    <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://sunterrasolarenergy.com/projects</loc>
-    <lastmod>2025-12-10</lastmod>
+    <lastmod>2025-12-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://sunterrasolarenergy.com/blog</loc>
-    <lastmod>2025-12-10</lastmod>
+    <lastmod>2025-12-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://sunterrasolarenergy.com/calculator</loc>
-    <lastmod>2025-12-10</lastmod>
+    <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://sunterrasolarenergy.com/faq</loc>
-    <lastmod>2025-12-10</lastmod>
+    <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://sunterrasolarenergy.com/contact</loc>
-    <lastmod>2025-12-10</lastmod>
+    <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <!-- Blog Posts -->
+  <url>
+    <loc>https://sunterrasolarenergy.com/blog/net-metering-philippines-save-money-solar</loc>
+    <lastmod>2025-12-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
   <url>
     <loc>https://sunterrasolarenergy.com/blog/complete-solar-energy-system-maintenance-guide-panels-breakers</loc>
     <lastmod>2025-12-10</lastmod>
@@ -84,12 +90,6 @@
   <url>
     <loc>https://sunterrasolarenergy.com/blog/hybrid-solar-systems-best-solution-unstable-power</loc>
     <lastmod>2025-11-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://sunterrasolarenergy.com/blog/net-metering-philippines-save-money-solar</loc>
-    <lastmod>2025-11-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

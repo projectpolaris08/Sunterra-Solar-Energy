@@ -99,7 +99,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
       location: "TBD",
       systemType: "Hybrid Solar",
       capacity: "16kW",
-      installDate: "Estimated Installation Date Nov. 29, 2025",
+      installDate: "Final Phase - Near Completion",
       description:
         "Large-scale hybrid solar installation currently in progress. Includes battery storage for power reliability and energy independence. Expected to significantly reduce electricity costs.",
       color: "from-indigo-400 to-indigo-600",
@@ -107,9 +107,9 @@ export default function Projects({ onNavigate }: ProjectsProps) {
       category: "Residential",
       image: "/images/Batasan-project.jpg",
       status: "ongoing",
-      progress: 30,
+      progress: 90,
       details: {
-        currentPhase: "Pre-wiring for the inverter",
+        currentPhase: "Awaiting main breaker installation to power up the inverter and install batteries",
       },
     },
   ];

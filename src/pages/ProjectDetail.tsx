@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ArrowLeft,
   MapPin,
@@ -6,6 +7,7 @@ import {
   CheckCircle,
   Clock,
   Sun,
+  X,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -40,7 +42,7 @@ const allProjectsData = [
       roofArea: "65 sqm",
       installationTime: "1 day",
       warranty:
-        "12 years on panels, 5 years on inverter and 5 years on LiFePO4 Battery",
+        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
       environmentalImpact: "Reduces CO₂ by 9.5 tons annually",
       paybackPeriod: "3-4 years",
     },
@@ -66,7 +68,7 @@ const allProjectsData = [
       roofArea: "65 sqm",
       installationTime: "1 day",
       warranty:
-        "12 years on panels, 5 years on inverter and 5 years on LiFePO4 Battery",
+        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
       environmentalImpact: "Reduces CO₂ by 9.5 tons annually",
       paybackPeriod: "3-4 years",
     },
@@ -92,7 +94,7 @@ const allProjectsData = [
       roofArea: "65 sqm",
       installationTime: "1 day",
       warranty:
-        "12 years on panels, 5 years on inverter and 5 years on LiFePO4 Battery",
+        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
       environmentalImpact: "Reduces CO₂ by 9.5 tons annually",
       paybackPeriod: "3-4 years",
     },
@@ -118,7 +120,7 @@ const allProjectsData = [
       roofArea: "85 sqm",
       installationTime: "1 day",
       warranty:
-        "12 years on panels, 5 years on inverter and 5 years on LiFePO4 Battery",
+        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
       environmentalImpact: "Reduces CO₂ by 12.5 tons annually",
       paybackPeriod: "3-4 years",
     },
@@ -144,7 +146,7 @@ const allProjectsData = [
       roofArea: "45 sqm",
       installationTime: "1 day",
       warranty:
-        "12 years on panels, 5 years on inverter and 5 years on LiFePO4 Battery",
+        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
       environmentalImpact: "Reduces CO₂ by 6.5 tons annually",
       paybackPeriod: "3-4 years",
     },
@@ -170,7 +172,7 @@ const allProjectsData = [
       roofArea: "45 sqm",
       installationTime: "1 day",
       warranty:
-        "12 years on panels, 5 years on inverter and 5 years on LiFePO4 Battery",
+        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
       environmentalImpact: "Reduces CO₂ by 6.5 tons annually",
       paybackPeriod: "3-4 years",
     },
@@ -181,15 +183,21 @@ const allProjectsData = [
     location: "Batasan, Quezon City",
     systemType: "Hybrid Solar",
     capacity: "16kW",
-    installDate: "Estimated Installation Date Nov. 29, 2025",
+    installDate: "Final Phase - Near Completion",
     description:
       "Large-scale hybrid solar installation currently in progress. Includes battery storage for power reliability and energy independence. Expected to significantly reduce electricity costs.",
     color: "from-indigo-400 to-indigo-600",
     estimatedSavings: "₱20,000/month",
     category: "Residential",
     image: "/images/Batasan-project.jpg",
+    additionalImages: [
+      "/images/Installation16kW.jpg",
+      "/images/Inverter16kW.jpg",
+      "/images/Panels16kW.jpg",
+      "/images/Delivery16kW.jpg",
+    ],
     status: "ongoing",
-    progress: 30,
+    progress: 90,
     details: {
       panels: "27pcs 620W Solar panels (planned)",
       inverter: "Deye Hybrid Inverter 16kW (planned)",
@@ -197,10 +205,11 @@ const allProjectsData = [
       roofArea: "85 sqm",
       installationTime: "2 days (estimated)",
       warranty:
-        "12 years on panels, 5 years on inverter and 5 years on LiFePO4 Battery",
+        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
       environmentalImpact: "Expected to reduce CO₂ by 12.5 tons annually",
       paybackPeriod: "3-4 years (estimated)",
-      currentPhase: "Pre-wiring for the inverter",
+      currentPhase:
+        "Awaiting main breaker installation to power up the inverter and install batteries",
     },
   },
 ];
@@ -209,6 +218,7 @@ export default function ProjectDetail({
   onNavigate,
   projectId,
 }: ProjectDetailProps) {
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const project = allProjectsData.find((p) => p.id.toString() === projectId);
 
   if (!project) {
@@ -302,6 +312,44 @@ export default function ProjectDetail({
                   </div>
                 )}
               </div>
+
+              {/* Additional Images Gallery */}
+              {(project as any).additionalImages &&
+                (project as any).additionalImages.length > 0 && (
+                  <div className="px-6 mb-6">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                      Project Gallery
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {(project as any).additionalImages.map(
+                        (img: string, index: number) => (
+                          <div
+                            key={index}
+                            className="relative aspect-video rounded-lg overflow-hidden cursor-pointer group"
+                            onClick={() => setLightboxImage(img)}
+                          >
+                            <img
+                              src={img}
+                              alt={`${project.title} - Image ${index + 1}`}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-125"
+                              onError={(e) => {
+                                // Fallback to main image if additional image doesn't exist
+                                (e.target as HTMLImageElement).src =
+                                  project.image || "";
+                              }}
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <div className="bg-white/90 dark:bg-gray-800/90 px-3 py-1 rounded-full text-xs font-medium text-gray-900 dark:text-white">
+                                Click to enlarge
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
 
               <div className="px-6 pb-6">
                 <div className="flex items-start justify-between mb-6">
@@ -475,6 +523,40 @@ export default function ProjectDetail({
           </div>
         </div>
       </section>
+
+      {/* Lightbox Modal */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setLightboxImage(null)}
+        >
+          <button
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-2 text-white hover:text-gray-200 transition-all duration-300 z-10 shadow-lg"
+            onClick={() => setLightboxImage(null)}
+            aria-label="Close lightbox"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <div className="max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center relative">
+            <img
+              src={lightboxImage}
+              alt="Enlarged view"
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              className="absolute top-2 right-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-2 text-white hover:text-gray-200 transition-all duration-300 shadow-lg md:hidden"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxImage(null);
+              }}
+              aria-label="Close lightbox"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
