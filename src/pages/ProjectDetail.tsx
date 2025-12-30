@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   MapPin,
@@ -57,6 +57,45 @@ const allProjectsData = [
         "Awaiting main breaker installation to power up the inverter and install batteries",
     },
   },
+  {
+    id: 2,
+    slug: "sampaloc-manila-6kw-hybrid-solar",
+    title: "Residential Hybrid Solar Installation",
+    location: "Sampaloc, Manila",
+    systemType: "Hybrid Solar",
+    capacity: "6kW",
+    installDate: "Completed",
+    description:
+      "On December 28, 2025, we installed a 6kW Hybrid Inverter for a client's newly acquired townhouse unit. The client specifically chose a hybrid setup after experiencing limited savings and performance improvement from a 5kW grid-tied system installed in his first unit. With the hybrid system, the client now benefits from energy storage, improved self-consumption, and a stable power supply during grid outages and nighttime. Because of the clear advantages of the hybrid configuration, the client is planning to upgrade and eventually replace the existing grid-tied system in his first unit with a hybrid setup as well.",
+    color: "from-blue-400 to-blue-600",
+    savings: "₱8,500/month",
+    category: "Residential",
+    image: "/images/before.jpg",
+    additionalImages: [
+      "/images/preparation.jpg",
+      "/images/railings.jpg",
+      "/images/layingout.jpg",
+      "/images/wiring.jpg",
+      "/images/6kW-Inverter.jpg",
+      "/images/battery.jpg",
+      "/images/installedpanels.jpg",
+      "/images/electrical.jpg",
+      "/images/commisioned.jpg",
+    ],
+    status: "completed",
+    progress: 100,
+    details: {
+      panels: "10pcs 620W Canadian Solar Panels (6.2kWp)",
+      inverter: "6kW Hybrid Inverter",
+      battery: "51.2V 314Ah LVTopsun LiFePO4 Battery (16kWh capacity)",
+      roofArea: "24 sqm",
+      installationTime: "1 day",
+      warranty:
+        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
+      environmentalImpact: "Reduces CO₂ by 4.8 tons annually",
+      paybackPeriod: "3-4 years",
+    },
+  },
 ];
 
 export default function ProjectDetail({
@@ -68,6 +107,23 @@ export default function ProjectDetail({
   const project = allProjectsData.find(
     (p) => (p as any).slug === projectId || p.id.toString() === projectId
   );
+
+  // Scroll to top when lightbox opens and prevent background scroll
+  useEffect(() => {
+    if (lightboxImage) {
+      // Scroll to top instantly
+      window.scrollTo({ top: 0, behavior: "instant" });
+      // Prevent body scroll when lightbox is open (but allow modal container to scroll)
+      document.body.style.overflow = "hidden";
+    } else {
+      // Restore body scroll when lightbox is closed
+      document.body.style.overflow = "";
+    }
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [lightboxImage]);
 
   if (!project) {
     return (
@@ -222,19 +278,35 @@ export default function ProjectDetail({
                   </div>
                 </div>
 
-                {project.status === "ongoing" && (project as any).progress && (
-                  <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                {(project as any).progress && (
+                  <div
+                    className={`mb-6 p-4 rounded-lg border ${
+                      project.status === "ongoing"
+                        ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800"
+                        : "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+                    }`}
+                  >
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Installation Progress
                       </span>
-                      <span className="text-sm font-semibold text-amber-600">
+                      <span
+                        className={`text-sm font-semibold ${
+                          project.status === "ongoing"
+                            ? "text-amber-600"
+                            : "text-green-600"
+                        }`}
+                      >
                         {(project as any).progress}%
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                       <div
-                        className="bg-amber-500 h-3 rounded-full transition-all duration-300"
+                        className={`h-3 rounded-full transition-all duration-300 ${
+                          project.status === "ongoing"
+                            ? "bg-amber-500"
+                            : "bg-green-500"
+                        }`}
                         style={{
                           width: `${(project as any).progress}%`,
                         }}
@@ -310,9 +382,7 @@ export default function ProjectDetail({
                     <dl className="space-y-3">
                       <div>
                         <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                          {project.status === "ongoing"
-                            ? "Monthly Savings (estimated savings)"
-                            : "Monthly Savings"}
+                          Estimated Monthly Savings
                         </dt>
                         <dd
                           className={`text-2xl font-bold ${
@@ -376,33 +446,61 @@ export default function ProjectDetail({
       {/* Lightbox Modal */}
       {lightboxImage && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          className="fixed inset-0 z-50 bg-black/90"
           onClick={() => setLightboxImage(null)}
+          style={{
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            position: "fixed",
+            overflowY: "scroll",
+            overflowX: "hidden",
+            WebkitOverflowScrolling: "touch",
+            height: "100vh",
+            width: "100vw",
+          }}
         >
           <button
-            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-2 text-white hover:text-gray-200 transition-all duration-300 z-10 shadow-lg"
-            onClick={() => setLightboxImage(null)}
+            className="fixed top-4 right-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-2 text-white hover:text-gray-200 transition-all duration-300 z-[60] shadow-lg"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightboxImage(null);
+            }}
             aria-label="Close lightbox"
           >
             <X className="w-6 h-6" />
           </button>
-          <div className="max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center relative">
+          <div
+            className="flex justify-center w-full"
+            style={{ 
+              paddingTop: "4rem",
+              paddingBottom: "4rem",
+              paddingLeft: "1rem",
+              paddingRight: "1rem",
+              minHeight: "100vh",
+              alignItems: "flex-start",
+            }}
+          >
             <img
               src={lightboxImage}
               alt="Enlarged view"
-              className="max-w-full max-h-full object-contain rounded-lg"
+              className="rounded-lg"
               onClick={(e) => e.stopPropagation()}
-            />
-            <button
-              className="absolute top-2 right-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-2 text-white hover:text-gray-200 transition-all duration-300 shadow-lg md:hidden"
-              onClick={(e) => {
-                e.stopPropagation();
-                setLightboxImage(null);
+              style={{ 
+                maxWidth: "100%",
+                width: "auto",
+                height: "auto",
+                display: "block",
+                margin: "0 auto",
+                objectFit: "contain",
               }}
-              aria-label="Close lightbox"
-            >
-              <X className="w-5 h-5" />
-            </button>
+              onLoad={(e) => {
+                // Ensure image can be its full natural size
+                const img = e.target as HTMLImageElement;
+                img.style.maxHeight = "none";
+              }}
+            />
           </div>
         </div>
       )}

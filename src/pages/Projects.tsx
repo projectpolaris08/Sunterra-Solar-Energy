@@ -20,6 +20,7 @@ interface ProjectsProps {
 
 interface Project {
   id: number;
+  slug?: string;
   title: string;
   location: string;
   systemType: string;
@@ -42,7 +43,24 @@ export default function Projects({ onNavigate }: ProjectsProps) {
   const [selectedCategory, setSelectedCategory] = useState("All Projects");
   const [currentPage, setCurrentPage] = useState(1);
   const projectsPerPage = 6;
-  const projects: Project[] = [];
+  const projects: Project[] = [
+    {
+      id: 2,
+      slug: "sampaloc-manila-6kw-hybrid-solar",
+      title: "Residential Hybrid Solar Installation",
+      location: "Sampaloc, Manila",
+      systemType: "Hybrid Solar",
+      capacity: "6kW",
+      installDate: "Completed",
+      description:
+        "On December 28, 2025, we installed a 6kW Hybrid Inverter for a client's newly acquired townhouse unit. The client specifically chose a hybrid setup after experiencing limited savings and performance improvement from a 5kW grid-tied system installed in his first unit. With the hybrid system, the client now benefits from energy storage, improved self-consumption, and a stable power supply during grid outages and nighttime. Because of the clear advantages of the hybrid configuration, the client is planning to upgrade and eventually replace the existing grid-tied system in his first unit with a hybrid setup as well.",
+      color: "from-blue-400 to-blue-600",
+      savings: "₱8,500/month",
+      category: "Residential",
+      image: "/images/before.jpg",
+      progress: 100,
+    },
+  ];
   const [visibleSections, setVisibleSections] = useState<Set<string>>(
     new Set()
   );
@@ -110,7 +128,8 @@ export default function Projects({ onNavigate }: ProjectsProps) {
       status: "ongoing",
       progress: 90,
       details: {
-        currentPhase: "Awaiting main breaker installation to power up the inverter and install batteries",
+        currentPhase:
+          "Awaiting main breaker installation to power up the inverter and install batteries",
       },
     },
   ];
@@ -231,7 +250,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
             {currentProjects.map((project, index) => (
               <div
                 key={project.id}
-                className={`transition-all duration-700 ease-out ${
+                className={`transition-all duration-700 ease-out flex ${
                   visibleSections.has("projects-hero-section")
                     ? "opacity-100 translate-y-0 scale-100"
                     : "opacity-0 translate-y-12 scale-95"
@@ -241,7 +260,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                 }}
               >
                 <div
-                  className="card-3d immersive-hover"
+                  className="card-3d immersive-hover w-full"
                   style={{
                     transform: `perspective(1000px) rotateY(${
                       mousePosition.x * 2
@@ -249,7 +268,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                   }}
                 >
                   <Card
-                    className="overflow-hidden cursor-pointer depth-4 h-full"
+                    className="overflow-hidden cursor-pointer depth-4 h-full flex flex-col w-full"
                     onClick={() =>
                       onNavigate(
                         `project-detail:${
@@ -295,7 +314,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                       )}
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-3 flex flex-col flex-1">
                       <div className="flex items-start justify-between">
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                           {project.title}
@@ -329,39 +348,46 @@ export default function Projects({ onNavigate }: ProjectsProps) {
                         <span>{project.installDate}</span>
                       </div>
 
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed pt-2">
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed pt-2 line-clamp-4">
                         {project.description}
                       </p>
 
-                      {project.status === "ongoing" &&
-                        (project as any).progress && (
-                          <div className="pt-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Progress
-                              </span>
-                              <span className="text-sm font-semibold text-amber-600">
-                                {(project as any).progress}%
-                              </span>
-                            </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                              <div
-                                className="bg-amber-500 h-2.5 rounded-full transition-all duration-300"
-                                style={{
-                                  width: `${(project as any).progress}%`,
-                                }}
-                              ></div>
-                            </div>
+                      {(project as any).progress && (
+                        <div className="pt-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Progress
+                            </span>
+                            <span
+                              className={`text-sm font-semibold ${
+                                project.status === "ongoing"
+                                  ? "text-amber-600"
+                                  : "text-green-600"
+                              }`}
+                            >
+                              {(project as any).progress}%
+                            </span>
                           </div>
-                        )}
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                            <div
+                              className={`h-2.5 rounded-full transition-all duration-300 ${
+                                project.status === "ongoing"
+                                  ? "bg-amber-500"
+                                  : "bg-green-500"
+                              }`}
+                              style={{
+                                width: `${(project as any).progress}%`,
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
 
-                      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <div className="pt-4 border-t border-gray-200 dark:border-gray-700 mt-auto">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                              {project.status === "ongoing"
-                                ? "Estimated Savings"
-                                : "Monthly Savings"}
+                              Estimated Monthly Savings
                             </p>
                             <p
                               className={`text-lg font-bold ${
