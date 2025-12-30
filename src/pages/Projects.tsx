@@ -55,7 +55,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
       description:
         "On December 28, 2025, we installed a 6kW Hybrid Inverter for a client's newly acquired townhouse unit. The client specifically chose a hybrid setup after experiencing limited savings and performance improvement from a 5kW grid-tied system installed in his first unit. With the hybrid system, the client now benefits from energy storage, improved self-consumption, and a stable power supply during grid outages and nighttime. Because of the clear advantages of the hybrid configuration, the client is planning to upgrade and eventually replace the existing grid-tied system in his first unit with a hybrid setup as well.",
       color: "from-blue-400 to-blue-600",
-      savings: "₱8,500/month",
+      savings: "₱5,500/month",
       category: "Residential",
       image: "/images/before.jpg",
       progress: 100,
