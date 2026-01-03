@@ -7,6 +7,7 @@ import {
   DollarSign,
   Leaf,
   Wrench,
+  Star,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "../components/Button";
@@ -192,6 +193,16 @@ export default function Home({ onNavigate }: HomeProps) {
       image: OffGridImage,
       color: "from-green-500 to-green-600",
       animation: "animate-battery-charge",
+    },
+  ];
+
+  const testimonials = [
+    {
+      name: "Curt Uy",
+      location: "",
+      text: "After acquiring my second unit, I realized that my existing grid-tie system was not giving the results I expected. That's when I decided to upgrade to a hybrid system and contacted Sunterra Solar Energy. The hybrid system has been a game-changer. We no longer worry about power outages, and the savings have been incredible. Sunterra's service, from consultation to installation, was excellent.",
+      rating: 5,
+      image: "/images/commisioned.jpg",
     },
   ];
 
@@ -949,6 +960,79 @@ export default function Home({ onNavigate }: HomeProps) {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="testimonials-section"
+        data-scroll-section
+        className="py-20 bg-white dark:bg-gray-900"
+      >
+        <div className="container mx-auto px-4">
+          <div
+            className={`text-center mb-16 transition-all duration-1000 ${
+              visibleSections.has("testimonials-section")
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 gradient-text">
+              What Our Clients Say
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              Real experiences from satisfied customers across the Philippines
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <div
+                key={index}
+                className={`transition-all duration-700 ease-out ${
+                  visibleSections.has("testimonials-section")
+                    ? "opacity-100 translate-y-0 scale-100"
+                    : "opacity-0 translate-y-12 scale-95"
+                }`}
+                style={{
+                  transitionDelay: `${index * 150}ms`,
+                }}
+              >
+                <Card className="bg-white dark:bg-gray-800 h-full flex flex-col group hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
+                  {(testimonial as any).image && (
+                    <div className="h-48 -mx-6 -mt-6 mb-6 relative overflow-hidden">
+                      <img
+                        src={(testimonial as any).image}
+                        alt={testimonial.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                    </div>
+                  )}
+                  <div className="flex mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="w-5 h-5 fill-amber-400 text-amber-400"
+                      />
+                    ))}
+                  </div>
+                  <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed italic flex-grow">
+                    "{testimonial.text}"
+                  </p>
+                  <div className="border-t dark:border-gray-700 pt-4 mt-auto">
+                    <p className="font-semibold text-gray-900 dark:text-white">
+                      {testimonial.name}
+                    </p>
+                    {testimonial.location && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {testimonial.location}
+                      </p>
+                    )}
+                  </div>
+                </Card>
+              </div>
+            ))}
           </div>
         </div>
       </section>
