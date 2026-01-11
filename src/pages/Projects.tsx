@@ -45,6 +45,22 @@ export default function Projects({ onNavigate }: ProjectsProps) {
   const projectsPerPage = 6;
   const projects: Project[] = [
     {
+      id: 1,
+      slug: "batasan-quezon-city-16kw-hybrid-solar",
+      title: "Residential Hybrid Solar Installation",
+      location: "Batasan, Quezon City",
+      systemType: "Hybrid Solar",
+      capacity: "16kW",
+      installDate: "Completed",
+      description:
+        "Large-scale hybrid solar installation completed successfully. Includes battery storage for power reliability and energy independence. Significantly reduces electricity costs with reliable backup power during outages.",
+      color: "from-indigo-400 to-indigo-600",
+      savings: "₱20,000/month",
+      category: "Residential",
+      image: "/images/Batasan-project.jpg",
+      progress: 100,
+    },
+    {
       id: 2,
       slug: "sampaloc-manila-6kw-hybrid-solar",
       title: "Residential Hybrid Solar Installation",
@@ -110,29 +126,7 @@ export default function Projects({ onNavigate }: ProjectsProps) {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const ongoingProjects = [
-    {
-      id: 1,
-      slug: "batasan-quezon-city-16kw-hybrid-solar",
-      title: "Residential Hybrid Solar Installation",
-      location: "Batasan, Quezon City",
-      systemType: "Hybrid Solar",
-      capacity: "16kW",
-      installDate: "Final Phase - Near Completion",
-      description:
-        "Large-scale hybrid solar installation currently in progress. Includes battery storage for power reliability and energy independence. Expected to significantly reduce electricity costs.",
-      color: "from-indigo-400 to-indigo-600",
-      estimatedSavings: "₱20,000/month",
-      category: "Residential",
-      image: "/images/Batasan-project.jpg",
-      status: "ongoing",
-      progress: 90,
-      details: {
-        currentPhase:
-          "Awaiting main breaker installation to power up the inverter and install batteries",
-      },
-    },
-  ];
+  const ongoingProjects: Project[] = [];
 
   // Add status to existing projects and put ongoing projects first
   const allProjects = [
