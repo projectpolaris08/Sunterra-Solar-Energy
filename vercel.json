@@ -37,6 +37,10 @@
     {
       "source": "/api/auth/:path*",
       "destination": "/api?endpoint=auth"
+    },
+    {
+      "source": "/api/contact",
+      "destination": "/api?endpoint=contact"
     }
   ],
   "headers": [
