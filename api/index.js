@@ -39,6 +39,8 @@ import {
   getPayments,
   createPayment,
   updatePayment,
+  updateReferrerStats,
+  syncPaidReferralsWithPayments,
 } from "./lib/referral-database.js";
 import nodemailer from "nodemailer";
 import { createHash } from "crypto";
@@ -1035,10 +1037,23 @@ async function handleReferral(req, res, action, queryParams, body) {
         });
       }
 
+      // Sync paid referrals with payments before fetching
+      await syncPaidReferralsWithPayments();
+
       const payments = await getPayments(referrerId);
       return sendJson(req, res, 200, {
         success: true,
         payments,
+      });
+    }
+
+    // Sync paid referrals with payments (manual sync endpoint)
+    if (req.method === "POST" && act === "sync-payments") {
+      const result = await syncPaidReferralsWithPayments();
+      return sendJson(req, res, 200, {
+        success: true,
+        message: `Synced ${result.synced} payment(s)`,
+        synced: result.synced,
       });
     }
 
@@ -1054,6 +1069,7 @@ async function handleReferral(req, res, action, queryParams, body) {
         location,
         propertyType,
         roofType,
+        contractPrice,
         message,
       } = body;
 
@@ -1086,8 +1102,8 @@ async function handleReferral(req, res, action, queryParams, body) {
         referral_code: referrer.referral_code,
       });
 
-      // Calculate commission (you can customize this logic)
-      const commissionAmount = calculateCommission(systemSize, systemType);
+      // Calculate commission as 3% of contract price
+      const commissionAmount = calculateCommission(contractPrice);
 
       // Create referral with all available data
       // Store additional info in a notes field or extend the table schema
@@ -1109,6 +1125,7 @@ async function handleReferral(req, res, action, queryParams, body) {
           customer_phone: customerPhone,
           system_type: systemType,
           system_size: systemSize || systemType,
+          contract_price: contractPrice ? parseFloat(contractPrice) : null,
           notes: referralNotes, // Store additional info
           commission_amount: commissionAmount,
         });
@@ -1150,7 +1167,7 @@ async function handleReferral(req, res, action, queryParams, body) {
 
     // Admin: Update referral status
     if (req.method === "PUT" && act === "update-referral") {
-      const { id, status, commissionAmount } = body;
+      const { id, status, contractPrice, commissionAmount } = body;
       if (!id) {
         return sendJson(req, res, 400, {
           success: false,
@@ -1160,19 +1177,60 @@ async function handleReferral(req, res, action, queryParams, body) {
 
       const updates = {};
       if (status) updates.status = status;
+      if (contractPrice !== undefined) {
+        updates.contract_price = contractPrice;
+        // Auto-calculate commission if contract price is updated but commission not explicitly set
+        if (commissionAmount === undefined && contractPrice) {
+          updates.commission_amount = calculateCommission(contractPrice);
+        }
+      }
       if (commissionAmount !== undefined)
         updates.commission_amount = commissionAmount;
 
       const referral = await updateReferral(id, updates);
+      // Update referrer stats after updating referral
+      if (referral?.referrer_id) {
+        await updateReferrerStats(referral.referrer_id);
+      }
       return sendJson(req, res, 200, {
         success: true,
         referral,
       });
     }
 
+    // Update referrer payment details
+    if (req.method === "PUT" && act === "update-payment") {
+      const { referrerId, paymentMethod, paymentDetails } = body;
+      if (!referrerId || !paymentMethod || !paymentDetails) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message:
+            "Referrer ID, payment method, and payment details are required",
+        });
+      }
+
+      const updatedReferrer = await updateReferrer(referrerId, {
+        payment_method: paymentMethod,
+        payment_details: paymentDetails,
+      });
+
+      if (!updatedReferrer) {
+        return sendJson(req, res, 404, {
+          success: false,
+          message: "Referrer not found",
+        });
+      }
+
+      return sendJson(req, res, 200, {
+        success: true,
+        message: "Payment details updated successfully",
+        referrer: updatedReferrer,
+      });
+    }
+
     // Admin: Create payment
     if (req.method === "POST" && act === "create-payment") {
-      const { referrerId, amount, paymentMethod, paymentDate } = body;
+      const { referrerId, amount, paymentMethod, paymentDate, status } = body;
       if (!referrerId || !amount) {
         return sendJson(req, res, 400, {
           success: false,
@@ -1185,7 +1243,7 @@ async function handleReferral(req, res, action, queryParams, body) {
         amount,
         payment_method: paymentMethod || "bank",
         payment_date: paymentDate || new Date().toISOString(),
-        status: "completed",
+        status: status || "paid",
       });
 
       return sendJson(req, res, 201, {
@@ -1194,10 +1252,42 @@ async function handleReferral(req, res, action, queryParams, body) {
       });
     }
 
+    // Update payment status
+    if (req.method === "PUT" && act === "update-payment-status") {
+      const { paymentId, status } = body;
+      if (!paymentId || !status) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "Payment ID and status are required",
+        });
+      }
+
+      try {
+        const payment = await updatePayment(paymentId, { status });
+        if (!payment) {
+          return sendJson(req, res, 404, {
+            success: false,
+            message: "Payment not found",
+          });
+        }
+
+        return sendJson(req, res, 200, {
+          success: true,
+          message: "Payment status updated successfully",
+          payment,
+        });
+      } catch (error) {
+        return sendJson(req, res, 500, {
+          success: false,
+          message: error.message || "Failed to update payment status",
+        });
+      }
+    }
+
     return sendJson(req, res, 400, {
       success: false,
       message:
-        "Invalid action. Use: signup, referrer, referrals, payments, create, admin-referrers, update-referral, create-payment",
+        "Invalid action. Use: signup, referrer, referrals, payments, create, admin-referrers, update-referral, update-payment, update-payment-status, create-payment, sync-payments",
     });
   } catch (error) {
     console.error("Referral API error:", error);
@@ -1208,16 +1298,15 @@ async function handleReferral(req, res, action, queryParams, body) {
   }
 }
 
-// Calculate commission based on system size and type
-function calculateCommission(systemSize, systemType) {
-  // Default commission structure (you can customize this)
-  // Example: 2% of system value, minimum ₱1,000, maximum ₱50,000
-  const systemValue = parseFloat(systemSize) * 100000; // Assuming ₱100k per kW
-  const commissionRate = 0.02; // 2%
-  let commission = systemValue * commissionRate;
+// Calculate commission as 3% of contract price
+function calculateCommission(contractPrice) {
+  if (!contractPrice || contractPrice <= 0) {
+    return 0; // No commission if no contract price provided
+  }
 
-  // Minimum and maximum limits
-  commission = Math.max(1000, Math.min(50000, commission));
+  const price = parseFloat(contractPrice);
+  const commissionRate = 0.03; // 3%
+  const commission = price * commissionRate;
 
-  return Math.round(commission);
+  return Math.round(commission * 100) / 100; // Round to 2 decimal places
 }

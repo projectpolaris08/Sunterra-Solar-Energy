@@ -14,6 +14,10 @@ import {
   RefreshCw,
   Eye,
   EyeOff,
+  CreditCard,
+  Edit,
+  Save,
+  X,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -46,6 +50,7 @@ interface Referral {
   system_size: string;
   status: string;
   commission_amount: number;
+  contract_price?: number;
   notes?: string;
   location?: string;
   property_type?: string;
@@ -63,7 +68,9 @@ interface Payment {
   created_at: string;
 }
 
-export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps) {
+export default function ReferralDashboard({
+  onNavigate,
+}: ReferralDashboardProps) {
   const [referrer, setReferrer] = useState<ReferrerData | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -72,6 +79,14 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
   const [copied, setCopied] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
   const [newReferralsCount, setNewReferralsCount] = useState(0);
+  const [isEditingPayment, setIsEditingPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentDetails, setPaymentDetails] = useState("");
+  const [updatingPayment, setUpdatingPayment] = useState(false);
+  const [paymentUpdateError, setPaymentUpdateError] = useState<string | null>(
+    null
+  );
+  const [paymentUpdateSuccess, setPaymentUpdateSuccess] = useState(false);
 
   // Get referrer ID from localStorage or prompt for email
   const [referrerEmail, setReferrerEmail] = useState<string | null>(
@@ -83,7 +98,7 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
   useEffect(() => {
     if (referrerEmail) {
       fetchDashboardData();
-      
+
       // Auto-refresh every 30 seconds to get new referrals (silent refresh)
       const refreshInterval = setInterval(() => {
         fetchDashboardData(false); // Don't show loading spinner on auto-refresh
@@ -117,10 +132,16 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
 
       // Get password from localStorage (stored after login)
       const storedPassword = localStorage.getItem("referrer_password");
-      
+
       // Fetch referrer data (password optional for backward compatibility)
       const referrerResponse = await fetch(
-        `${apiUrl}/api/referral?action=referrer&email=${encodeURIComponent(referrerEmail!)}${storedPassword ? `&password=${encodeURIComponent(storedPassword)}` : ""}`
+        `${apiUrl}/api/referral?action=referrer&email=${encodeURIComponent(
+          referrerEmail!
+        )}${
+          storedPassword
+            ? `&password=${encodeURIComponent(storedPassword)}`
+            : ""
+        }`
       );
       const referrerData = await referrerResponse.json();
 
@@ -129,6 +150,13 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
       }
 
       setReferrer(referrerData.referrer);
+      // Initialize payment method and details from referrer data
+      if (referrerData.referrer.payment_method) {
+        setPaymentMethod(referrerData.referrer.payment_method);
+      }
+      if (referrerData.referrer.payment_details) {
+        setPaymentDetails(referrerData.referrer.payment_details);
+      }
 
       // Fetch referrals
       const referralsResponse = await fetch(
@@ -137,18 +165,20 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
       const referralsData = await referralsResponse.json();
       if (referralsData.success) {
         const newReferrals = referralsData.referrals || [];
-        
+
         // Check for new referrals (compare with existing)
         if (referrals.length > 0) {
           const existingIds = new Set(referrals.map((r: Referral) => r.id));
-          const newCount = newReferrals.filter((r: Referral) => !existingIds.has(r.id)).length;
+          const newCount = newReferrals.filter(
+            (r: Referral) => !existingIds.has(r.id)
+          ).length;
           if (newCount > 0) {
             setNewReferralsCount(newCount);
             // Clear notification after 5 seconds
             setTimeout(() => setNewReferralsCount(0), 5000);
           }
         }
-        
+
         setReferrals(newReferrals);
         setLastRefreshTime(new Date());
       }
@@ -177,7 +207,8 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
     setError(null);
     const form = e.target as HTMLFormElement;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement)
+      .value;
 
     if (!email || !password) {
       setError("Please enter your email and password");
@@ -235,9 +266,9 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
 
   const getReferralLink = () => {
     // Use production URL for sharing, but allow localhost for development
-    const baseUrl = 
-      window.location.hostname === "localhost" 
-        ? window.location.origin 
+    const baseUrl =
+      window.location.hostname === "localhost"
+        ? window.location.origin
         : "https://sunterrasolarenergy.com";
     return `${baseUrl}/contact?ref=${referrer?.referral_code}`;
   };
@@ -262,6 +293,86 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
     navigator.clipboard.writeText(referralLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleEditPayment = () => {
+    setIsEditingPayment(true);
+    setPaymentMethod(referrer?.payment_method || "");
+    setPaymentDetails(referrer?.payment_details || "");
+    setPaymentUpdateError(null);
+    setPaymentUpdateSuccess(false);
+  };
+
+  const handleCancelEditPayment = () => {
+    setIsEditingPayment(false);
+    setPaymentMethod(referrer?.payment_method || "");
+    setPaymentDetails(referrer?.payment_details || "");
+    setPaymentUpdateError(null);
+    setPaymentUpdateSuccess(false);
+  };
+
+  const handleSavePayment = async () => {
+    if (!referrer?.id) {
+      setPaymentUpdateError("Referrer ID not found");
+      return;
+    }
+
+    if (!paymentMethod || !paymentDetails) {
+      setPaymentUpdateError(
+        "Please fill in both payment method and payment details"
+      );
+      return;
+    }
+
+    setUpdatingPayment(true);
+    setPaymentUpdateError(null);
+    setPaymentUpdateSuccess(false);
+
+    try {
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        "https://sunterra-solar-energy.vercel.app";
+
+      const response = await fetch(
+        `${apiUrl}/api/referral?action=update-payment`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            referrerId: referrer.id,
+            paymentMethod,
+            paymentDetails,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to update payment details");
+      }
+
+      // Update local referrer state
+      setReferrer({
+        ...referrer,
+        payment_method: paymentMethod,
+        payment_details: paymentDetails,
+      });
+
+      setPaymentUpdateSuccess(true);
+      setIsEditingPayment(false);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setPaymentUpdateSuccess(false), 3000);
+    } catch (err) {
+      setPaymentUpdateError(
+        err instanceof Error ? err.message : "Failed to update payment details"
+      );
+    } finally {
+      setUpdatingPayment(false);
+    }
   };
 
   if (showLogin) {
@@ -338,7 +449,9 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
 
                 {error && (
                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                    <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {error}
+                    </p>
                   </div>
                 )}
 
@@ -372,7 +485,9 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
         <div className="container mx-auto px-4">
           <Card className="max-w-6xl mx-auto text-center py-20">
             <div className="inline-block animate-spin text-4xl mb-4">⏳</div>
-            <p className="text-gray-600 dark:text-gray-300">Loading dashboard...</p>
+            <p className="text-gray-600 dark:text-gray-300">
+              Loading dashboard...
+            </p>
           </Card>
         </div>
       </section>
@@ -437,17 +552,148 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
                 Track your referrals and earnings
               </p>
             </div>
-            <Button variant="outline" onClick={handleLogout} className="mt-4 md:mt-0">
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="mt-4 md:mt-0"
+            >
               <LogOut className="w-4 h-4 mr-2" />
               Logout
             </Button>
           </div>
 
+          {/* Payment Method Card */}
+          <Card className="mb-8 bg-white dark:bg-gray-800 border-2 border-green-200 dark:border-green-700 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <CreditCard className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Payment Information
+                </h2>
+              </div>
+              {!isEditingPayment && (
+                <button
+                  onClick={handleEditPayment}
+                  className="flex items-center px-3 py-1.5 text-sm font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                >
+                  <Edit className="w-4 h-4 mr-1" />
+                  Edit
+                </button>
+              )}
+            </div>
+
+            {paymentUpdateSuccess && (
+              <div className="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                <p className="text-sm text-green-600 dark:text-green-400">
+                  ✓ Payment details updated successfully!
+                </p>
+              </div>
+            )}
+
+            {paymentUpdateError && (
+              <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {paymentUpdateError}
+                </p>
+              </div>
+            )}
+
+            {isEditingPayment ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Payment Method
+                  </label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    <option value="">Select payment method</option>
+                    <option value="gcash">GCash</option>
+                    <option value="paymaya">PayMaya</option>
+                    <option value="bank">Bank Transfer</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Payment Details
+                  </label>
+                  <input
+                    type="text"
+                    value={paymentDetails}
+                    onChange={(e) => setPaymentDetails(e.target.value)}
+                    placeholder="e.g., GCash number, bank account number, PayPal email"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Enter your account number, email, or other payment details
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Button
+                    onClick={handleSavePayment}
+                    disabled={updatingPayment}
+                    className="bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700"
+                  >
+                    {updatingPayment ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Changes
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={handleCancelEditPayment}
+                    variant="outline"
+                    disabled={updatingPayment}
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Payment Method
+                  </p>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
+                    {referrer?.payment_method || "Not set"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Payment Details
+                  </p>
+                  <p className="text-lg font-medium text-gray-900 dark:text-white">
+                    {referrer?.payment_details || "Not provided"}
+                  </p>
+                </div>
+                {!referrer?.payment_method || !referrer?.payment_details ? (
+                  <p className="text-sm text-amber-600 dark:text-amber-400 italic">
+                    Please update your payment information to receive payments
+                  </p>
+                ) : null}
+              </div>
+            )}
+          </Card>
+
           {/* Referral Code Card */}
           <Card className="mb-8 bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-700 shadow-xl">
             <div className="space-y-4">
               <div>
-                <p className="text-gray-700 dark:text-gray-300 mb-2 font-semibold text-sm uppercase tracking-wide">Your Referral Code</p>
+                <p className="text-gray-700 dark:text-gray-300 mb-2 font-semibold text-sm uppercase tracking-wide">
+                  Your Referral Code
+                </p>
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg shadow-md">
                     <p className="text-3xl font-bold font-mono">
@@ -463,9 +709,11 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
                   </button>
                 </div>
               </div>
-              
+
               <div>
-                <p className="text-gray-700 dark:text-gray-300 mb-2 font-semibold text-sm uppercase tracking-wide">Your Referral Link</p>
+                <p className="text-gray-700 dark:text-gray-300 mb-2 font-semibold text-sm uppercase tracking-wide">
+                  Your Referral Link
+                </p>
                 <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-900 rounded-lg p-3 border-2 border-gray-200 dark:border-gray-700">
                   <p className="text-sm font-mono text-gray-800 dark:text-gray-200 flex-1 break-all">
                     {getReferralLink()}
@@ -480,7 +728,9 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 text-xs mt-2">
                   {copied ? (
-                    <span className="text-green-600 dark:text-green-400 font-semibold">✓ Link copied to clipboard!</span>
+                    <span className="text-green-600 dark:text-green-400 font-semibold">
+                      ✓ Link copied to clipboard!
+                    </span>
                   ) : (
                     "Click the copy button to copy the full link - it will auto-fill the referral code on the contact form"
                   )}
@@ -538,7 +788,8 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
                 </h2>
                 {newReferralsCount > 0 && (
                   <p className="text-sm text-green-600 dark:text-green-400 mt-1 font-medium">
-                    ✨ {newReferralsCount} new referral{newReferralsCount > 1 ? "s" : ""}!
+                    ✨ {newReferralsCount} new referral
+                    {newReferralsCount > 1 ? "s" : ""}!
                   </p>
                 )}
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -576,7 +827,10 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
                         Status
                       </th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Commission
+                        Contract Price
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Commission (3%)
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Date
@@ -603,11 +857,12 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
                           <p className="text-gray-900 dark:text-white font-medium">
                             {referral.system_type}
                           </p>
-                          {referral.system_size && referral.system_size !== referral.system_type && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {referral.system_size}
-                            </p>
-                          )}
+                          {referral.system_size &&
+                            referral.system_size !== referral.system_type && (
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {referral.system_size}
+                              </p>
+                            )}
                           {referral.notes && (
                             <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs text-gray-600 dark:text-gray-400">
                               {referral.notes.split(" | ").map((note, idx) => (
@@ -621,6 +876,8 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               referral.status === "completed"
                                 ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                : referral.status === "paid"
+                                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
                                 : referral.status === "approved"
                                 ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
                                 : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
@@ -631,8 +888,34 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
                         </td>
                         <td className="py-3 px-4 text-right">
                           <p className="font-semibold text-gray-900 dark:text-white">
-                            ₱{referral.commission_amount?.toLocaleString() || "0"}
+                            {referral.contract_price
+                              ? `₱${referral.contract_price.toLocaleString(
+                                  undefined,
+                                  {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  }
+                                )}`
+                              : "—"}
                           </p>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <p className="font-semibold text-gray-900 dark:text-white">
+                            ₱
+                            {referral.commission_amount?.toLocaleString(
+                              undefined,
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            ) || "0.00"}
+                          </p>
+                          {referral.contract_price && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              (3% of ₱{referral.contract_price.toLocaleString()}
+                              )
+                            </p>
+                          )}
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-500 dark:text-gray-400">
                           {new Date(referral.created_at).toLocaleDateString()}

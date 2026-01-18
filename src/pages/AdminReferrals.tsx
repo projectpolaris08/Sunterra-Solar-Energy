@@ -11,6 +11,8 @@ import {
   X,
   Plus,
   Save,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 
 interface AdminReferralsProps {
@@ -24,6 +26,8 @@ interface Referrer {
   email: string;
   phone: string;
   referral_code: string;
+  payment_method?: string;
+  payment_details?: string;
   total_referrals: number;
   total_earnings: number;
   paid_earnings: number;
@@ -42,6 +46,7 @@ interface Referral {
   system_size: string;
   status: string;
   commission_amount: number;
+  contract_price?: number;
   notes?: string;
   created_at: string;
 }
@@ -60,6 +65,7 @@ const statusColors = {
   pending:
     "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
   approved: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  paid: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
   completed:
     "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
   cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
@@ -84,18 +90,53 @@ export default function AdminReferrals({
     amount: "",
     paymentMethod: "bank",
     paymentDate: new Date().toISOString().split("T")[0],
+    status: "paid",
   });
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    type: "success" | "error" | "info";
+    title: string;
+    message: string;
+    details?: { contractPrice?: number; commission?: number };
+  } | null>(null);
 
   const apiUrl =
     import.meta.env.VITE_API_URL || "https://sunterra-solar-energy.vercel.app";
 
   useEffect(() => {
     fetchData();
+
+    // Auto-refresh every 30 seconds to get updated payment details
+    const refreshInterval = setInterval(() => {
+      fetchData();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(refreshInterval);
   }, []);
+
+  // Auto-dismiss notification after 5 seconds
+  useEffect(() => {
+    if (notification?.show) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Sync paid referrals with payments first
+      try {
+        await fetch(`${apiUrl}/api/referral?action=sync-payments`, {
+          method: "POST",
+        });
+      } catch (syncError) {
+        console.warn("Failed to sync payments:", syncError);
+        // Continue even if sync fails
+      }
+
       // Fetch referrers
       const referrersRes = await fetch(
         `${apiUrl}/api/referral?action=admin-referrers`
@@ -160,6 +201,7 @@ export default function AdminReferrals({
           body: JSON.stringify({
             id: referral.id,
             status: referral.status,
+            contractPrice: referral.contract_price ?? null,
             commissionAmount: referral.commission_amount,
           }),
         }
@@ -167,21 +209,106 @@ export default function AdminReferrals({
 
       const data = await response.json();
       if (data.success) {
+        // Update local state with the returned referral data (includes contract_price)
         setReferrals((prev) =>
-          prev.map((r) => (r.id === referral.id ? { ...referral } : r))
+          prev.map((r) =>
+            r.id === referral.id ? { ...r, ...data.referral } : r
+          )
         );
         setEditingReferral(null);
-        fetchData(); // Refresh to update stats
+        fetchData(); // Refresh to update stats and ensure consistency
+
+        // Show success notification
+        setNotification({
+          show: true,
+          type: "success",
+          title: "Referral Updated Successfully",
+          message:
+            "The referral has been updated and changes will appear in the referral dashboard.",
+          details: referral.contract_price
+            ? {
+                contractPrice: referral.contract_price,
+                commission: referral.commission_amount,
+              }
+            : undefined,
+        });
+      } else {
+        setNotification({
+          show: true,
+          type: "error",
+          title: "Update Failed",
+          message:
+            data.message || "Failed to update referral. Please try again.",
+        });
       }
     } catch (error) {
       console.error("Failed to update referral:", error);
-      alert("Failed to update referral. Please try again.");
+      setNotification({
+        show: true,
+        type: "error",
+        title: "Update Failed",
+        message: "Failed to update referral. Please try again.",
+      });
+    }
+  };
+
+  const handleUpdatePaymentStatus = async (
+    paymentId: string,
+    newStatus: string
+  ) => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/api/referral?action=update-payment-status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            paymentId,
+            status: newStatus,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setNotification({
+          show: true,
+          type: "success",
+          title: "Payment Updated",
+          message: `Payment status updated to ${newStatus} successfully.`,
+        });
+        fetchData();
+      } else {
+        setNotification({
+          show: true,
+          type: "error",
+          title: "Update Failed",
+          message: data.message || "Failed to update payment status.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to update payment:", error);
+      setNotification({
+        show: true,
+        type: "error",
+        title: "Update Failed",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to update payment status. Please try again.",
+      });
     }
   };
 
   const handleCreatePayment = async () => {
     if (!paymentForm.referrerId || !paymentForm.amount) {
-      alert("Please fill in all required fields");
+      setNotification({
+        show: true,
+        type: "error",
+        title: "Validation Error",
+        message: "Please fill in all required fields",
+      });
       return;
     }
 
@@ -196,6 +323,7 @@ export default function AdminReferrals({
             amount: parseFloat(paymentForm.amount),
             paymentMethod: paymentForm.paymentMethod,
             paymentDate: paymentForm.paymentDate,
+            status: paymentForm.status,
           }),
         }
       );
@@ -208,12 +336,18 @@ export default function AdminReferrals({
           amount: "",
           paymentMethod: "bank",
           paymentDate: new Date().toISOString().split("T")[0],
+          status: "paid",
         });
         fetchData();
       }
     } catch (error) {
       console.error("Failed to create payment:", error);
-      alert("Failed to create payment. Please try again.");
+      setNotification({
+        show: true,
+        type: "error",
+        title: "Payment Creation Failed",
+        message: "Failed to create payment. Please try again.",
+      });
     }
   };
 
@@ -364,6 +498,9 @@ export default function AdminReferrals({
                         Referral Code
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Payment Details
+                      </th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Referrals
                       </th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -393,6 +530,23 @@ export default function AdminReferrals({
                           <span className="font-mono text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
                             {referrer.referral_code}
                           </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          {referrer.payment_method &&
+                          referrer.payment_details ? (
+                            <div className="text-sm">
+                              <p className="font-medium text-gray-900 dark:text-white capitalize">
+                                {referrer.payment_method}
+                              </p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                {referrer.payment_details}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-400 dark:text-gray-500 italic">
+                              Not provided
+                            </span>
+                          )}
                         </td>
                         <td className="py-3 px-4 text-gray-900 dark:text-white">
                           {referrer.total_referrals || 0}
@@ -428,7 +582,10 @@ export default function AdminReferrals({
                         Status
                       </th>
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Commission
+                        Contract Price
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Commission (3%)
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Date
@@ -471,6 +628,7 @@ export default function AdminReferrals({
                             >
                               <option value="pending">Pending</option>
                               <option value="approved">Approved</option>
+                              <option value="paid">Paid</option>
                               <option value="completed">Completed</option>
                               <option value="cancelled">Cancelled</option>
                             </select>
@@ -488,24 +646,95 @@ export default function AdminReferrals({
                         </td>
                         <td className="py-3 px-4 text-right">
                           {editingReferral?.id === referral.id ? (
-                            <input
-                              type="number"
-                              value={editingReferral.commission_amount}
-                              onChange={(e) =>
-                                setEditingReferral({
-                                  ...editingReferral,
-                                  commission_amount:
-                                    parseFloat(e.target.value) || 0,
-                                })
-                              }
-                              className="w-24 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                            />
+                            <div>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={editingReferral.contract_price || ""}
+                                onChange={(e) => {
+                                  const price = parseFloat(e.target.value) || 0;
+                                  const commission = price * 0.03; // 3% commission
+                                  setEditingReferral({
+                                    ...editingReferral,
+                                    contract_price:
+                                      price > 0 ? price : undefined,
+                                    commission_amount:
+                                      Math.round(commission * 100) / 100,
+                                  });
+                                }}
+                                className="w-32 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                placeholder="0.00"
+                              />
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="font-semibold text-gray-900 dark:text-white">
+                                {referral.contract_price ? (
+                                  `₱${referral.contract_price.toLocaleString(
+                                    undefined,
+                                    {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    }
+                                  )}`
+                                ) : referral.commission_amount > 0 ? (
+                                  <span
+                                    className="text-amber-600 dark:text-amber-400"
+                                    title="Contract price not set. Click edit to add it."
+                                  >
+                                    —{" "}
+                                    <span className="text-xs">
+                                      (Est: ₱
+                                      {(
+                                        referral.commission_amount / 0.03
+                                      ).toLocaleString(undefined, {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                      })}
+                                      )
+                                    </span>
+                                  </span>
+                                ) : (
+                                  "—"
+                                )}
+                              </span>
+                              {referral.contract_price && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  (Updates in real-time on referral dashboard)
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          {editingReferral?.id === referral.id ? (
+                            <div>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={editingReferral.commission_amount}
+                                onChange={(e) =>
+                                  setEditingReferral({
+                                    ...editingReferral,
+                                    commission_amount:
+                                      parseFloat(e.target.value) || 0,
+                                  })
+                                }
+                                className="w-24 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                              />
+                            </div>
                           ) : (
                             <span className="font-semibold text-gray-900 dark:text-white">
                               ₱
-                              {(
-                                referral.commission_amount || 0
-                              ).toLocaleString()}
+                              {(referral.commission_amount || 0).toLocaleString(
+                                undefined,
+                                {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                }
+                              )}
                             </span>
                           )}
                         </td>
@@ -563,10 +792,16 @@ export default function AdminReferrals({
                         Method
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Payment Details
+                      </th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Status
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
                         Date
+                      </th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Actions
                       </th>
                     </tr>
                   </thead>
@@ -595,20 +830,52 @@ export default function AdminReferrals({
                             key={payment.id}
                             className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                           >
-                            <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">
-                              {referrer?.name || "Unknown"}
+                            <td className="py-3 px-4">
+                              <div>
+                                <p className="font-medium text-gray-900 dark:text-white">
+                                  {referrer?.name || "Unknown"}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {referrer?.email || ""}
+                                </p>
+                              </div>
                             </td>
                             <td className="py-3 px-4 text-right font-semibold text-green-600 dark:text-green-400">
-                              ₱{payment.amount.toLocaleString()}
+                              ₱
+                              {payment.amount.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </td>
                             <td className="py-3 px-4 text-gray-600 dark:text-gray-400 capitalize">
                               {payment.payment_method}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div>
+                                {referrer?.payment_method &&
+                                referrer?.payment_details ? (
+                                  <div className="text-sm">
+                                    <p className="font-medium text-gray-900 dark:text-white capitalize">
+                                      {referrer.payment_method}
+                                    </p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                      {referrer.payment_details}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-gray-400 dark:text-gray-500 italic">
+                                    Not provided
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="py-3 px-4">
                               <span
                                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                   payment.status === "completed"
                                     ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                    : payment.status === "paid"
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
                                     : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
                                 }`}
                               >
@@ -619,6 +886,41 @@ export default function AdminReferrals({
                               {new Date(
                                 payment.payment_date
                               ).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 px-4">
+                              {payment.status === "pending" ? (
+                                <button
+                                  onClick={() =>
+                                    handleUpdatePaymentStatus(
+                                      payment.id,
+                                      "paid"
+                                    )
+                                  }
+                                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors"
+                                  title="Mark as paid"
+                                >
+                                  <CheckCircle className="w-3.5 h-3.5" />
+                                  Mark Paid
+                                </button>
+                              ) : payment.status === "paid" ? (
+                                <button
+                                  onClick={() =>
+                                    handleUpdatePaymentStatus(
+                                      payment.id,
+                                      "completed"
+                                    )
+                                  }
+                                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                                  title="Mark as completed"
+                                >
+                                  <CheckCircle className="w-3.5 h-3.5" />
+                                  Complete
+                                </button>
+                              ) : (
+                                <span className="text-xs text-gray-400 dark:text-gray-500 italic">
+                                  No action
+                                </span>
+                              )}
                             </td>
                           </tr>
                         );
@@ -718,6 +1020,25 @@ export default function AdminReferrals({
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Status
+                </label>
+                <select
+                  value={paymentForm.status}
+                  onChange={(e) =>
+                    setPaymentForm({
+                      ...paymentForm,
+                      status: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="paid">Paid</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={handleCreatePayment}
@@ -732,6 +1053,111 @@ export default function AdminReferrals({
                   Cancel
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notification Modal */}
+      {notification?.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg mx-auto transform transition-all animate-in fade-in zoom-in-95 overflow-hidden">
+            {/* Header */}
+            <div
+              className={`flex items-center justify-between px-6 py-5 border-b rounded-t-2xl ${
+                notification.type === "success"
+                  ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+                  : notification.type === "error"
+                  ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+                  : "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                {notification.type === "success" ? (
+                  <div className="p-2.5 bg-green-100 dark:bg-green-900/30 rounded-full">
+                    <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  </div>
+                ) : (
+                  <div className="p-2.5 bg-red-100 dark:bg-red-900/30 rounded-full">
+                    <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  </div>
+                )}
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {notification.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => setNotification(null)}
+                className="p-2 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5">
+              <p className="text-base text-gray-700 dark:text-gray-300 mb-5 leading-relaxed">
+                {notification.message}
+              </p>
+
+              {/* Contract Price & Commission Details */}
+              {notification.details?.contractPrice && (
+                <div className="mt-5 p-5 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-blue-200 dark:border-gray-600">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                        Contract Price
+                      </p>
+                      <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                        ₱
+                        {notification.details.contractPrice.toLocaleString(
+                          undefined,
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                        Commission (3%)
+                      </p>
+                      <p className="text-xl font-bold text-green-600 dark:text-green-400">
+                        ₱
+                        {notification.details.commission?.toLocaleString(
+                          undefined,
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-blue-200 dark:border-gray-600">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                      💡 This update will appear in the referral dashboard
+                      within 30 seconds (auto-refresh) or immediately when the
+                      user refreshes.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-3 px-6 py-5 border-t border-gray-200 dark:border-gray-700 rounded-b-2xl">
+              <button
+                onClick={() => setNotification(null)}
+                className={`px-8 py-2.5 rounded-lg font-semibold text-base transition-colors ${
+                  notification.type === "success"
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                }`}
+              >
+                OK
+              </button>
             </div>
           </div>
         </div>

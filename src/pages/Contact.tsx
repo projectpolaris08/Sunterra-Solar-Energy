@@ -26,6 +26,7 @@ export default function Contact({ onNavigate }: ContactProps) {
     location: "",
     roofType: "",
     referralCode: "",
+    contractPrice: "",
     message: "",
   });
 
@@ -151,6 +152,9 @@ export default function Contact({ onNavigate }: ContactProps) {
                 location: formData.location,
                 propertyType: formData.propertyType,
                 roofType: formData.roofType,
+                contractPrice: formData.contractPrice
+                  ? parseFloat(formData.contractPrice)
+                  : null,
                 message: formData.message,
               }),
             }
@@ -221,6 +225,7 @@ export default function Contact({ onNavigate }: ContactProps) {
         location: "",
         roofType: "",
         referralCode: "",
+        contractPrice: "",
         message: "",
       });
 
@@ -735,6 +740,33 @@ export default function Contact({ onNavigate }: ContactProps) {
                           <option value="not-sure">Not Sure</option>
                         </select>
                       </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="contractPrice"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                      >
+                        Contract Price (₱){" "}
+                        <span className="text-xs text-gray-500">
+                          (Optional - for commission calculation)
+                        </span>
+                      </label>
+                      <input
+                        type="number"
+                        id="contractPrice"
+                        name="contractPrice"
+                        min="0"
+                        step="0.01"
+                        value={formData.contractPrice}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                        placeholder="Enter total contract price (e.g., 500000)"
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Commission will be calculated as 3% of the contract
+                        price
+                      </p>
                     </div>
 
                     <div>

@@ -346,7 +346,10 @@ export async function createReferral(referralData) {
   const newReferral = {
     ...referralData,
     status: "pending",
-    commission_amount: 0,
+    // Use provided commission_amount or calculate from contract_price, or default to 0
+    commission_amount:
+      referralData.commission_amount ??
+      (referralData.contract_price ? referralData.contract_price * 0.03 : 0),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -402,6 +405,13 @@ export async function updateReferral(id, updates) {
 
   if (supabase) {
     try {
+      // Get the referral first to check current status and commission
+      const { data: currentReferral } = await supabase
+        .from("referrals")
+        .select("*")
+        .eq("id", id)
+        .single();
+
       const { data, error } = await supabase
         .from("referrals")
         .update(updatedData)
@@ -411,10 +421,52 @@ export async function updateReferral(id, updates) {
 
       if (error) throw error;
 
-      // Update referrer stats if status or commission changed
-      if (updates.status || updates.commission_amount) {
-        const referral =
-          data || memoryStorage.referrals.find((r) => r.id === id);
+      const referral = data || memoryStorage.referrals.find((r) => r.id === id);
+
+      // If status is updated to "paid", update or create corresponding payment
+      if (
+        updates.status === "paid" &&
+        referral?.referrer_id &&
+        referral?.commission_amount
+      ) {
+        // Find pending payment for this referrer with matching commission amount
+        const { data: payments } = await supabase
+          .from("referral_payments")
+          .select("*")
+          .eq("referrer_id", referral.referrer_id)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false });
+
+        if (payments && payments.length > 0) {
+          // Find payment with matching commission amount (or closest match)
+          const matchingPayment =
+            payments.find(
+              (p) => Math.abs(p.amount - referral.commission_amount) < 0.01
+            ) || payments[0]; // Use first pending payment if no exact match
+
+          // Update the payment status to "paid"
+          await supabase
+            .from("referral_payments")
+            .update({ status: "paid", updated_at: new Date().toISOString() })
+            .eq("id", matchingPayment.id);
+        } else {
+          // No pending payment found, create a new payment record
+          await createPayment({
+            referrer_id: referral.referrer_id,
+            amount: referral.commission_amount,
+            payment_method: "auto",
+            payment_date: new Date().toISOString(),
+            status: "paid",
+          });
+        }
+      }
+
+      // Update referrer stats if status, commission, or contract price changed
+      if (
+        updates.status ||
+        updates.commission_amount ||
+        updates.contract_price
+      ) {
         if (referral?.referrer_id) {
           await updateReferrerStats(referral.referrer_id);
         }
@@ -430,6 +482,47 @@ export async function updateReferral(id, updates) {
           ...updatedData,
         };
         const referral = memoryStorage.referrals[index];
+
+        // If status is updated to "paid", update or create corresponding payment (in-memory)
+        if (
+          updates.status === "paid" &&
+          referral?.referrer_id &&
+          referral?.commission_amount
+        ) {
+          const pendingPayments = memoryStorage.payments.filter(
+            (p) =>
+              p.referrer_id === referral.referrer_id && p.status === "pending"
+          );
+
+          if (pendingPayments.length > 0) {
+            const matchingPayment =
+              pendingPayments.find(
+                (p) => Math.abs(p.amount - referral.commission_amount) < 0.01
+              ) || pendingPayments[0];
+
+            const paymentIndex = memoryStorage.payments.findIndex(
+              (p) => p.id === matchingPayment.id
+            );
+            if (paymentIndex !== -1) {
+              memoryStorage.payments[paymentIndex].status = "paid";
+              memoryStorage.payments[paymentIndex].updated_at =
+                new Date().toISOString();
+            }
+          } else {
+            // Create new payment
+            memoryStorage.payments.push({
+              id: Date.now().toString(),
+              referrer_id: referral.referrer_id,
+              amount: referral.commission_amount,
+              payment_method: "auto",
+              payment_date: new Date().toISOString(),
+              status: "paid",
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+          }
+        }
+
         if (referral?.referrer_id) {
           await updateReferrerStats(referral.referrer_id);
         }
@@ -446,6 +539,46 @@ export async function updateReferral(id, updates) {
       ...updatedData,
     };
     const referral = memoryStorage.referrals[index];
+
+    // If status is updated to "paid", update or create corresponding payment (in-memory)
+    if (
+      updates.status === "paid" &&
+      referral?.referrer_id &&
+      referral?.commission_amount
+    ) {
+      const pendingPayments = memoryStorage.payments.filter(
+        (p) => p.referrer_id === referral.referrer_id && p.status === "pending"
+      );
+
+      if (pendingPayments.length > 0) {
+        const matchingPayment =
+          pendingPayments.find(
+            (p) => Math.abs(p.amount - referral.commission_amount) < 0.01
+          ) || pendingPayments[0];
+
+        const paymentIndex = memoryStorage.payments.findIndex(
+          (p) => p.id === matchingPayment.id
+        );
+        if (paymentIndex !== -1) {
+          memoryStorage.payments[paymentIndex].status = "paid";
+          memoryStorage.payments[paymentIndex].updated_at =
+            new Date().toISOString();
+        }
+      } else {
+        // Create new payment
+        memoryStorage.payments.push({
+          id: Date.now().toString(),
+          referrer_id: referral.referrer_id,
+          amount: referral.commission_amount,
+          payment_method: "auto",
+          payment_date: new Date().toISOString(),
+          status: "paid",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      }
+    }
+
     if (referral?.referrer_id) {
       await updateReferrerStats(referral.referrer_id);
     }
@@ -489,7 +622,7 @@ export async function getPayments(referrerId = null) {
 export async function createPayment(paymentData) {
   const newPayment = {
     ...paymentData,
-    status: "pending",
+    status: paymentData.status || "pending",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -504,8 +637,8 @@ export async function createPayment(paymentData) {
 
       if (error) throw error;
 
-      // Update referrer paid earnings
-      if (paymentData.status === "completed") {
+      // Update referrer paid earnings if status is "completed" or "paid"
+      if (paymentData.status === "completed" || paymentData.status === "paid") {
         await updateReferrerPaidEarnings(
           paymentData.referrer_id,
           paymentData.amount
@@ -517,7 +650,7 @@ export async function createPayment(paymentData) {
       console.error("Failed to create payment in Supabase:", error);
       newPayment.id = Date.now().toString();
       memoryStorage.payments.push(newPayment);
-      if (paymentData.status === "completed") {
+      if (paymentData.status === "completed" || paymentData.status === "paid") {
         await updateReferrerPaidEarnings(
           paymentData.referrer_id,
           paymentData.amount
@@ -529,7 +662,7 @@ export async function createPayment(paymentData) {
 
   newPayment.id = Date.now().toString();
   memoryStorage.payments.push(newPayment);
-  if (paymentData.status === "completed") {
+  if (paymentData.status === "completed" || paymentData.status === "paid") {
     await updateReferrerPaidEarnings(
       paymentData.referrer_id,
       paymentData.amount
@@ -555,8 +688,8 @@ export async function updatePayment(id, updates) {
 
       if (error) throw error;
 
-      // Update referrer paid earnings if status changed to completed
-      if (updates.status === "completed") {
+      // Update referrer paid earnings if status changed to completed or paid
+      if (updates.status === "completed" || updates.status === "paid") {
         const payment = data || memoryStorage.payments.find((p) => p.id === id);
         if (payment?.referrer_id) {
           await updateReferrerPaidEarnings(payment.referrer_id, payment.amount);
@@ -573,7 +706,10 @@ export async function updatePayment(id, updates) {
           ...updatedData,
         };
         const payment = memoryStorage.payments[index];
-        if (updates.status === "completed" && payment?.referrer_id) {
+        if (
+          (updates.status === "completed" || updates.status === "paid") &&
+          payment?.referrer_id
+        ) {
           await updateReferrerPaidEarnings(payment.referrer_id, payment.amount);
         }
         return memoryStorage.payments[index];
@@ -589,12 +725,110 @@ export async function updatePayment(id, updates) {
       ...updatedData,
     };
     const payment = memoryStorage.payments[index];
-    if (updates.status === "completed" && payment?.referrer_id) {
+    if (
+      (updates.status === "completed" || updates.status === "paid") &&
+      payment?.referrer_id
+    ) {
       await updateReferrerPaidEarnings(payment.referrer_id, payment.amount);
     }
     return memoryStorage.payments[index];
   }
   return null;
+}
+
+// ==================== SYNC FUNCTIONS ====================
+// Sync payments for referrals that are "paid" but have pending payments
+export async function syncPaidReferralsWithPayments() {
+  if (supabase) {
+    try {
+      // Get all referrals with status "paid"
+      const { data: paidReferrals, error: referralsError } = await supabase
+        .from("referrals")
+        .select("*")
+        .eq("status", "paid");
+
+      if (referralsError) throw referralsError;
+
+      if (!paidReferrals || paidReferrals.length === 0) {
+        return { synced: 0 };
+      }
+
+      let syncedCount = 0;
+
+      // For each paid referral, check if payment needs to be updated
+      for (const referral of paidReferrals) {
+        if (!referral.referrer_id || !referral.commission_amount) continue;
+
+        // Find pending payments for this referrer with matching commission
+        const { data: pendingPayments } = await supabase
+          .from("referral_payments")
+          .select("*")
+          .eq("referrer_id", referral.referrer_id)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false });
+
+        if (pendingPayments && pendingPayments.length > 0) {
+          // Find payment with matching commission amount
+          const matchingPayment =
+            pendingPayments.find(
+              (p) => Math.abs(p.amount - referral.commission_amount) < 0.01
+            ) || pendingPayments[0]; // Use first pending payment if no exact match
+
+          // Update the payment status to "paid"
+          const { error: updateError } = await supabase
+            .from("referral_payments")
+            .update({ status: "paid", updated_at: new Date().toISOString() })
+            .eq("id", matchingPayment.id);
+
+          if (!updateError) {
+            syncedCount++;
+            // Update referrer paid earnings
+            await updateReferrerPaidEarnings(
+              referral.referrer_id,
+              matchingPayment.amount
+            );
+          }
+        }
+      }
+
+      return { synced: syncedCount };
+    } catch (error) {
+      console.error("Failed to sync paid referrals with payments:", error);
+      return { synced: 0, error: error.message };
+    }
+  }
+
+  // In-memory fallback
+  let syncedCount = 0;
+  const paidReferrals = memoryStorage.referrals.filter(
+    (r) => r.status === "paid"
+  );
+
+  for (const referral of paidReferrals) {
+    if (!referral.referrer_id || !referral.commission_amount) continue;
+
+    const pendingPayments = memoryStorage.payments.filter(
+      (p) =>
+        p.referrer_id === referral.referrer_id &&
+        p.status === "pending" &&
+        Math.abs(p.amount - referral.commission_amount) < 0.01
+    );
+
+    if (pendingPayments.length > 0) {
+      const payment = pendingPayments[0];
+      const paymentIndex = memoryStorage.payments.findIndex(
+        (p) => p.id === payment.id
+      );
+      if (paymentIndex !== -1) {
+        memoryStorage.payments[paymentIndex].status = "paid";
+        memoryStorage.payments[paymentIndex].updated_at =
+          new Date().toISOString();
+        syncedCount++;
+      }
+    }
+  }
+
+  return { synced: syncedCount };
 }
 
 // ==================== HELPER FUNCTIONS ====================
@@ -610,10 +844,13 @@ function generateReferralCode(nameOrEmail) {
   return `${prefix}-${middle}-${suffix}`;
 }
 
-async function updateReferrerStats(referrerId) {
+export async function updateReferrerStats(referrerId) {
   const referrals = await getReferrals(referrerId);
   const totalReferrals = referrals.length;
-  const completedReferrals = referrals.filter((r) => r.status === "completed");
+  // Total earnings includes both "paid" and "completed" statuses
+  const completedReferrals = referrals.filter(
+    (r) => r.status === "completed" || r.status === "paid"
+  );
   const totalEarnings = completedReferrals.reduce(
     (sum, r) => sum + (r.commission_amount || 0),
     0
