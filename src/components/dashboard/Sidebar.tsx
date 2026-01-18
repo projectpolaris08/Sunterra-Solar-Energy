@@ -12,6 +12,7 @@ import {
   UserPlus,
   Receipt,
   Ruler,
+  Gift,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
   { name: "Analytics", icon: BarChart3, path: "admin-analytics" },
   { name: "Clients", icon: Users, path: "admin-users" },
   { name: "Leads", icon: UserPlus, path: "admin-leads" },
+  { name: "Referrals", icon: Gift, path: "admin-referrals" },
   { name: "Expenses", icon: Receipt, path: "admin-expenses" },
   { name: "Calendar", icon: Calendar, path: "admin-calendar" },
   { name: "Monitoring", icon: Activity, path: "admin-monitoring" },

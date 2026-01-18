@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Menu, X, ArrowRight, ChevronDown } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import Button from "./Button";
 
@@ -11,6 +11,8 @@ interface HeaderProps {
 export default function Header({ currentPage, onNavigate }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
@@ -21,17 +23,45 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsServicesDropdownOpen(false);
+      }
+    };
+
+    if (isServicesDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isServicesDropdownOpen]);
+
   const navItems = [
     { name: "Home", path: "home" },
     { name: "About", path: "about" },
-    { name: "Services", path: "services" },
-    { name: "Projects", path: "projects" },
     { name: "Blog", path: "blog" },
-    { name: "Calculator", path: "calculator" },
     { name: "FAQ", path: "faq" },
-    { name: "Earn with Us", path: "referral" },
     { name: "Contact", path: "contact" },
   ];
+
+  const servicesSubmenu = [
+    { name: "Projects", path: "projects" },
+    { name: "Calculator", path: "calculator" },
+    { name: "Earn with Us", path: "referral" },
+  ];
+
+  // Check if current page is in services submenu
+  const isServicesPage =
+    currentPage === "projects" ||
+    currentPage === "calculator" ||
+    currentPage === "referral";
 
   const handleNavClick = (path: string) => {
     onNavigate(path);
@@ -79,16 +109,77 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                     : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                 }`}
               >
-                {item.name}
-                <span
-                  className={`absolute -bottom-1 left-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-300 ${
-                    currentPage === item.path
-                      ? "w-full"
-                      : "w-0 group-hover:w-full"
+                <span className="relative inline-block">
+                  {item.name}
+                  <span
+                    className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] bg-blue-600 dark:bg-blue-400 transition-all duration-300 ${
+                      currentPage === item.path
+                        ? "w-full"
+                        : "w-0 group-hover:w-full"
+                    }`}
+                  />
+                </span>
+              </button>
+            ))}
+
+            {/* Services Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setIsServicesDropdownOpen(!isServicesDropdownOpen)}
+                className={`font-medium transition-colors duration-300 relative group flex items-center space-x-1 ${
+                  isServicesPage
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
+                }`}
+              >
+                <span className="relative inline-block">
+                  Services
+                  <span
+                    className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] bg-blue-600 dark:bg-blue-400 transition-all duration-300 ${
+                      isServicesPage
+                        ? "w-full"
+                        : "w-0 group-hover:w-full"
+                    }`}
+                  />
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-300 ${
+                    isServicesDropdownOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
-            ))}
+
+              {/* Dropdown Menu */}
+              {isServicesDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
+                  {servicesSubmenu.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => {
+                        handleNavClick(item.path);
+                        setIsServicesDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors relative group ${
+                        currentPage === item.path
+                          ? "bg-blue-600 dark:bg-blue-600 text-white dark:text-white font-medium"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400"
+                      }`}
+                    >
+                      <span className="relative inline-block">
+                        {item.name}
+                        <span
+                          className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] transition-all duration-300 ${
+                            currentPage === item.path
+                              ? "w-full bg-white dark:bg-white"
+                              : "w-0 group-hover:w-full bg-blue-600 dark:bg-blue-400"
+                          }`}
+                        />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
@@ -151,6 +242,58 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                 {item.name}
               </button>
             ))}
+
+            {/* Services Dropdown for Mobile */}
+            <div className="mt-2">
+              <button
+                onClick={() =>
+                  setIsServicesDropdownOpen(!isServicesDropdownOpen)
+                }
+                className={`w-full flex items-center justify-between py-3 px-4 rounded-lg font-medium transition-colors ${
+                  isServicesPage
+                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                }`}
+              >
+                <span>Services</span>
+                <ChevronDown
+                  className={`w-5 h-5 transition-transform duration-300 ${
+                    isServicesDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isServicesDropdownOpen && (
+                <div className="ml-4 mt-2 space-y-1">
+                  {servicesSubmenu.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => {
+                        handleNavClick(item.path);
+                        setIsServicesDropdownOpen(false);
+                      }}
+                      className={`block w-full text-left py-2 px-4 rounded-lg text-sm transition-colors relative group ${
+                        currentPage === item.path
+                          ? "bg-blue-600 dark:bg-blue-600 text-white dark:text-white font-medium"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400"
+                      }`}
+                    >
+                      <span className="relative inline-block">
+                        {item.name}
+                        <span
+                          className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] transition-all duration-300 ${
+                            currentPage === item.path
+                              ? "w-full bg-white dark:bg-white"
+                              : "w-0 group-hover:w-full bg-blue-600 dark:bg-blue-400"
+                          }`}
+                        />
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="mt-4 px-4">
               <Button
                 onClick={() => handleNavClick("contact")}

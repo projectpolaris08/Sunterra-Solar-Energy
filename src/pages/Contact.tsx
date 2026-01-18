@@ -128,7 +128,11 @@ export default function Contact({ onNavigate }: ContactProps) {
               customerEmail: formData.email,
               customerPhone: formData.phone,
               systemType: formData.systemType,
-              systemSize: "", // You can add this field if needed
+              systemSize: formData.systemType, // Using systemType as size indicator
+              location: formData.location,
+              propertyType: formData.propertyType,
+              roofType: formData.roofType,
+              message: formData.message,
             }),
           });
         } catch (err) {
@@ -709,7 +713,9 @@ export default function Contact({ onNavigate }: ContactProps) {
                         placeholder="Enter referral code if you have one"
                       />
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Have a referral code? Enter it here to help someone earn rewards!
+                        {formData.referralCode 
+                          ? "✓ Referral code automatically added from link! You can edit or remove it if needed." 
+                          : "Have a referral code? Enter it here to help someone earn rewards!"}
                       </p>
                     </div>
 

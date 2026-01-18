@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import {
   DollarSign,
   Users,
-  TrendingUp,
   CheckCircle,
   Clock,
   Copy,
@@ -10,6 +9,9 @@ import {
   LogOut,
   ArrowRight,
   Gift,
+  Lock,
+  Mail,
+  RefreshCw,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -42,6 +44,10 @@ interface Referral {
   system_size: string;
   status: string;
   commission_amount: number;
+  notes?: string;
+  location?: string;
+  property_type?: string;
+  roof_type?: string;
   created_at: string;
 }
 
@@ -62,6 +68,8 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
+  const [newReferralsCount, setNewReferralsCount] = useState(0);
 
   // Get referrer ID from localStorage or prompt for email
   const [referrerEmail, setReferrerEmail] = useState<string | null>(
@@ -72,11 +80,31 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
   useEffect(() => {
     if (referrerEmail) {
       fetchDashboardData();
+      
+      // Auto-refresh every 30 seconds to get new referrals (silent refresh)
+      const refreshInterval = setInterval(() => {
+        fetchDashboardData(false); // Don't show loading spinner on auto-refresh
+      }, 30000); // 30 seconds
+
+      return () => clearInterval(refreshInterval);
     }
   }, [referrerEmail]);
 
-  const fetchDashboardData = async () => {
-    setLoading(true);
+  // Add focus event to refresh when user returns to tab
+  useEffect(() => {
+    const handleFocus = () => {
+      if (referrerEmail && !loading) {
+        fetchDashboardData(false); // Silent refresh on focus
+      }
+    };
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [referrerEmail, loading]);
+
+  const fetchDashboardData = async (showLoading = true) => {
+    if (showLoading) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -84,9 +112,12 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
         import.meta.env.VITE_API_URL ||
         "https://sunterra-solar-energy.vercel.app";
 
-      // Fetch referrer data
+      // Get password from localStorage (stored after login)
+      const storedPassword = localStorage.getItem("referrer_password");
+      
+      // Fetch referrer data (password optional for backward compatibility)
       const referrerResponse = await fetch(
-        `${apiUrl}/api/referral?action=referrer&email=${encodeURIComponent(referrerEmail!)}`
+        `${apiUrl}/api/referral?action=referrer&email=${encodeURIComponent(referrerEmail!)}${storedPassword ? `&password=${encodeURIComponent(storedPassword)}` : ""}`
       );
       const referrerData = await referrerResponse.json();
 
@@ -102,7 +133,21 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
       );
       const referralsData = await referralsResponse.json();
       if (referralsData.success) {
-        setReferrals(referralsData.referrals || []);
+        const newReferrals = referralsData.referrals || [];
+        
+        // Check for new referrals (compare with existing)
+        if (referrals.length > 0) {
+          const existingIds = new Set(referrals.map((r: Referral) => r.id));
+          const newCount = newReferrals.filter((r: Referral) => !existingIds.has(r.id)).length;
+          if (newCount > 0) {
+            setNewReferralsCount(newCount);
+            // Clear notification after 5 seconds
+            setTimeout(() => setNewReferralsCount(0), 5000);
+          }
+        }
+        
+        setReferrals(newReferrals);
+        setLastRefreshTime(new Date());
       }
 
       // Fetch payments
@@ -118,27 +163,58 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
         err instanceof Error ? err.message : "Failed to load dashboard data"
       );
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     const form = e.target as HTMLFormElement;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
-    if (!email) {
-      setError("Please enter your email address");
+    if (!email || !password) {
+      setError("Please enter your email and password");
       return;
     }
 
-    localStorage.setItem("referrer_email", email);
-    setReferrerEmail(email);
-    setShowLogin(false);
+    try {
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        "https://sunterra-solar-energy.vercel.app";
+
+      const response = await fetch(`${apiUrl}/api/referral?action=login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Invalid email or password");
+      }
+
+      // Login successful - store email and password
+      localStorage.setItem("referrer_email", email);
+      localStorage.setItem("referrer_password", password);
+      setReferrerEmail(email);
+      setShowLogin(false);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Login failed. Please try again."
+      );
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("referrer_email");
+    localStorage.removeItem("referrer_password");
     setReferrerEmail(null);
     setShowLogin(true);
     setReferrer(null);
@@ -154,8 +230,17 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
     }
   };
 
+  const getReferralLink = () => {
+    // Use production URL for sharing, but allow localhost for development
+    const baseUrl = 
+      window.location.hostname === "localhost" 
+        ? window.location.origin 
+        : "https://sunterrasolarenergy.com";
+    return `${baseUrl}/contact?ref=${referrer?.referral_code}`;
+  };
+
   const shareReferralLink = () => {
-    const referralLink = `${window.location.origin}/contact?ref=${referrer?.referral_code}`;
+    const referralLink = getReferralLink();
     if (navigator.share) {
       navigator.share({
         title: "Join Sunterra Solar Energy",
@@ -167,6 +252,13 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const copyReferralLink = () => {
+    const referralLink = getReferralLink();
+    navigator.clipboard.writeText(referralLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (showLogin) {
@@ -197,14 +289,37 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
                   >
                     Email Address
                   </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                    placeholder="your@email.com"
-                  />
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      required
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="password"
+                      id="password"
+                      name="password"
+                      required
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                      placeholder="Enter your password"
+                    />
+                  </div>
                 </div>
 
                 {error && (
@@ -315,31 +430,65 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
           </div>
 
           {/* Referral Code Card */}
-          <Card className="mb-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+          <Card className="mb-8 bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-700 shadow-xl">
+            <div className="space-y-4">
               <div>
-                <p className="text-blue-100 mb-2">Your Referral Code</p>
-                <div className="flex items-center space-x-4">
-                  <p className="text-3xl font-bold font-mono">{referrer?.referral_code}</p>
+                <p className="text-gray-700 dark:text-gray-300 mb-2 font-semibold text-sm uppercase tracking-wide">Your Referral Code</p>
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg shadow-md">
+                    <p className="text-3xl font-bold font-mono">
+                      {referrer?.referral_code}
+                    </p>
+                  </div>
                   <button
                     onClick={copyReferralCode}
-                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
+                    className="p-3 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg transition-all shadow-md border-2 border-blue-300 dark:border-blue-700"
                     title="Copy code"
                   >
                     <Copy className="w-5 h-5" />
                   </button>
                 </div>
-                <p className="text-blue-100 text-sm mt-2">
-                  Share this code with friends and family
+              </div>
+              
+              <div>
+                <p className="text-gray-700 dark:text-gray-300 mb-2 font-semibold text-sm uppercase tracking-wide">Your Referral Link</p>
+                <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-900 rounded-lg p-3 border-2 border-gray-200 dark:border-gray-700">
+                  <p className="text-sm font-mono text-gray-800 dark:text-gray-200 flex-1 break-all">
+                    {getReferralLink()}
+                  </p>
+                  <button
+                    onClick={copyReferralLink}
+                    className="p-2 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg transition-all flex-shrink-0 shadow-md border border-blue-300 dark:border-blue-700"
+                    title="Copy full link"
+                  >
+                    <Copy className="w-5 h-5" />
+                  </button>
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 text-xs mt-2">
+                  {copied ? (
+                    <span className="text-green-600 dark:text-green-400 font-semibold">✓ Link copied to clipboard!</span>
+                  ) : (
+                    "Click the copy button to copy the full link - it will auto-fill the referral code on the contact form"
+                  )}
                 </p>
               </div>
-              <Button
-                onClick={shareReferralLink}
-                className="mt-4 md:mt-0 bg-white text-blue-600 hover:bg-blue-50"
-              >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share Link
-              </Button>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <Button
+                  onClick={shareReferralLink}
+                  className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700 shadow-md hover:shadow-lg transition-all"
+                >
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share Link
+                </Button>
+                <Button
+                  onClick={copyReferralLink}
+                  className="bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-blue-600 dark:text-blue-400 border-2 border-blue-600 dark:border-blue-500 shadow-md hover:shadow-lg transition-all"
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy Link
+                </Button>
+              </div>
             </div>
           </Card>
 
@@ -368,9 +517,29 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
 
           {/* Referrals Table */}
           <Card className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Your Referrals
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Your Referrals
+                </h2>
+                {newReferralsCount > 0 && (
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-1 font-medium">
+                    ✨ {newReferralsCount} new referral{newReferralsCount > 1 ? "s" : ""}!
+                  </p>
+                )}
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Last updated: {lastRefreshTime.toLocaleTimeString()}
+                </p>
+              </div>
+              <button
+                onClick={() => fetchDashboardData(true)}
+                className="flex items-center px-4 py-2 text-sm font-semibold rounded-lg border-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white transition-all"
+                title="Refresh to see new referrals"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </button>
+            </div>
             {referrals.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -417,13 +586,20 @@ export default function ReferralDashboard({ onNavigate }: ReferralDashboardProps
                           </div>
                         </td>
                         <td className="py-3 px-4">
-                          <p className="text-gray-900 dark:text-white">
+                          <p className="text-gray-900 dark:text-white font-medium">
                             {referral.system_type}
                           </p>
-                          {referral.system_size && (
+                          {referral.system_size && referral.system_size !== referral.system_type && (
                             <p className="text-sm text-gray-500 dark:text-gray-400">
                               {referral.system_size}
                             </p>
+                          )}
+                          {referral.notes && (
+                            <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs text-gray-600 dark:text-gray-400">
+                              {referral.notes.split(" | ").map((note, idx) => (
+                                <p key={idx}>{note}</p>
+                              ))}
+                            </div>
                           )}
                         </td>
                         <td className="py-3 px-4">

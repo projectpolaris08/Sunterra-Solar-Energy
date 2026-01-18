@@ -3,12 +3,12 @@ import {
   Users,
   Gift,
   Share2,
-  CheckCircle,
   ArrowRight,
   Sun,
   TrendingUp,
   Award,
   MessageCircle,
+  LogIn,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Card from "../components/Card";
@@ -104,7 +104,8 @@ export default function Referral({ onNavigate }: ReferralProps) {
     {
       number: "1",
       title: "Sign Up",
-      description: "Register for our referral program and get your unique referral link.",
+      description:
+        "Register for our referral program and get your unique referral link.",
       icon: Share2,
     },
     {
@@ -205,12 +206,6 @@ export default function Referral({ onNavigate }: ReferralProps) {
                 : "opacity-0 translate-y-10"
             }`}
           >
-            <div className="inline-flex items-center space-x-2 bg-amber-100 dark:bg-amber-900/30 px-4 py-2 rounded-full mb-6">
-              <Gift className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              <span className="text-sm font-medium text-amber-800 dark:text-amber-300">
-                Referral Program
-              </span>
-            </div>
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 gradient-text">
               Earn with Us
             </h1>
@@ -226,6 +221,15 @@ export default function Referral({ onNavigate }: ReferralProps) {
               >
                 Join Referral Program
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => onNavigate("referral-dashboard")}
+                className="w-full sm:w-auto"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Login to Dashboard
               </Button>
               <Button
                 variant="outline"
@@ -262,8 +266,8 @@ export default function Referral({ onNavigate }: ReferralProps) {
               Why Join Our Referral Program?
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Earn money while helping others make the switch to clean, renewable
-              energy
+              Earn money while helping others make the switch to clean,
+              renewable energy
             </p>
           </div>
 
@@ -401,6 +405,15 @@ export default function Referral({ onNavigate }: ReferralProps) {
               <Button
                 variant="outline"
                 size="lg"
+                onClick={() => onNavigate("referral-dashboard")}
+                className="w-full sm:w-auto"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Login
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
                 onClick={() => {
                   document
                     .getElementById("faq-section")
@@ -493,14 +506,25 @@ export default function Referral({ onNavigate }: ReferralProps) {
               Join thousands of others who are earning money by sharing the
               benefits of solar energy. Get started in minutes!
             </p>
-            <Button
-              size="lg"
-              onClick={() => onNavigate("referral-signup")}
-              className="hover:scale-110 hover:shadow-xl transition-all duration-300 group"
-            >
-              Sign Up Now
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button
+                size="lg"
+                onClick={() => onNavigate("referral-signup")}
+                className="hover:scale-110 hover:shadow-xl transition-all duration-300 group"
+              >
+                Sign Up Now
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => onNavigate("referral-dashboard")}
+                className="hover:scale-110 hover:shadow-xl transition-all duration-300"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Login to Dashboard
+              </Button>
+            </div>
           </Card>
         </div>
       </section>

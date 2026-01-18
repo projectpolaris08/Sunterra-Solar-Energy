@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserPlus, Mail, Phone, MapPin, Building, ArrowRight, CheckCircle, X } from "lucide-react";
+import { UserPlus, Mail, Phone, MapPin, ArrowRight, CheckCircle, X, LogIn, Lock } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import SEO from "../components/SEO";
@@ -14,6 +14,8 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
     email: "",
     phone: "",
     address: "",
+    password: "",
+    confirmPassword: "",
     paymentMethod: "",
     paymentDetails: "",
   });
@@ -22,6 +24,7 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [signedUpEmail, setSignedUpEmail] = useState<string | null>(null);
 
   const paymentMethods = [
     { value: "gcash", label: "GCash", placeholder: "Enter GCash number (e.g., 09171234567)" },
@@ -49,12 +52,34 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
         import.meta.env.VITE_API_URL ||
         "https://sunterra-solar-energy.vercel.app";
 
+      // Validate password match
+      if (formData.password !== formData.confirmPassword) {
+        setError("Passwords do not match");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Validate password strength
+      if (formData.password.length < 6) {
+        setError("Password must be at least 6 characters long");
+        setIsSubmitting(false);
+        return;
+      }
+
       const response = await fetch(`${apiUrl}/api/referral?action=signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          password: formData.password,
+          paymentMethod: formData.paymentMethod,
+          paymentDetails: formData.paymentDetails,
+        }),
       });
 
       const contentType = response.headers.get("content-type") || "";
@@ -76,11 +101,15 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
       // Success
       setSubmitted(true);
       setReferralCode(data.referralCode);
+      setSignedUpEmail(formData.email); // Save email for display
+      // Don't auto-login - user needs to login with password
       setFormData({
         name: "",
         email: "",
         phone: "",
         address: "",
+        password: "",
+        confirmPassword: "",
         paymentMethod: "",
         paymentDetails: "",
       });
@@ -174,10 +203,14 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   size="lg"
-                  onClick={() => onNavigate("referral-dashboard")}
+                  onClick={() => {
+                    // Clear any stored email - user needs to login with password
+                    localStorage.removeItem("referrer_email");
+                    onNavigate("referral-dashboard");
+                  }}
                   className="w-full sm:w-auto"
                 >
-                  Go to Dashboard
+                  Login to Dashboard
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
                 <Button
@@ -187,6 +220,26 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
                   className="w-full sm:w-auto"
                 >
                   Learn More
+                </Button>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Need to login later? Use your email to access your dashboard.
+                </p>
+                {signedUpEmail && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                    Your login email: <strong className="text-gray-700 dark:text-gray-300">{signedUpEmail}</strong>
+                  </p>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigate("referral-dashboard")}
+                  className="mt-2"
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Login to Dashboard
                 </Button>
               </div>
             </Card>
@@ -311,6 +364,57 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all resize-none"
                       placeholder="City, Province, Philippines"
                     />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      Password *
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                        minLength={6}
+                        value={formData.password}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                        placeholder="At least 6 characters"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Minimum 6 characters
+                    </p>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="confirmPassword"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      Confirm Password *
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="password"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        required
+                        minLength={6}
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                        placeholder="Re-enter password"
+                      />
+                    </div>
                   </div>
                 </div>
 

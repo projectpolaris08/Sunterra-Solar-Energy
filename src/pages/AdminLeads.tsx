@@ -2,7 +2,18 @@ import { useState, useEffect } from "react";
 import AdminLayout from "../components/dashboard/AdminLayout";
 import ChartCard from "../components/dashboard/ChartCard";
 import { supabase } from "../lib/supabase";
-import { Search, Plus, Edit, Trash2, Mail, Phone, X, Save } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Mail,
+  Phone,
+  X,
+  Save,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 interface AdminLeadsProps {
   onNavigate: (page: string) => void;
@@ -51,6 +62,8 @@ export default function AdminLeads({
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [pageNumber, setPageNumber] = useState(1);
+  const itemsPerPage = 10;
 
   // Fetch leads directly from Supabase on mount
   useEffect(() => {
@@ -110,6 +123,17 @@ export default function AdminLeads({
 
     return matchesSearch && matchesStatus;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
+  const startIndex = (pageNumber - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedLeads = filteredLeads.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setPageNumber(1);
+  }, [searchTerm, statusFilter]);
 
   const stats = {
     total: leads.length,
@@ -524,7 +548,7 @@ export default function AdminLeads({
                 </tr>
               </thead>
               <tbody>
-                {filteredLeads.length === 0 ? (
+                {paginatedLeads.length === 0 ? (
                   <tr>
                     <td
                       colSpan={7}
@@ -534,7 +558,7 @@ export default function AdminLeads({
                     </td>
                   </tr>
                 ) : (
-                  filteredLeads.map((lead) => {
+                  paginatedLeads.map((lead) => {
                     return (
                       <tr
                         key={lead.id}
@@ -631,6 +655,82 @@ export default function AdminLeads({
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {filteredLeads.length > itemsPerPage && (
+            <div className="mt-6 flex items-center justify-between">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Showing {startIndex + 1} to{" "}
+                {Math.min(endIndex, filteredLeads.length)} of{" "}
+                {filteredLeads.length} leads
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
+                  disabled={pageNumber === 1}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                    pageNumber === 1
+                      ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                      : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600"
+                  }`}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      // Show first page, last page, current page, and pages around current
+                      return (
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= pageNumber - 1 && page <= pageNumber + 1)
+                      );
+                    })
+                    .map((page, index, array) => {
+                      // Add ellipsis if there's a gap
+                      const showEllipsisBefore =
+                        index > 0 && page - array[index - 1] > 1;
+                      return (
+                        <div key={page} className="flex items-center gap-1">
+                          {showEllipsisBefore && (
+                            <span className="px-2 text-gray-400 dark:text-gray-500">
+                              ...
+                            </span>
+                          )}
+                          <button
+                            onClick={() => setPageNumber(page)}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                              pageNumber === page
+                                ? "bg-blue-600 text-white"
+                                : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        </div>
+                      );
+                    })}
+                </div>
+
+                <button
+                  onClick={() =>
+                    setPageNumber((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={pageNumber === totalPages}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                    pageNumber === totalPages
+                      ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                      : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600"
+                  }`}
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </ChartCard>
       </div>
 

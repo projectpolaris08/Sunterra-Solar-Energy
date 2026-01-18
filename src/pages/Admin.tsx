@@ -50,6 +50,9 @@ export default function Admin({
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
   const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+  const [activeClientsCount, setActiveClientsCount] = useState(0);
+  const [projectsCount, setProjectsCount] = useState(0);
+  const [energyGenerated, setEnergyGenerated] = useState(0);
 
   // Fetch expenses data
   useEffect(() => {
@@ -156,11 +159,37 @@ export default function Admin({
         }
 
         // Fetch recent clients
-        const { data: clientsData } = await supabase
+        const { data: clientsData, count: clientsCount } = await supabase
           .from("clients")
-          .select("id, client_name, project_amount, join_date")
+          .select("id, client_name, project_amount, join_date, inverter", { count: "exact" })
           .order("join_date", { ascending: false })
           .limit(5);
+
+        // Fetch all clients for projects and energy calculation
+        const { data: allClientsData } = await supabase
+          .from("clients")
+          .select("id, inverter");
+
+        if (clientsCount !== null) {
+          setActiveClientsCount(clientsCount);
+          setProjectsCount(clientsCount); // Each client represents a project
+        }
+
+        // Calculate total energy generation capacity based on inverter size
+        if (allClientsData) {
+          let totalEnergyCapacity = 0;
+          allClientsData.forEach((client: any) => {
+            const inverter = client.inverter || "";
+            // Extract kW from inverter string (e.g., "6kW" -> 6, "10kW" -> 10)
+            const inverterMatch = inverter.match(/(\d+(?:\.\d+)?)\s*kw/i);
+            if (inverterMatch) {
+              const capacityKW = parseFloat(inverterMatch[1]);
+              totalEnergyCapacity += capacityKW;
+            }
+          });
+          // Set total capacity (sum of all inverters)
+          setEnergyGenerated(Math.round(totalEnergyCapacity));
+        }
 
         if (clientsData) {
           clientsData.forEach((client: any) => {
@@ -380,26 +409,36 @@ export default function Admin({
           icon={Receipt}
           gradient="from-red-500 to-rose-600"
         />
+        <div 
+          onClick={() => onNavigate("admin-users")} 
+          className="cursor-pointer transform transition-transform hover:scale-105"
+        >
+          <StatsCard
+            title="Active Clients"
+            value={activeClientsCount}
+            change="View All"
+            trend="up"
+            icon={Users}
+            gradient="from-blue-500 to-cyan-500"
+          />
+        </div>
+        <div 
+          onClick={() => onNavigate("admin-users")} 
+          className="cursor-pointer transform transition-transform hover:scale-105"
+        >
+          <StatsCard
+            title="Projects"
+            value={projectsCount}
+            change="View All"
+            trend="up"
+            icon={Target}
+            gradient="from-purple-500 to-pink-500"
+          />
+        </div>
         <StatsCard
-          title="Active Clients"
-          value="1"
-          change="New"
-          trend="up"
-          icon={Users}
-          gradient="from-blue-500 to-cyan-500"
-        />
-        <StatsCard
-          title="Projects"
-          value="1"
-          change="Pending"
-          trend="up"
-          icon={Target}
-          gradient="from-purple-500 to-pink-500"
-        />
-        <StatsCard
-          title="Energy Generated"
-          value="0 kWh"
-          change="Pending"
+          title="Total Capacity"
+          value={`${energyGenerated.toLocaleString()} kW`}
+          change="Installed"
           icon={Zap}
           gradient="from-amber-500 to-orange-500"
         />

@@ -26,6 +26,7 @@ import AdminSolarDesigner from "./pages/AdminSolarDesigner";
 import AdminReports from "./pages/AdminReports";
 import AdminNotifications from "./pages/AdminNotifications";
 import AdminSettings from "./pages/AdminSettings";
+import AdminReferrals from "./pages/AdminReferrals";
 import Login from "./pages/Login";
 import { useAuth } from "./contexts/AuthContext";
 
@@ -95,7 +96,6 @@ function App() {
 
   const [currentPage, setCurrentPage] = useState(getPageFromPath);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [prevPage, setPrevPage] = useState<string | null>(null);
 
   // Sync URL with page state on initial load and browser back/forward
   useEffect(() => {
@@ -119,13 +119,11 @@ function App() {
     if (page === currentPage) return;
     
     setIsTransitioning(true);
-    setPrevPage(currentPage);
     
     // Smooth transition effect
     setTimeout(() => {
       setCurrentPage(page);
       setIsTransitioning(false);
-      setPrevPage(null);
     }, 300);
 
     // Update URL based on page
@@ -242,6 +240,13 @@ function App() {
         case "admin-settings":
           return (
             <AdminSettings
+              onNavigate={handleNavigate}
+              currentPage={currentPage}
+            />
+          );
+        case "admin-referrals":
+          return (
+            <AdminReferrals
               onNavigate={handleNavigate}
               currentPage={currentPage}
             />

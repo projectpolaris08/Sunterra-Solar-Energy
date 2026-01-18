@@ -4,7 +4,11 @@ import { setCorsHeaders, handleOptions } from "./lib/cors.js";
 import { checkEmailsForLeads } from "./lib/email-monitor.js";
 import { DeyeCloudApi } from "./lib/deye-cloud-api.js";
 import { MonitoringService } from "./lib/monitoring-service.js";
-import { getAlerts, getAllErrorCodes, deleteAlert } from "./lib/supabase-storage.js";
+import {
+  getAlerts,
+  getAllErrorCodes,
+  deleteAlert,
+} from "./lib/supabase-storage.js";
 import {
   getClients,
   createClientRecord,
@@ -37,6 +41,7 @@ import {
   updatePayment,
 } from "./lib/referral-database.js";
 import nodemailer from "nodemailer";
+import { createHash } from "crypto";
 
 function sendJson(req, res, statusCode, data) {
   setCorsHeaders(req, res);
@@ -58,7 +63,7 @@ export default async function handler(req, res) {
     // Extract endpoint from query or path
     // First check query parameter (from rewrite rules)
     let endpoint = req.query.endpoint;
-    
+
     // If not in query, extract from URL path
     if (!endpoint) {
       const urlPath = req.url.split("?")[0]; // Remove query string
@@ -67,7 +72,7 @@ export default async function handler(req, res) {
         endpoint = pathMatch[1];
       }
     }
-    
+
     const resource = req.query.resource;
     const action = req.query.action; // Get action from query
     const body = req.body || {};
@@ -91,7 +96,13 @@ export default async function handler(req, res) {
       case "cron":
         return await handleCron(req, res, req.query.path, body);
       case "referral":
-        return await handleReferral(req, res, req.query.action, req.query, body);
+        return await handleReferral(
+          req,
+          res,
+          req.query.action,
+          req.query,
+          body
+        );
       default:
         // Try to infer from URL path
         if (req.url.includes("/contact")) {
@@ -116,12 +127,19 @@ export default async function handler(req, res) {
           return await handleCron(req, res, req.query.path, body);
         }
         if (req.url.includes("/referral")) {
-          return await handleReferral(req, res, req.query.action, req.query, body);
+          return await handleReferral(
+            req,
+            res,
+            req.query.action,
+            req.query,
+            body
+          );
         }
-        
+
         return sendJson(req, res, 404, {
           success: false,
-          message: "Endpoint not found. Available: contact, auth, admin, email, ai-monitoring, deye, referral",
+          message:
+            "Endpoint not found. Available: contact, auth, admin, email, ai-monitoring, deye, referral",
         });
     }
   } catch (error) {
@@ -142,9 +160,26 @@ async function handleContact(req, res, body) {
     });
   }
 
-  const { name, email, phone, propertyType, systemType, location, roofType, message } = body;
+  const {
+    name,
+    email,
+    phone,
+    propertyType,
+    systemType,
+    location,
+    roofType,
+    message,
+  } = body;
 
-  if (!name || !email || !phone || !propertyType || !systemType || !location || !roofType) {
+  if (
+    !name ||
+    !email ||
+    !phone ||
+    !propertyType ||
+    !systemType ||
+    !location ||
+    !roofType
+  ) {
     return sendJson(req, res, 400, {
       success: false,
       message: "Please fill in all required fields",
@@ -155,7 +190,8 @@ async function handleContact(req, res, body) {
   const smtpPort = parseInt(process.env.SMTP_PORT || "465", 10);
   const smtpUser = process.env.SMTP_USER || "info@sunterrasolarenergy.com";
   const smtpPassword = process.env.SMTP_PASSWORD;
-  const recipientEmail = process.env.RECIPIENT_EMAIL || "info@sunterrasolarenergy.com";
+  const recipientEmail =
+    process.env.RECIPIENT_EMAIL || "info@sunterrasolarenergy.com";
 
   if (!smtpPassword) {
     return sendJson(req, res, 500, {
@@ -192,10 +228,18 @@ async function handleContact(req, res, body) {
           ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
           ${roofType ? `<p><strong>Roof Type:</strong> ${roofType}</p>` : ""}
         </div>
-        ${message ? `<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;"><h3>Message</h3><p style="white-space: pre-wrap;">${message}</p></div>` : ""}
+        ${
+          message
+            ? `<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;"><h3>Message</h3><p style="white-space: pre-wrap;">${message}</p></div>`
+            : ""
+        }
       </div>
     `,
-    text: `New Contact Form Submission\n\nContact: ${name} (${email}, ${phone})\nProperty: ${propertyType}\nSystem: ${systemType}${location ? `\nLocation: ${location}` : ""}${roofType ? `\nRoof Type: ${roofType}` : ""}${message ? `\nMessage:\n${message}` : ""}`,
+    text: `New Contact Form Submission\n\nContact: ${name} (${email}, ${phone})\nProperty: ${propertyType}\nSystem: ${systemType}${
+      location ? `\nLocation: ${location}` : ""
+    }${roofType ? `\nRoof Type: ${roofType}` : ""}${
+      message ? `\nMessage:\n${message}` : ""
+    }`,
   };
 
   try {
@@ -244,8 +288,13 @@ async function handleAuth(req, res, body) {
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedValidEmail = validEmail.trim().toLowerCase();
 
-  if (normalizedEmail === normalizedValidEmail && password.trim() === validPassword) {
-    const sessionToken = Buffer.from(`${normalizedEmail}:${Date.now()}`).toString("base64");
+  if (
+    normalizedEmail === normalizedValidEmail &&
+    password.trim() === validPassword
+  ) {
+    const sessionToken = Buffer.from(
+      `${normalizedEmail}:${Date.now()}`
+    ).toString("base64");
     return sendJson(req, res, 200, {
       success: true,
       message: "Login successful",
@@ -275,7 +324,8 @@ async function handleAdmin(req, res, resource, action, queryParams, body) {
     default:
       return sendJson(req, res, 400, {
         success: false,
-        message: "Invalid resource. Use: clients, notifications, appointments, reports, or settings",
+        message:
+          "Invalid resource. Use: clients, notifications, appointments, reports, or settings",
       });
   }
 }
@@ -283,7 +333,11 @@ async function handleAdmin(req, res, resource, action, queryParams, body) {
 async function handleClients(req, res, action, queryParams, body) {
   if (req.method === "GET") {
     const clients = await getClients();
-    return sendJson(req, res, 200, { success: true, clients, count: clients.length });
+    return sendJson(req, res, 200, {
+      success: true,
+      clients,
+      count: clients.length,
+    });
   }
   if (req.method === "POST" && action === "create") {
     const client = await createClientRecord(body);
@@ -291,24 +345,42 @@ async function handleClients(req, res, action, queryParams, body) {
   }
   if (req.method === "PUT" || req.method === "PATCH") {
     const { id, ...clientData } = body;
-    if (!id) return sendJson(req, res, 400, { success: false, message: "Client ID required" });
+    if (!id)
+      return sendJson(req, res, 400, {
+        success: false,
+        message: "Client ID required",
+      });
     const client = await updateClient(id, clientData);
     return sendJson(req, res, 200, { success: true, client });
   }
   if (req.method === "DELETE") {
     const id = queryParams.id || body.id;
-    if (!id) return sendJson(req, res, 400, { success: false, message: "Client ID required" });
+    if (!id)
+      return sendJson(req, res, 400, {
+        success: false,
+        message: "Client ID required",
+      });
     await deleteClient(id);
-    return sendJson(req, res, 200, { success: true, message: "Client deleted" });
+    return sendJson(req, res, 200, {
+      success: true,
+      message: "Client deleted",
+    });
   }
-  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+  return sendJson(req, res, 405, {
+    success: false,
+    message: "Method not allowed",
+  });
 }
 
 async function handleNotifications(req, res, action, queryParams, body) {
   if (req.method === "GET") {
     const limit = parseInt(queryParams.limit || "50", 10);
     const notifications = await getNotifications(limit);
-    return sendJson(req, res, 200, { success: true, notifications, count: notifications.length });
+    return sendJson(req, res, 200, {
+      success: true,
+      notifications,
+      count: notifications.length,
+    });
   }
   if (req.method === "POST") {
     if (action === "mark_read" && body.id) {
@@ -316,15 +388,28 @@ async function handleNotifications(req, res, action, queryParams, body) {
       return sendJson(req, res, 200, { success: true, notification });
     }
     const newNotification = await createNotification(body);
-    return sendJson(req, res, 201, { success: true, notification: newNotification });
+    return sendJson(req, res, 201, {
+      success: true,
+      notification: newNotification,
+    });
   }
-  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+  return sendJson(req, res, 405, {
+    success: false,
+    message: "Method not allowed",
+  });
 }
 
 async function handleAppointments(req, res, action, queryParams, body) {
   if (req.method === "GET") {
-    const appointments = await getAppointments(queryParams.startDate, queryParams.endDate);
-    return sendJson(req, res, 200, { success: true, appointments, count: appointments.length });
+    const appointments = await getAppointments(
+      queryParams.startDate,
+      queryParams.endDate
+    );
+    return sendJson(req, res, 200, {
+      success: true,
+      appointments,
+      count: appointments.length,
+    });
   }
   if (req.method === "POST") {
     const appointment = await createAppointment(body);
@@ -332,29 +417,50 @@ async function handleAppointments(req, res, action, queryParams, body) {
   }
   if (req.method === "PUT" || req.method === "PATCH") {
     const { id, ...appointmentData } = body;
-    if (!id) return sendJson(req, res, 400, { success: false, message: "Appointment ID required" });
+    if (!id)
+      return sendJson(req, res, 400, {
+        success: false,
+        message: "Appointment ID required",
+      });
     const appointment = await updateAppointment(id, appointmentData);
     return sendJson(req, res, 200, { success: true, appointment });
   }
   if (req.method === "DELETE") {
     const id = queryParams.id || body.id;
-    if (!id) return sendJson(req, res, 400, { success: false, message: "Appointment ID required" });
+    if (!id)
+      return sendJson(req, res, 400, {
+        success: false,
+        message: "Appointment ID required",
+      });
     await deleteAppointment(id);
-    return sendJson(req, res, 200, { success: true, message: "Appointment deleted" });
+    return sendJson(req, res, 200, {
+      success: true,
+      message: "Appointment deleted",
+    });
   }
-  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+  return sendJson(req, res, 405, {
+    success: false,
+    message: "Method not allowed",
+  });
 }
 
 async function handleReports(req, res, action, queryParams, body) {
   if (req.method === "GET") {
     const reports = await getReports();
-    return sendJson(req, res, 200, { success: true, reports, count: reports.length });
+    return sendJson(req, res, 200, {
+      success: true,
+      reports,
+      count: reports.length,
+    });
   }
   if (req.method === "POST") {
     const report = await createReport(body);
     return sendJson(req, res, 201, { success: true, report });
   }
-  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+  return sendJson(req, res, 405, {
+    success: false,
+    message: "Method not allowed",
+  });
 }
 
 async function handleSettings(req, res, action, queryParams, body) {
@@ -366,21 +472,30 @@ async function handleSettings(req, res, action, queryParams, body) {
     const settings = await updateSettings(body);
     return sendJson(req, res, 200, { success: true, settings });
   }
-  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+  return sendJson(req, res, 405, {
+    success: false,
+    message: "Method not allowed",
+  });
 }
 
 // Email check handler
 async function handleEmailCheck(req, res) {
   if (req.method !== "GET" && req.method !== "POST") {
-    return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+    return sendJson(req, res, 405, {
+      success: false,
+      message: "Method not allowed",
+    });
   }
 
   const authHeader = req.headers.authorization;
   const cronSecret = process.env.CRON_SECRET;
-  const isCronRequest = authHeader && (cronSecret ? authHeader === `Bearer ${cronSecret}` : true);
+  const isCronRequest =
+    authHeader && (cronSecret ? authHeader === `Bearer ${cronSecret}` : true);
 
   try {
-    console.log(`[EMAIL CHECK] ${isCronRequest ? "Cron" : "Manual"} email check started`);
+    console.log(
+      `[EMAIL CHECK] ${isCronRequest ? "Cron" : "Manual"} email check started`
+    );
     const result = await checkEmailsForLeads();
     console.log(`[EMAIL CHECK] Completed: ${result.message || "Success"}`);
     return sendJson(req, res, 200, {
@@ -407,15 +522,29 @@ async function handleAIMonitoring(req, res, action, queryParams, body) {
       const limit = parseInt(queryParams.limit || "100", 10);
       const alerts = await getAlerts(limit);
       const filtered = alerts.filter(
-        (a) => a.type !== "voltage" && a.type !== "device_state" && a.type !== "low_production"
+        (a) =>
+          a.type !== "voltage" &&
+          a.type !== "device_state" &&
+          a.type !== "low_production"
       );
-      return sendJson(req, res, 200, { success: true, alerts: filtered, count: filtered.length });
+      return sendJson(req, res, 200, {
+        success: true,
+        alerts: filtered,
+        count: filtered.length,
+      });
     }
     if (act === "error-codes") {
       const errorCodes = await getAllErrorCodes();
-      return sendJson(req, res, 200, { success: true, errorCodes, count: errorCodes.length });
+      return sendJson(req, res, 200, {
+        success: true,
+        errorCodes,
+        count: errorCodes.length,
+      });
     }
-    return sendJson(req, res, 400, { success: false, message: "Invalid action. Use 'alerts' or 'error-codes'" });
+    return sendJson(req, res, 400, {
+      success: false,
+      message: "Invalid action. Use 'alerts' or 'error-codes'",
+    });
   }
 
   if (req.method === "POST") {
@@ -425,31 +554,50 @@ async function handleAIMonitoring(req, res, action, queryParams, body) {
       monitoringService.monitorDevices().catch((error) => {
         console.error("Error in monitoring trigger:", error);
       });
-      return sendJson(req, res, 200, { success: true, message: "Monitoring cycle triggered" });
+      return sendJson(req, res, 200, {
+        success: true,
+        message: "Monitoring cycle triggered",
+      });
     }
     if (act === "delete") {
       const alertId = queryParams.id || body.id;
-      if (!alertId) return sendJson(req, res, 400, { success: false, message: "Alert ID required" });
+      if (!alertId)
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "Alert ID required",
+        });
       const deleted = await deleteAlert(alertId);
       if (deleted) {
-        return sendJson(req, res, 200, { success: true, message: "Alert deleted" });
+        return sendJson(req, res, 200, {
+          success: true,
+          message: "Alert deleted",
+        });
       }
-      return sendJson(req, res, 404, { success: false, message: "Alert not found" });
+      return sendJson(req, res, 404, {
+        success: false,
+        message: "Alert not found",
+      });
     }
   }
 
-  return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+  return sendJson(req, res, 405, {
+    success: false,
+    message: "Method not allowed",
+  });
 }
 
 // Deye handler
 async function handleDeye(req, res, pathParam, body) {
   if (req.method !== "GET" && req.method !== "POST") {
-    return sendJson(req, res, 405, { success: false, message: "Method not allowed" });
+    return sendJson(req, res, 405, {
+      success: false,
+      message: "Method not allowed",
+    });
   }
 
   try {
     let path = "/";
-    
+
     // Try to get path from various sources
     if (pathParam) {
       if (Array.isArray(pathParam)) {
@@ -473,7 +621,7 @@ async function handleDeye(req, res, pathParam, body) {
         path = "/";
       }
     }
-    
+
     // Ensure path starts with /
     if (!path.startsWith("/")) {
       path = "/" + path;
@@ -507,22 +655,26 @@ async function handleDeye(req, res, pathParam, body) {
 // Cron handler
 async function handleCron(req, res, pathParam, body) {
   const path = pathParam || req.query.path || "";
-  
+
   // Verify cron request
   const authHeader = req.headers.authorization;
   const cronSecret = process.env.CRON_SECRET;
-  
+
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
     return sendJson(req, res, 401, { success: false, error: "Unauthorized" });
   }
 
   if (path === "monitor") {
     try {
-      console.log(`[Cron] Monitoring job started at ${new Date().toISOString()}`);
+      console.log(
+        `[Cron] Monitoring job started at ${new Date().toISOString()}`
+      );
       const deyeCloudApi = new DeyeCloudApi();
       const monitoringService = new MonitoringService(deyeCloudApi);
       await monitoringService.monitorDevices();
-      console.log(`[Cron] Monitoring job completed at ${new Date().toISOString()}`);
+      console.log(
+        `[Cron] Monitoring job completed at ${new Date().toISOString()}`
+      );
       return sendJson(req, res, 200, {
         success: true,
         message: "Monitoring cycle completed",
@@ -549,7 +701,7 @@ async function handleCron(req, res, pathParam, body) {
     try {
       // Run monitoring first
       console.log(`[Cron] Combined job started at ${new Date().toISOString()}`);
-      
+
       try {
         console.log(`[Cron] Starting monitoring...`);
         const deyeCloudApi = new DeyeCloudApi();
@@ -573,7 +725,8 @@ async function handleCron(req, res, pathParam, body) {
         results.emailCheck = { success: false, error: error.message };
       }
 
-      const allSuccess = results.monitoring?.success && results.emailCheck?.success;
+      const allSuccess =
+        results.monitoring?.success && results.emailCheck?.success;
       return sendJson(req, res, allSuccess ? 200 : 207, {
         success: allSuccess,
         message: "Combined cron job completed",
@@ -603,12 +756,36 @@ async function handleReferral(req, res, action, queryParams, body) {
   try {
     // Sign up new referrer
     if (req.method === "POST" && act === "signup") {
-      const { name, email, phone, address, paymentMethod, paymentDetails } = body;
+      const {
+        name,
+        email,
+        phone,
+        address,
+        password,
+        paymentMethod,
+        paymentDetails,
+      } = body;
 
-      if (!name || !email || !phone || !address || !paymentMethod || !paymentDetails) {
+      if (
+        !name ||
+        !email ||
+        !phone ||
+        !address ||
+        !password ||
+        !paymentMethod ||
+        !paymentDetails
+      ) {
         return sendJson(req, res, 400, {
           success: false,
           message: "Please fill in all required fields",
+        });
+      }
+
+      // Validate password strength
+      if (password.length < 6) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "Password must be at least 6 characters long",
         });
       }
 
@@ -628,6 +805,11 @@ async function handleReferral(req, res, action, queryParams, body) {
         });
       }
 
+      // Hash password using SHA-256
+      const hashedPassword = createHash("sha256")
+        .update(password)
+        .digest("hex");
+
       let referrer;
       try {
         referrer = await createReferrer({
@@ -635,6 +817,7 @@ async function handleReferral(req, res, action, queryParams, body) {
           email,
           phone,
           address,
+          password: hashedPassword,
           payment_method: paymentMethod,
           payment_details: paymentDetails,
         });
@@ -642,8 +825,10 @@ async function handleReferral(req, res, action, queryParams, body) {
         console.error("Error creating referrer:", error);
         return sendJson(req, res, 500, {
           success: false,
-          message: "Failed to create referral account. Please try again or contact support.",
-          error: process.env.NODE_ENV === "development" ? error.message : undefined,
+          message:
+            "Failed to create referral account. Please try again or contact support.",
+          error:
+            process.env.NODE_ENV === "development" ? error.message : undefined,
         });
       }
 
@@ -660,9 +845,50 @@ async function handleReferral(req, res, action, queryParams, body) {
       });
     }
 
-    // Get referrer by email
+    // Login referrer (verify email and password)
+    if (req.method === "POST" && act === "login") {
+      const { email, password } = body;
+
+      if (!email || !password) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "Email and password are required",
+        });
+      }
+
+      const referrer = await getReferrerByEmail(email);
+      if (!referrer) {
+        return sendJson(req, res, 401, {
+          success: false,
+          message: "Invalid email or password",
+        });
+      }
+
+      // Verify password
+      const hashedPassword = createHash("sha256")
+        .update(password)
+        .digest("hex");
+
+      if (referrer.password !== hashedPassword) {
+        return sendJson(req, res, 401, {
+          success: false,
+          message: "Invalid email or password",
+        });
+      }
+
+      // Return referrer data (without password)
+      const { password: _, ...referrerData } = referrer;
+      return sendJson(req, res, 200, {
+        success: true,
+        referrer: referrerData,
+      });
+    }
+
+    // Get referrer by email (for dashboard - requires password verification)
     if (req.method === "GET" && act === "referrer") {
       const email = queryParams.email;
+      const password = queryParams.password; // Optional for backward compatibility
+
       if (!email) {
         return sendJson(req, res, 400, {
           success: false,
@@ -678,9 +904,24 @@ async function handleReferral(req, res, action, queryParams, body) {
         });
       }
 
+      // If password provided, verify it
+      if (password) {
+        const hashedPassword = createHash("sha256")
+          .update(password)
+          .digest("hex");
+        if (referrer.password !== hashedPassword) {
+          return sendJson(req, res, 401, {
+            success: false,
+            message: "Invalid password",
+          });
+        }
+      }
+
+      // Return referrer data (without password)
+      const { password: _, ...referrerData } = referrer;
       return sendJson(req, res, 200, {
         success: true,
-        referrer,
+        referrer: referrerData,
       });
     }
 
@@ -720,7 +961,18 @@ async function handleReferral(req, res, action, queryParams, body) {
 
     // Create referral (when contact form is submitted with referral code)
     if (req.method === "POST" && act === "create") {
-      const { referrerCode, customerName, customerEmail, customerPhone, systemType, systemSize } = body;
+      const {
+        referrerCode,
+        customerName,
+        customerEmail,
+        customerPhone,
+        systemType,
+        systemSize,
+        location,
+        propertyType,
+        roofType,
+        message,
+      } = body;
 
       if (!referrerCode || !customerName || !customerEmail) {
         return sendJson(req, res, 400, {
@@ -740,15 +992,30 @@ async function handleReferral(req, res, action, queryParams, body) {
       // Calculate commission (you can customize this logic)
       const commissionAmount = calculateCommission(systemSize, systemType);
 
+      // Create referral with all available data
+      // Store additional info in a notes field or extend the table schema
+      const referralNotes = [
+        location ? `Location: ${location}` : null,
+        propertyType ? `Property: ${propertyType}` : null,
+        roofType ? `Roof: ${roofType}` : null,
+        message ? `Message: ${message}` : null,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+
       const referral = await createReferral({
         referrer_id: referrer.id,
         customer_name: customerName,
         customer_email: customerEmail,
         customer_phone: customerPhone,
         system_type: systemType,
-        system_size: systemSize,
+        system_size: systemSize || systemType,
+        notes: referralNotes, // Store additional info
         commission_amount: commissionAmount,
       });
+
+      // Update referrer stats automatically
+      await updateReferrerStats(referrer.id);
 
       return sendJson(req, res, 201, {
         success: true,
@@ -778,7 +1045,8 @@ async function handleReferral(req, res, action, queryParams, body) {
 
       const updates = {};
       if (status) updates.status = status;
-      if (commissionAmount !== undefined) updates.commission_amount = commissionAmount;
+      if (commissionAmount !== undefined)
+        updates.commission_amount = commissionAmount;
 
       const referral = await updateReferral(id, updates);
       return sendJson(req, res, 200, {
@@ -813,7 +1081,8 @@ async function handleReferral(req, res, action, queryParams, body) {
 
     return sendJson(req, res, 400, {
       success: false,
-      message: "Invalid action. Use: signup, referrer, referrals, payments, create, admin-referrers, update-referral, create-payment",
+      message:
+        "Invalid action. Use: signup, referrer, referrals, payments, create, admin-referrers, update-referral, create-payment",
     });
   } catch (error) {
     console.error("Referral API error:", error);
@@ -837,4 +1106,3 @@ function calculateCommission(systemSize, systemType) {
 
   return Math.round(commission);
 }
-
