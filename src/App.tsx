@@ -12,6 +12,9 @@ import BlogPost from "./pages/BlogPost";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
 import Calculator from "./pages/Calculator";
+import Referral from "./pages/Referral";
+import ReferralSignup from "./pages/ReferralSignup";
+import ReferralDashboard from "./pages/ReferralDashboard";
 import Admin from "./pages/Admin";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminUsers from "./pages/AdminUsers";
@@ -37,6 +40,9 @@ const pathToPage: Record<string, string> = {
   "/calculator": "calculator",
   "/faq": "faq",
   "/contact": "contact",
+  "/referral": "referral",
+  "/referral/signup": "referral-signup",
+  "/referral/dashboard": "referral-dashboard",
   "/login": "login",
   "/admin": "admin",
 };
@@ -51,6 +57,9 @@ const pageToPath: Record<string, string> = {
   calculator: "/calculator",
   faq: "/faq",
   contact: "/contact",
+  referral: "/referral",
+  "referral-signup": "/referral/signup",
+  "referral-dashboard": "/referral/dashboard",
   login: "/login",
   admin: "/admin",
 };
@@ -261,6 +270,12 @@ function App() {
         return <FAQ onNavigate={handleNavigate} />;
       case "contact":
         return <Contact onNavigate={handleNavigate} />;
+      case "referral":
+        return <Referral onNavigate={handleNavigate} />;
+      case "referral-signup":
+        return <ReferralSignup onNavigate={handleNavigate} />;
+      case "referral-dashboard":
+        return <ReferralDashboard onNavigate={handleNavigate} />;
       default:
         return <Home onNavigate={handleNavigate} />;
     }

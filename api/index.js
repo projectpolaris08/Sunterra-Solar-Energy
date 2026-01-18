@@ -22,6 +22,20 @@ import {
   getSettings,
   updateSettings,
 } from "./lib/admin-database.js";
+import {
+  getReferrers,
+  getReferrerById,
+  getReferrerByEmail,
+  getReferrerByCode,
+  createReferrer,
+  updateReferrer,
+  getReferrals,
+  createReferral,
+  updateReferral,
+  getPayments,
+  createPayment,
+  updatePayment,
+} from "./lib/referral-database.js";
 import nodemailer from "nodemailer";
 
 function sendJson(req, res, statusCode, data) {
@@ -76,6 +90,8 @@ export default async function handler(req, res) {
         return await handleDeye(req, res, req.query.path, body);
       case "cron":
         return await handleCron(req, res, req.query.path, body);
+      case "referral":
+        return await handleReferral(req, res, req.query.action, req.query, body);
       default:
         // Try to infer from URL path
         if (req.url.includes("/contact")) {
@@ -99,10 +115,13 @@ export default async function handler(req, res) {
         if (req.url.includes("/cron")) {
           return await handleCron(req, res, req.query.path, body);
         }
+        if (req.url.includes("/referral")) {
+          return await handleReferral(req, res, req.query.action, req.query, body);
+        }
         
         return sendJson(req, res, 404, {
           success: false,
-          message: "Endpoint not found. Available: contact, auth, admin, email, ai-monitoring, deye",
+          message: "Endpoint not found. Available: contact, auth, admin, email, ai-monitoring, deye, referral",
         });
     }
   } catch (error) {
@@ -123,9 +142,9 @@ async function handleContact(req, res, body) {
     });
   }
 
-  const { name, email, phone, propertyType, systemType, message } = body;
+  const { name, email, phone, propertyType, systemType, location, roofType, message } = body;
 
-  if (!name || !email || !phone || !propertyType || !systemType) {
+  if (!name || !email || !phone || !propertyType || !systemType || !location || !roofType) {
     return sendJson(req, res, 400, {
       success: false,
       message: "Please fill in all required fields",
@@ -170,11 +189,13 @@ async function handleContact(req, res, body) {
           <h3>Project Details</h3>
           <p><strong>Property Type:</strong> ${propertyType}</p>
           <p><strong>System Interest:</strong> ${systemType}</p>
+          ${location ? `<p><strong>Location:</strong> ${location}</p>` : ""}
+          ${roofType ? `<p><strong>Roof Type:</strong> ${roofType}</p>` : ""}
         </div>
         ${message ? `<div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;"><h3>Message</h3><p style="white-space: pre-wrap;">${message}</p></div>` : ""}
       </div>
     `,
-    text: `New Contact Form Submission\n\nContact: ${name} (${email}, ${phone})\nProperty: ${propertyType}\nSystem: ${systemType}\n${message ? `\nMessage:\n${message}` : ""}`,
+    text: `New Contact Form Submission\n\nContact: ${name} (${email}, ${phone})\nProperty: ${propertyType}\nSystem: ${systemType}${location ? `\nLocation: ${location}` : ""}${roofType ? `\nRoof Type: ${roofType}` : ""}${message ? `\nMessage:\n${message}` : ""}`,
   };
 
   try {
@@ -573,5 +594,247 @@ async function handleCron(req, res, pathParam, body) {
     success: false,
     message: "Cron endpoint not found. Use: monitor or all",
   });
+}
+
+// Referral handler
+async function handleReferral(req, res, action, queryParams, body) {
+  const act = action || queryParams.action;
+
+  try {
+    // Sign up new referrer
+    if (req.method === "POST" && act === "signup") {
+      const { name, email, phone, address, paymentMethod, paymentDetails } = body;
+
+      if (!name || !email || !phone || !address || !paymentMethod || !paymentDetails) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "Please fill in all required fields",
+        });
+      }
+
+      // Check if referrer already exists
+      let existing;
+      try {
+        existing = await getReferrerByEmail(email);
+      } catch (error) {
+        console.error("Error checking existing referrer:", error);
+        // Continue - might be database not set up yet, will use in-memory
+      }
+
+      if (existing) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "An account with this email already exists",
+        });
+      }
+
+      let referrer;
+      try {
+        referrer = await createReferrer({
+          name,
+          email,
+          phone,
+          address,
+          payment_method: paymentMethod,
+          payment_details: paymentDetails,
+        });
+      } catch (error) {
+        console.error("Error creating referrer:", error);
+        return sendJson(req, res, 500, {
+          success: false,
+          message: "Failed to create referral account. Please try again or contact support.",
+          error: process.env.NODE_ENV === "development" ? error.message : undefined,
+        });
+      }
+
+      return sendJson(req, res, 201, {
+        success: true,
+        message: "Referral account created successfully",
+        referralCode: referrer.referral_code,
+        referrer: {
+          id: referrer.id,
+          name: referrer.name,
+          email: referrer.email,
+          referral_code: referrer.referral_code,
+        },
+      });
+    }
+
+    // Get referrer by email
+    if (req.method === "GET" && act === "referrer") {
+      const email = queryParams.email;
+      if (!email) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "Email is required",
+        });
+      }
+
+      const referrer = await getReferrerByEmail(email);
+      if (!referrer) {
+        return sendJson(req, res, 404, {
+          success: false,
+          message: "Referrer not found",
+        });
+      }
+
+      return sendJson(req, res, 200, {
+        success: true,
+        referrer,
+      });
+    }
+
+    // Get referrals
+    if (req.method === "GET" && act === "referrals") {
+      const referrerId = queryParams.referrerId;
+      if (!referrerId) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "Referrer ID is required",
+        });
+      }
+
+      const referrals = await getReferrals(referrerId);
+      return sendJson(req, res, 200, {
+        success: true,
+        referrals,
+      });
+    }
+
+    // Get payments
+    if (req.method === "GET" && act === "payments") {
+      const referrerId = queryParams.referrerId;
+      if (!referrerId) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "Referrer ID is required",
+        });
+      }
+
+      const payments = await getPayments(referrerId);
+      return sendJson(req, res, 200, {
+        success: true,
+        payments,
+      });
+    }
+
+    // Create referral (when contact form is submitted with referral code)
+    if (req.method === "POST" && act === "create") {
+      const { referrerCode, customerName, customerEmail, customerPhone, systemType, systemSize } = body;
+
+      if (!referrerCode || !customerName || !customerEmail) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "Referrer code and customer information are required",
+        });
+      }
+
+      const referrer = await getReferrerByCode(referrerCode);
+      if (!referrer) {
+        return sendJson(req, res, 404, {
+          success: false,
+          message: "Invalid referral code",
+        });
+      }
+
+      // Calculate commission (you can customize this logic)
+      const commissionAmount = calculateCommission(systemSize, systemType);
+
+      const referral = await createReferral({
+        referrer_id: referrer.id,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        customer_phone: customerPhone,
+        system_type: systemType,
+        system_size: systemSize,
+        commission_amount: commissionAmount,
+      });
+
+      return sendJson(req, res, 201, {
+        success: true,
+        message: "Referral created successfully",
+        referral,
+      });
+    }
+
+    // Admin: Get all referrers
+    if (req.method === "GET" && act === "admin-referrers") {
+      const referrers = await getReferrers();
+      return sendJson(req, res, 200, {
+        success: true,
+        referrers,
+      });
+    }
+
+    // Admin: Update referral status
+    if (req.method === "PUT" && act === "update-referral") {
+      const { id, status, commissionAmount } = body;
+      if (!id) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "Referral ID is required",
+        });
+      }
+
+      const updates = {};
+      if (status) updates.status = status;
+      if (commissionAmount !== undefined) updates.commission_amount = commissionAmount;
+
+      const referral = await updateReferral(id, updates);
+      return sendJson(req, res, 200, {
+        success: true,
+        referral,
+      });
+    }
+
+    // Admin: Create payment
+    if (req.method === "POST" && act === "create-payment") {
+      const { referrerId, amount, paymentMethod, paymentDate } = body;
+      if (!referrerId || !amount) {
+        return sendJson(req, res, 400, {
+          success: false,
+          message: "Referrer ID and amount are required",
+        });
+      }
+
+      const payment = await createPayment({
+        referrer_id: referrerId,
+        amount,
+        payment_method: paymentMethod || "bank",
+        payment_date: paymentDate || new Date().toISOString(),
+        status: "completed",
+      });
+
+      return sendJson(req, res, 201, {
+        success: true,
+        payment,
+      });
+    }
+
+    return sendJson(req, res, 400, {
+      success: false,
+      message: "Invalid action. Use: signup, referrer, referrals, payments, create, admin-referrers, update-referral, create-payment",
+    });
+  } catch (error) {
+    console.error("Referral API error:", error);
+    return sendJson(req, res, 500, {
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
+}
+
+// Calculate commission based on system size and type
+function calculateCommission(systemSize, systemType) {
+  // Default commission structure (you can customize this)
+  // Example: 2% of system value, minimum ₱1,000, maximum ₱50,000
+  const systemValue = parseFloat(systemSize) * 100000; // Assuming ₱100k per kW
+  const commissionRate = 0.02; // 2%
+  let commission = systemValue * commissionRate;
+
+  // Minimum and maximum limits
+  commission = Math.max(1000, Math.min(50000, commission));
+
+  return Math.round(commission);
 }
 

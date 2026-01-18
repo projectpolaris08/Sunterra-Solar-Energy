@@ -23,6 +23,9 @@ export default function Contact({ onNavigate }: ContactProps) {
     phone: "",
     propertyType: "",
     systemType: "",
+    location: "",
+    roofType: "",
+    referralCode: "",
     message: "",
   });
 
@@ -34,6 +37,18 @@ export default function Contact({ onNavigate }: ContactProps) {
   );
   const [scrollY, setScrollY] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Check for referral code in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get("ref");
+    if (refCode) {
+      setFormData((prev) => ({
+        ...prev,
+        referralCode: refCode,
+      }));
+    }
+  }, []);
 
   useEffect(() => {
     const observerOptions = {
@@ -99,6 +114,29 @@ export default function Contact({ onNavigate }: ContactProps) {
         body: JSON.stringify(formData),
       });
 
+      // If referral code is provided, create referral record
+      if (formData.referralCode) {
+        try {
+          await fetch(`${apiUrl}/api/referral?action=create`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              referrerCode: formData.referralCode,
+              customerName: formData.name,
+              customerEmail: formData.email,
+              customerPhone: formData.phone,
+              systemType: formData.systemType,
+              systemSize: "", // You can add this field if needed
+            }),
+          });
+        } catch (err) {
+          // Silently fail - referral creation is not critical
+          console.error("Failed to create referral:", err);
+        }
+      }
+
       // Check if response is JSON before parsing
       const contentType = response.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
@@ -135,6 +173,9 @@ export default function Contact({ onNavigate }: ContactProps) {
         phone: "",
         propertyType: "",
         systemType: "",
+        location: "",
+        roofType: "",
+        referralCode: "",
         message: "",
       });
 
@@ -603,6 +644,73 @@ export default function Contact({ onNavigate }: ContactProps) {
                           <option value="not-sure">Not Sure</option>
                         </select>
                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="location"
+                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        >
+                          Location *
+                        </label>
+                        <input
+                          type="text"
+                          id="location"
+                          name="location"
+                          required
+                          value={formData.location}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                          placeholder="City, Province (e.g., Quezon City, Metro Manila)"
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="roofType"
+                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        >
+                          Roof Type *
+                        </label>
+                        <select
+                          id="roofType"
+                          name="roofType"
+                          required
+                          value={formData.roofType}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                        >
+                          <option value="">Select roof type</option>
+                          <option value="concrete">Concrete</option>
+                          <option value="metal">Metal/Corrugated</option>
+                          <option value="tile">Tile</option>
+                          <option value="asphalt">Asphalt Shingle</option>
+                          <option value="flat">Flat Roof</option>
+                          <option value="not-sure">Not Sure</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="referralCode"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                      >
+                        Referral Code (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        id="referralCode"
+                        name="referralCode"
+                        value={formData.referralCode}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                        placeholder="Enter referral code if you have one"
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Have a referral code? Enter it here to help someone earn rewards!
+                      </p>
                     </div>
 
                     <div>

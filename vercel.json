@@ -41,6 +41,10 @@
     {
       "source": "/api/contact",
       "destination": "/api?endpoint=contact"
+    },
+    {
+      "source": "/api/referral",
+      "destination": "/api?endpoint=referral"
     }
   ],
   "headers": [
@@ -48,20 +52,12 @@
       "source": "/api/:path*",
       "headers": [
         {
-          "key": "Access-Control-Allow-Origin",
-          "value": "https://sunterrasolarenergy.com"
-        },
-        {
           "key": "Access-Control-Allow-Methods",
           "value": "GET,POST,PUT,DELETE,OPTIONS,PATCH"
         },
         {
           "key": "Access-Control-Allow-Headers",
           "value": "Content-Type,Authorization,X-Requested-With,Accept,Origin"
-        },
-        {
-          "key": "Access-Control-Allow-Credentials",
-          "value": "true"
         },
         {
           "key": "Access-Control-Max-Age",

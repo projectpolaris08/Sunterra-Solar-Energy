@@ -8,12 +8,18 @@ export function setCorsHeaders(req, res) {
     "https://www.sunterrasolarenergy.com",
     "http://localhost:5173",
     "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
   ];
 
   // Set Access-Control-Allow-Origin
   // Always allow the requesting origin if it's in our list or matches
   if (origin) {
-    if (allowedOrigins.includes(origin)) {
+    // Check if it's localhost (development)
+    if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+    } else if (allowedOrigins.includes(origin)) {
       res.setHeader("Access-Control-Allow-Origin", origin);
       res.setHeader("Access-Control-Allow-Credentials", "true");
     } else {
@@ -46,6 +52,8 @@ export function handleOptions(req, res) {
     "https://www.sunterrasolarenergy.com",
     "http://localhost:5173",
     "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
   ];
 
   // Determine the origin to allow
@@ -53,8 +61,11 @@ export function handleOptions(req, res) {
   let allowCredentials = false;
 
   if (origin) {
-    // Check if origin is in allowed list
-    if (allowedOrigins.includes(origin)) {
+    // Check if it's localhost (development) - always allow
+    if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+      allowOrigin = origin;
+      allowCredentials = true;
+    } else if (allowedOrigins.includes(origin)) {
       allowOrigin = origin;
       allowCredentials = true;
     } else {

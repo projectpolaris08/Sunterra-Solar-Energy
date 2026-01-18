@@ -29,6 +29,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
     { name: "Blog", path: "blog" },
     { name: "Calculator", path: "calculator" },
     { name: "FAQ", path: "faq" },
+    { name: "Earn with Us", path: "referral" },
     { name: "Contact", path: "contact" },
   ];
 

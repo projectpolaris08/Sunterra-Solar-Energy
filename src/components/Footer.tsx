@@ -52,7 +52,7 @@ export default function Footer({ onNavigate }: FooterProps) {
               Quick Links
             </h4>
             <ul className="space-y-2">
-              {["home", "about", "services", "projects"].map((page, index) => (
+              {["home", "about", "services", "projects", "referral"].map((page, index) => (
                 <li key={page}>
                   <button
                     onClick={() => handleNavClick(page)}
@@ -61,7 +61,7 @@ export default function Footer({ onNavigate }: FooterProps) {
                       transitionDelay: `${index * 50}ms`,
                     }}
                   >
-                    {page}
+                    {page === "referral" ? "Earn with Us" : page}
                   </button>
                 </li>
               ))}
