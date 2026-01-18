@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
 import { trackPageView } from "./utils/analytics";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -312,6 +313,7 @@ function App() {
         </div>
       </main>
       <Footer onNavigate={handleNavigate} />
+      <ScrollToTop />
     </div>
   );
 }

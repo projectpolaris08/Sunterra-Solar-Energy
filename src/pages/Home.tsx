@@ -8,6 +8,7 @@ import {
   Leaf,
   Wrench,
   Star,
+  LogIn,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "../components/Button";
@@ -1034,6 +1035,51 @@ export default function Home({ onNavigate }: HomeProps) {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Earn with Us Section */}
+      <section
+        id="earn-with-us-section"
+        data-scroll-section
+        className="py-20 bg-gradient-to-br from-blue-50 via-white to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+      >
+        <div className="container mx-auto px-4">
+          <Card
+            className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${
+              visibleSections.has("earn-with-us-section")
+                ? "opacity-100 translate-y-0 scale-100"
+                : "opacity-0 translate-y-12 scale-95"
+            }`}
+          >
+            <DollarSign className="w-16 h-16 text-amber-500 dark:text-amber-400 mx-auto mb-6" />
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 gradient-text">
+              Earn with Us
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+              Join our referral program and earn money by sharing the benefits of solar energy. 
+              Help others go solar while building your income!
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button
+                size="lg"
+                onClick={() => onNavigate("referral-signup")}
+                className="w-full sm:w-auto hover:scale-110 hover:shadow-xl transition-all duration-300 group"
+              >
+                Join Referral Program
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => onNavigate("referral-dashboard")}
+                className="w-full sm:w-auto hover:scale-110 hover:shadow-xl transition-all duration-300"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Login to Dashboard
+              </Button>
+            </div>
+          </Card>
         </div>
       </section>
 
