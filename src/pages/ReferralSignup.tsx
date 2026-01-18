@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserPlus, Mail, Phone, MapPin, ArrowRight, CheckCircle, X, LogIn, Lock, Eye, EyeOff } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -27,6 +27,13 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
   const [signedUpEmail, setSignedUpEmail] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Scroll to top when signup is successful
+  useEffect(() => {
+    if (submitted && referralCode) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [submitted, referralCode]);
 
   const paymentMethods = [
     { value: "gcash", label: "GCash", placeholder: "Enter GCash number (e.g., 09171234567)" },
@@ -208,7 +215,11 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
                   onClick={() => {
                     // Clear any stored email - user needs to login with password
                     localStorage.removeItem("referrer_email");
-                    onNavigate("referral-dashboard");
+                    // Scroll to top first, then navigate
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    setTimeout(() => {
+                      onNavigate("referral-dashboard");
+                    }, 300);
                   }}
                   className="w-full sm:w-auto"
                 >
@@ -237,7 +248,13 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onNavigate("referral-dashboard")}
+                  onClick={() => {
+                    // Scroll to top first, then navigate
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    setTimeout(() => {
+                      onNavigate("referral-dashboard");
+                    }, 300);
+                  }}
                   className="mt-2"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
@@ -263,7 +280,7 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-12">
-              <div className="inline-flex items-center space-x-2 bg-amber-100 dark:bg-amber-900/30 px-4 py-2 rounded-full mb-6">
+              <div className="flex items-center justify-center space-x-2 bg-amber-100 dark:bg-amber-900/30 px-4 py-2 rounded-full mb-6 w-fit mx-auto">
                 <UserPlus className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 <span className="text-sm font-medium text-amber-800 dark:text-amber-300">
                   Join Our Referral Program
