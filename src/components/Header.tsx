@@ -145,25 +145,27 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                 onClick={() =>
                   setIsServicesDropdownOpen(!isServicesDropdownOpen)
                 }
-                className={`font-medium transition-colors duration-300 relative group flex items-center space-x-1 ${
+                className={`font-medium transition-colors duration-300 relative group ${
                   isServicesPage
                     ? "text-blue-600 dark:text-blue-400"
                     : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                 }`}
               >
-                <span className="relative inline-block">
-                  Services
-                  <span
-                    className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] bg-blue-600 dark:bg-blue-400 transition-all duration-300 ${
-                      isServicesPage ? "w-full" : "w-0 group-hover:w-full"
+                <span className="relative inline-flex items-center space-x-1">
+                  <span className="relative inline-block">
+                    Services
+                    <span
+                      className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] bg-blue-600 dark:bg-blue-400 transition-all duration-300 ${
+                        isServicesPage ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-300 ${
+                      isServicesDropdownOpen ? "rotate-180" : ""
                     }`}
                   />
                 </span>
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-300 ${
-                    isServicesDropdownOpen ? "rotate-180" : ""
-                  }`}
-                />
               </button>
 
               {/* Dropdown Menu */}
@@ -184,10 +186,10 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                           : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                       }`}
                     >
-                      <span className="relative inline-block">
+                      <span className="relative inline-block w-full">
                         {item.name}
                         <span
-                          className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] transition-all duration-300 bg-blue-600 dark:bg-blue-400 ${
+                          className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] bg-blue-600 dark:bg-blue-400 transition-all duration-300 ${
                             currentPage === item.path
                               ? "w-full"
                               : "w-0 group-hover:w-full"
@@ -316,10 +318,10 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                           : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                       }`}
                     >
-                      <span className="relative inline-block">
+                      <span className="relative inline-block w-full">
                         {item.name}
                         <span
-                          className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] transition-all duration-300 bg-blue-600 dark:bg-blue-400 ${
+                          className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] bg-blue-600 dark:bg-blue-400 transition-all duration-300 ${
                             currentPage === item.path
                               ? "w-full"
                               : "w-0 group-hover:w-full"
