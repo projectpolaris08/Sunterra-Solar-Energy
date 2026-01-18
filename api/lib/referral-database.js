@@ -132,17 +132,48 @@ export async function createReferrer(referrerData) {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase insert error:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
+        throw error;
+      }
+      
+      if (!data) {
+        throw new Error("No data returned from Supabase insert");
+      }
+      
+      console.log("Successfully created referrer in Supabase:", {
+        id: data.id,
+        email: data.email,
+        referral_code: data.referral_code,
+      });
+      
       return data;
     } catch (error) {
       console.error("Failed to create referrer in Supabase:", error);
-      // Fallback to memory
+      console.error("Error message:", error.message);
+      console.error("Error code:", error.code);
+      // Re-throw the error so the API handler can respond appropriately
+      // Don't silently fall back to memory in production
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(`Failed to save to database: ${error.message}`);
+      }
+      // Fallback to memory only in development
+      console.warn("Falling back to in-memory storage (development only)");
       newReferrer.id = Date.now().toString();
       memoryStorage.referrers.push(newReferrer);
       return newReferrer;
     }
   }
 
+  // Supabase not configured
+  console.warn("Supabase not configured. Using in-memory storage.");
+  console.warn("Set SUPABASE_URL and SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY environment variables.");
+  
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Database not configured. Please configure Supabase credentials.");
+  }
+  
   newReferrer.id = Date.now().toString();
   memoryStorage.referrers.push(newReferrer);
   return newReferrer;

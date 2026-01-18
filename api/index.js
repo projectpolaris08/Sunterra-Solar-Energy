@@ -821,8 +821,29 @@ async function handleReferral(req, res, action, queryParams, body) {
           payment_method: paymentMethod,
           payment_details: paymentDetails,
         });
+
+        // Verify referrer was created successfully
+        if (!referrer || !referrer.id) {
+          console.error("Referrer creation returned invalid data:", referrer);
+          return sendJson(req, res, 500, {
+            success: false,
+            message:
+              "Failed to create referral account. Please try again or contact support.",
+            error:
+              process.env.NODE_ENV === "development"
+                ? "Referrer creation returned no ID"
+                : undefined,
+          });
+        }
+
+        console.log("Referrer created successfully:", {
+          id: referrer.id,
+          email: referrer.email,
+          referral_code: referrer.referral_code,
+        });
       } catch (error) {
         console.error("Error creating referrer:", error);
+        console.error("Error stack:", error.stack);
         return sendJson(req, res, 500, {
           success: false,
           message:

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UserPlus, Mail, Phone, MapPin, ArrowRight, CheckCircle, X, LogIn, Lock } from "lucide-react";
+import { UserPlus, Mail, Phone, MapPin, ArrowRight, CheckCircle, X, LogIn, Lock, Eye, EyeOff } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import SEO from "../components/SEO";
@@ -25,6 +25,8 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
   const [error, setError] = useState<string | null>(null);
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [signedUpEmail, setSignedUpEmail] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const paymentMethods = [
     { value: "gcash", label: "GCash", placeholder: "Enter GCash number (e.g., 09171234567)" },
@@ -378,16 +380,27 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         id="password"
                         name="password"
                         required
                         minLength={6}
                         value={formData.password}
                         onChange={handleChange}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                        className="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
                         placeholder="At least 6 characters"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Minimum 6 characters
@@ -404,17 +417,53 @@ export default function ReferralSignup({ onNavigate }: ReferralSignupProps) {
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
-                        type="password"
+                        type={showConfirmPassword ? "text" : "password"}
                         id="confirmPassword"
                         name="confirmPassword"
                         required
                         minLength={6}
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                        className={`w-full pl-10 pr-12 py-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all ${
+                          formData.confirmPassword && formData.password === formData.confirmPassword
+                            ? "border-green-500 dark:border-green-400"
+                            : formData.confirmPassword && formData.password !== formData.confirmPassword
+                            ? "border-red-500 dark:border-red-400"
+                            : "border-gray-300 dark:border-gray-600"
+                        }`}
                         placeholder="Re-enter password"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
                     </div>
+                    {formData.confirmPassword && (
+                      <div className="mt-1 flex items-center space-x-1">
+                        {formData.password === formData.confirmPassword ? (
+                          <>
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            <p className="text-xs text-green-600 dark:text-green-400">
+                              Passwords match
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <X className="w-4 h-4 text-red-500" />
+                            <p className="text-xs text-red-600 dark:text-red-400">
+                              Passwords do not match
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
