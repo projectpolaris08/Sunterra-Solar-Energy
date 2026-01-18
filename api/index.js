@@ -844,12 +844,41 @@ async function handleReferral(req, res, action, queryParams, body) {
       } catch (error) {
         console.error("Error creating referrer:", error);
         console.error("Error stack:", error.stack);
+        console.error("Error name:", error.name);
+        console.error(
+          "Full error object:",
+          JSON.stringify(error, Object.getOwnPropertyNames(error))
+        );
+
+        // Provide more helpful error messages
+        let errorMessage =
+          "Failed to create referral account. Please try again or contact support.";
+        const isDevelopment =
+          process.env.VERCEL_ENV !== "production" &&
+          process.env.NODE_ENV !== "production";
+
+        if (isDevelopment || process.env.VERCEL_ENV === "preview") {
+          // Show detailed error in development/preview
+          errorMessage = error.message || errorMessage;
+        } else if (error.message?.includes("Database not configured")) {
+          errorMessage =
+            "Database configuration error. Please contact support.";
+        } else if (
+          error.message?.includes("duplicate key") ||
+          error.message?.includes("unique constraint")
+        ) {
+          errorMessage = "An account with this email already exists.";
+        } else if (
+          error.message?.includes("column") &&
+          error.message?.includes("does not exist")
+        ) {
+          errorMessage = "Database schema error. Please contact support.";
+        }
+
         return sendJson(req, res, 500, {
           success: false,
-          message:
-            "Failed to create referral account. Please try again or contact support.",
-          error:
-            process.env.NODE_ENV === "development" ? error.message : undefined,
+          message: errorMessage,
+          error: isDevelopment ? error.message : undefined,
         });
       }
 
@@ -877,11 +906,30 @@ async function handleReferral(req, res, action, queryParams, body) {
         });
       }
 
+      const isDevelopment =
+        process.env.VERCEL_ENV !== "production" &&
+        process.env.NODE_ENV !== "production";
+
+      if (isDevelopment) {
+        console.log("Login attempt for email:", email.toLowerCase());
+      }
+
       const referrer = await getReferrerByEmail(email);
       if (!referrer) {
+        if (isDevelopment) {
+          console.log("Referrer not found for email:", email.toLowerCase());
+        }
         return sendJson(req, res, 401, {
           success: false,
           message: "Invalid email or password",
+        });
+      }
+
+      if (isDevelopment) {
+        console.log("Referrer found:", {
+          id: referrer.id,
+          email: referrer.email,
+          hasPassword: !!referrer.password,
         });
       }
 
@@ -890,7 +938,21 @@ async function handleReferral(req, res, action, queryParams, body) {
         .update(password)
         .digest("hex");
 
+      if (!referrer.password) {
+        console.error(
+          "Referrer has no password set for email:",
+          referrer.email
+        );
+        return sendJson(req, res, 401, {
+          success: false,
+          message: "Invalid email or password",
+        });
+      }
+
       if (referrer.password !== hashedPassword) {
+        if (isDevelopment) {
+          console.error("Password mismatch for email:", referrer.email);
+        }
         return sendJson(req, res, 401, {
           success: false,
           message: "Invalid email or password",
@@ -995,7 +1057,14 @@ async function handleReferral(req, res, action, queryParams, body) {
         message,
       } = body;
 
+      console.log("Creating referral with code:", referrerCode);
+
       if (!referrerCode || !customerName || !customerEmail) {
+        console.error("Missing required fields:", {
+          hasReferrerCode: !!referrerCode,
+          hasCustomerName: !!customerName,
+          hasCustomerEmail: !!customerEmail,
+        });
         return sendJson(req, res, 400, {
           success: false,
           message: "Referrer code and customer information are required",
@@ -1004,11 +1073,18 @@ async function handleReferral(req, res, action, queryParams, body) {
 
       const referrer = await getReferrerByCode(referrerCode);
       if (!referrer) {
+        console.error("Referrer not found for code:", referrerCode);
         return sendJson(req, res, 404, {
           success: false,
           message: "Invalid referral code",
         });
       }
+
+      console.log("Referrer found:", {
+        id: referrer.id,
+        email: referrer.email,
+        referral_code: referrer.referral_code,
+      });
 
       // Calculate commission (you can customize this logic)
       const commissionAmount = calculateCommission(systemSize, systemType);
@@ -1024,25 +1100,43 @@ async function handleReferral(req, res, action, queryParams, body) {
         .filter(Boolean)
         .join(" | ");
 
-      const referral = await createReferral({
-        referrer_id: referrer.id,
-        customer_name: customerName,
-        customer_email: customerEmail,
-        customer_phone: customerPhone,
-        system_type: systemType,
-        system_size: systemSize || systemType,
-        notes: referralNotes, // Store additional info
-        commission_amount: commissionAmount,
-      });
+      let referral;
+      try {
+        referral = await createReferral({
+          referrer_id: referrer.id,
+          customer_name: customerName,
+          customer_email: customerEmail,
+          customer_phone: customerPhone,
+          system_type: systemType,
+          system_size: systemSize || systemType,
+          notes: referralNotes, // Store additional info
+          commission_amount: commissionAmount,
+        });
 
-      // Update referrer stats automatically
-      await updateReferrerStats(referrer.id);
+        console.log("Referral created successfully:", {
+          id: referral.id,
+          referrer_id: referral.referrer_id,
+          customer_name: referral.customer_name,
+        });
 
-      return sendJson(req, res, 201, {
-        success: true,
-        message: "Referral created successfully",
-        referral,
-      });
+        // Update referrer stats automatically
+        await updateReferrerStats(referrer.id);
+
+        return sendJson(req, res, 201, {
+          success: true,
+          message: "Referral created successfully",
+          referral,
+        });
+      } catch (error) {
+        console.error("Failed to create referral:", error);
+        console.error("Error details:", error.message, error.stack);
+        return sendJson(req, res, 500, {
+          success: false,
+          message: "Failed to create referral. Please try again.",
+          error:
+            process.env.NODE_ENV === "development" ? error.message : undefined,
+        });
+      }
     }
 
     // Admin: Get all referrers

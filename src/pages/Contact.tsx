@@ -98,6 +98,14 @@ export default function Contact({ onNavigate }: ContactProps) {
     setIsSubmitting(true);
     setError(null);
 
+    // Debug: Log form data including referral code
+    console.log("📝 Contact form submitted with data:", {
+      name: formData.name,
+      email: formData.email,
+      referralCode: formData.referralCode,
+      hasReferralCode: !!formData.referralCode,
+    });
+
     try {
       // Determine the API URL based on environment
       // Frontend on Hostinger, backend on Vercel
@@ -115,30 +123,63 @@ export default function Contact({ onNavigate }: ContactProps) {
       });
 
       // If referral code is provided, create referral record
-      if (formData.referralCode) {
+      // Do this BEFORE the contact form response check to ensure it happens
+      if (formData.referralCode && formData.referralCode.trim()) {
+        console.log("Referral code detected:", formData.referralCode);
+        console.log("Form data for referral:", {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          systemType: formData.systemType,
+        });
+
         try {
-          await fetch(`${apiUrl}/api/referral?action=create`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              referrerCode: formData.referralCode,
-              customerName: formData.name,
-              customerEmail: formData.email,
-              customerPhone: formData.phone,
-              systemType: formData.systemType,
-              systemSize: formData.systemType, // Using systemType as size indicator
-              location: formData.location,
-              propertyType: formData.propertyType,
-              roofType: formData.roofType,
-              message: formData.message,
-            }),
-          });
+          const referralResponse = await fetch(
+            `${apiUrl}/api/referral?action=create`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                referrerCode: formData.referralCode.trim(),
+                customerName: formData.name,
+                customerEmail: formData.email,
+                customerPhone: formData.phone,
+                systemType: formData.systemType,
+                systemSize: formData.systemType, // Using systemType as size indicator
+                location: formData.location,
+                propertyType: formData.propertyType,
+                roofType: formData.roofType,
+                message: formData.message,
+              }),
+            }
+          );
+
+          console.log("Referral API response status:", referralResponse.status);
+
+          if (!referralResponse.ok) {
+            const errorText = await referralResponse.text();
+            console.error("Referral API error response:", errorText);
+            // Don't throw - just log, so contact form can still succeed
+          } else {
+            const referralData = await referralResponse.json();
+            if (referralData.success) {
+              console.log("✅ Referral created successfully:", referralData);
+            } else {
+              console.error("❌ Referral creation failed:", referralData);
+            }
+          }
         } catch (err) {
-          // Silently fail - referral creation is not critical
-          console.error("Failed to create referral:", err);
+          // Log error but don't block form submission
+          console.error("❌ Exception creating referral:", err);
+          if (err instanceof Error) {
+            console.error("Error message:", err.message);
+            console.error("Error stack:", err.stack);
+          }
         }
+      } else {
+        console.log("No referral code provided or code is empty");
       }
 
       // Check if response is JSON before parsing
@@ -713,8 +754,8 @@ export default function Contact({ onNavigate }: ContactProps) {
                         placeholder="Enter referral code if you have one"
                       />
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {formData.referralCode 
-                          ? "✓ Referral code automatically added from link! You can edit or remove it if needed." 
+                        {formData.referralCode
+                          ? "✓ Referral code automatically added from link! You can edit or remove it if needed."
                           : "Have a referral code? Enter it here to help someone earn rewards!"}
                       </p>
                     </div>

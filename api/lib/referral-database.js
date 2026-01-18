@@ -70,7 +70,24 @@ export async function getReferrerByEmail(email) {
         .eq("email", email.toLowerCase())
         .single();
 
-      if (error && error.code !== "PGRST116") throw error; // PGRST116 = not found
+      if (error && error.code !== "PGRST116") {
+        console.error("Supabase error getting referrer by email:", error);
+        throw error;
+      }
+
+      // Only log in development
+      const isDevelopment =
+        process.env.VERCEL_ENV !== "production" &&
+        process.env.NODE_ENV !== "production";
+
+      if (data && isDevelopment) {
+        console.log("Referrer retrieved from Supabase:", {
+          id: data.id,
+          email: data.email,
+          hasPassword: !!data.password,
+        });
+      }
+
       return data;
     } catch (error) {
       console.error("Failed to get referrer by email from Supabase:", error);
@@ -85,35 +102,74 @@ export async function getReferrerByEmail(email) {
 }
 
 export async function getReferrerByCode(referralCode) {
+  if (!referralCode) {
+    console.error("getReferrerByCode called with empty referralCode");
+    return null;
+  }
+
+  const normalizedCode = referralCode.toUpperCase().trim();
+  console.log("Looking up referrer by code:", {
+    original: referralCode,
+    normalized: normalizedCode,
+  });
+
   if (supabase) {
     try {
       const { data, error } = await supabase
         .from("referrers")
         .select("*")
-        .eq("referral_code", referralCode.toUpperCase())
+        .eq("referral_code", normalizedCode)
         .single();
 
-      if (error && error.code !== "PGRST116") throw error;
+      if (error) {
+        if (error.code === "PGRST116") {
+          // Not found
+          console.error("Referrer not found for code:", normalizedCode);
+          return null;
+        }
+        throw error;
+      }
+
+      if (data) {
+        console.log("Referrer found by code:", {
+          id: data.id,
+          email: data.email,
+          code: data.referral_code,
+        });
+      }
+
       return data;
     } catch (error) {
       console.error("Failed to get referrer by code from Supabase:", error);
       return memoryStorage.referrers.find(
-        (r) => r.referral_code?.toUpperCase() === referralCode.toUpperCase()
+        (r) => r.referral_code?.toUpperCase() === normalizedCode
       );
     }
   }
   return memoryStorage.referrers.find(
-    (r) => r.referral_code?.toUpperCase() === referralCode.toUpperCase()
+    (r) => r.referral_code?.toUpperCase() === normalizedCode
   );
 }
 
 export async function createReferrer(referrerData) {
+  // Validate required fields
+  if (!referrerData.name || !referrerData.email) {
+    throw new Error("Name and email are required");
+  }
+
   // Generate unique referral code
-  const referralCode = generateReferralCode(referrerData.name || referrerData.email);
+  const referralCode = generateReferralCode(
+    referrerData.name || referrerData.email
+  );
 
   const newReferrer = {
-    ...referrerData,
-    email: referrerData.email?.toLowerCase(),
+    name: referrerData.name,
+    email: (referrerData.email || "").toLowerCase().trim(),
+    phone: referrerData.phone || null,
+    address: referrerData.address || null,
+    password: referrerData.password || null,
+    payment_method: referrerData.payment_method || null,
+    payment_details: referrerData.payment_details || null,
     referral_code: referralCode,
     status: "active",
     total_referrals: 0,
@@ -123,6 +179,15 @@ export async function createReferrer(referrerData) {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
+
+  // Log the data being inserted (without sensitive info)
+  console.log("Creating referrer with data:", {
+    name: newReferrer.name,
+    email: newReferrer.email,
+    phone: newReferrer.phone ? "***" : null,
+    hasPassword: !!newReferrer.password,
+    referral_code: newReferrer.referral_code,
+  });
 
   if (supabase) {
     try {
@@ -137,43 +202,61 @@ export async function createReferrer(referrerData) {
         console.error("Error details:", JSON.stringify(error, null, 2));
         throw error;
       }
-      
+
       if (!data) {
         throw new Error("No data returned from Supabase insert");
       }
-      
+
       console.log("Successfully created referrer in Supabase:", {
         id: data.id,
         email: data.email,
         referral_code: data.referral_code,
       });
-      
+
       return data;
     } catch (error) {
       console.error("Failed to create referrer in Supabase:", error);
       console.error("Error message:", error.message);
       console.error("Error code:", error.code);
+      console.error(
+        "Error details:",
+        error.details || error.hint || "No additional details"
+      );
+
+      // Check if it's a production environment (Vercel sets VERCEL_ENV)
+      const isProduction =
+        process.env.VERCEL_ENV === "production" ||
+        process.env.NODE_ENV === "production";
+
       // Re-throw the error so the API handler can respond appropriately
-      // Don't silently fall back to memory in production
-      if (process.env.NODE_ENV === "production") {
-        throw new Error(`Failed to save to database: ${error.message}`);
-      }
-      // Fallback to memory only in development
-      console.warn("Falling back to in-memory storage (development only)");
-      newReferrer.id = Date.now().toString();
-      memoryStorage.referrers.push(newReferrer);
-      return newReferrer;
+      // Include more details about what went wrong
+      const errorMessage = error.message || "Unknown database error";
+      const errorDetails = error.details || error.hint || "";
+      throw new Error(
+        `Failed to save to database: ${errorMessage}${
+          errorDetails ? ` (${errorDetails})` : ""
+        }`
+      );
     }
   }
 
   // Supabase not configured
   console.warn("Supabase not configured. Using in-memory storage.");
-  console.warn("Set SUPABASE_URL and SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY environment variables.");
-  
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("Database not configured. Please configure Supabase credentials.");
+  console.warn(
+    "Set SUPABASE_URL and SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY environment variables."
+  );
+
+  // Check if it's a production environment (Vercel sets VERCEL_ENV)
+  const isProduction =
+    process.env.VERCEL_ENV === "production" ||
+    process.env.NODE_ENV === "production";
+
+  if (isProduction) {
+    throw new Error(
+      "Database not configured. Please configure Supabase credentials."
+    );
   }
-  
+
   newReferrer.id = Date.now().toString();
   memoryStorage.referrers.push(newReferrer);
   return newReferrer;
@@ -254,6 +337,12 @@ export async function getReferrals(referrerId = null) {
 }
 
 export async function createReferral(referralData) {
+  console.log("Creating referral with data:", {
+    referrer_id: referralData.referrer_id,
+    customer_name: referralData.customer_name,
+    customer_email: referralData.customer_email,
+  });
+
   const newReferral = {
     ...referralData,
     status: "pending",
@@ -270,7 +359,21 @@ export async function createReferral(referralData) {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error creating referral:", error);
+        console.error("Error details:", error.message, error.details);
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error("No data returned from Supabase insert");
+      }
+
+      console.log("Referral created successfully:", {
+        id: data.id,
+        referrer_id: data.referrer_id,
+        customer_name: data.customer_name,
+      });
 
       // Update referrer stats
       await updateReferrerStats(referralData.referrer_id);
@@ -310,7 +413,8 @@ export async function updateReferral(id, updates) {
 
       // Update referrer stats if status or commission changed
       if (updates.status || updates.commission_amount) {
-        const referral = data || memoryStorage.referrals.find((r) => r.id === id);
+        const referral =
+          data || memoryStorage.referrals.find((r) => r.id === id);
         if (referral?.referrer_id) {
           await updateReferrerStats(referral.referrer_id);
         }
@@ -402,7 +506,10 @@ export async function createPayment(paymentData) {
 
       // Update referrer paid earnings
       if (paymentData.status === "completed") {
-        await updateReferrerPaidEarnings(paymentData.referrer_id, paymentData.amount);
+        await updateReferrerPaidEarnings(
+          paymentData.referrer_id,
+          paymentData.amount
+        );
       }
 
       return data;
@@ -411,7 +518,10 @@ export async function createPayment(paymentData) {
       newPayment.id = Date.now().toString();
       memoryStorage.payments.push(newPayment);
       if (paymentData.status === "completed") {
-        await updateReferrerPaidEarnings(paymentData.referrer_id, paymentData.amount);
+        await updateReferrerPaidEarnings(
+          paymentData.referrer_id,
+          paymentData.amount
+        );
       }
       return newPayment;
     }
@@ -420,7 +530,10 @@ export async function createPayment(paymentData) {
   newPayment.id = Date.now().toString();
   memoryStorage.payments.push(newPayment);
   if (paymentData.status === "completed") {
-    await updateReferrerPaidEarnings(paymentData.referrer_id, paymentData.amount);
+    await updateReferrerPaidEarnings(
+      paymentData.referrer_id,
+      paymentData.amount
+    );
   }
   return newPayment;
 }
@@ -488,10 +601,11 @@ export async function updatePayment(id, updates) {
 function generateReferralCode(nameOrEmail) {
   // Generate code like: SUN-JOHN-1234
   const prefix = "SUN";
-  let middle = nameOrEmail
-    ?.substring(0, 4)
-    .toUpperCase()
-    .replace(/[^A-Z]/g, "") || "REF";
+  let middle =
+    nameOrEmail
+      ?.substring(0, 4)
+      .toUpperCase()
+      .replace(/[^A-Z]/g, "") || "REF";
   const suffix = Math.floor(1000 + Math.random() * 9000).toString();
   return `${prefix}-${middle}-${suffix}`;
 }
