@@ -18,6 +18,12 @@ import {
   Edit,
   Save,
   X,
+  Info,
+  FileText,
+  UserCheck,
+  TrendingUp,
+  Phone,
+  MessageCircle,
 } from "lucide-react";
 import Card from "../components/Card";
 import Button from "../components/Button";
@@ -970,6 +976,265 @@ export default function ReferralDashboard({
                 ))}
               </div>
             )}
+          </Card>
+
+          {/* How It Works / Referral Mechanics */}
+          <Card className="mb-8 bg-gradient-to-br from-blue-50 to-amber-50 dark:from-gray-800 dark:to-gray-700 border-2 border-blue-200 dark:border-blue-700 shadow-xl">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="bg-blue-600 dark:bg-blue-500 p-2 rounded-lg">
+                <Info className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                How the Referral Program Works
+              </h2>
+            </div>
+
+            <div className="space-y-6">
+              {/* Step 1 */}
+              <div className="flex items-start space-x-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
+                <div className="flex-shrink-0">
+                  <div className="bg-blue-600 dark:bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
+                    1
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+                    <Share2 className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
+                    Share Your Referral Code or Link
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+                    Share your unique referral code or referral link with friends, family, or anyone interested in solar energy. 
+                    You can copy your code above or share the link directly.
+                  </p>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-700">
+                    <p className="text-xs text-blue-800 dark:text-blue-300 font-medium">
+                      💡 Tip: Use your referral link - it automatically fills in your code on the contact form!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="flex items-start space-x-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
+                <div className="flex-shrink-0">
+                  <div className="bg-blue-600 dark:bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
+                    2
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+                    <FileText className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
+                    Client Submits Assessment or Contact Form
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+                    When your referral is ready to get a solar assessment, they need to:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-sm text-gray-600 dark:text-gray-300 mb-3">
+                    <li><strong>Option 1 (Recommended):</strong> Click your referral link - the code will automatically fill in!</li>
+                    <li><strong>Option 2:</strong> Visit the <strong>Contact</strong> page and manually enter your referral code</li>
+                    <li>Fill out their information (name, email, phone, property details, etc.)</li>
+                    <li>Submit the form with your referral code included</li>
+                  </ul>
+                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-700 mb-3">
+                    <p className="text-xs text-green-800 dark:text-green-300 font-medium">
+                      ✅ <strong>Automatic Fill:</strong> If your client clicks your referral link, the referral code will automatically fill in the contact/assessment form - no manual entry needed!
+                    </p>
+                  </div>
+                  <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-200 dark:border-amber-700">
+                    <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
+                      ⚠️ <strong>Important:</strong> The referral code MUST be present in the contact/assessment form for us to track who referred them. If they don't use your referral link, they must manually enter your code in the "Referral Code" field.
+                    </p>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onNavigate("contact")}
+                      className="text-xs"
+                    >
+                      <FileText className="w-4 h-4 mr-1" />
+                      Go to Contact Form
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex items-start space-x-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
+                <div className="flex-shrink-0">
+                  <div className="bg-blue-600 dark:bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
+                    3
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+                    <UserCheck className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
+                    We Process the Referral
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+                    Once the form is submitted with your referral code:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                    <li>We verify the referral code and link it to your account</li>
+                    <li>The referral appears in your dashboard with "Pending" status</li>
+                    <li>We contact the client to schedule their free site assessment</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Step 4 */}
+              <div className="flex items-start space-x-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
+                <div className="flex-shrink-0">
+                  <div className="bg-blue-600 dark:bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
+                    4
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+                    <CheckCircle className="w-5 h-5 mr-2 text-green-600 dark:text-green-400" />
+                    Installation Completed = Commission Earned
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+                    When the client completes their solar installation:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-sm text-gray-600 dark:text-gray-300 mb-3">
+                    <li>The referral status changes to "Completed" in your dashboard</li>
+                    <li>Commission is calculated as <strong className="text-green-600 dark:text-green-400">3% of the contract price</strong></li>
+                    <li>Your earnings are updated and shown as "Pending" until payment is processed</li>
+                  </ul>
+                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-700">
+                    <p className="text-xs text-green-800 dark:text-green-300 font-medium">
+                      💰 Commission Rate: 3% of total contract price (set by admin after installation)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 5 */}
+              <div className="flex items-start space-x-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
+                <div className="flex-shrink-0">
+                  <div className="bg-blue-600 dark:bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
+                    5
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+                    <TrendingUp className="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400" />
+                    Get Paid
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+                    Once your payment information is verified:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                    <li>Payments are processed according to our payment schedule</li>
+                    <li>You'll receive payment via your preferred method (GCash, PayMaya, Bank, PayPal)</li>
+                    <li>Payment history is tracked in your dashboard</li>
+                  </ul>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-700 mt-3">
+                    <p className="text-xs text-purple-800 dark:text-purple-300 font-medium">
+                      📝 Make sure your payment information is up to date in the Payment Information section above!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Tips */}
+            <div className="mt-6 pt-6 border-t border-blue-200 dark:border-blue-700">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                <Gift className="w-5 h-5 mr-2 text-amber-600 dark:text-amber-400" />
+                Pro Tips for Maximum Earnings
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-blue-200 dark:border-blue-700">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <strong className="text-blue-600 dark:text-blue-400">✓</strong> Always use your referral link when sharing - it's easier for clients
+                  </p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-blue-200 dark:border-blue-700">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <strong className="text-blue-600 dark:text-blue-400">✓</strong> Remind clients to enter your code when filling out the form
+                  </p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-blue-200 dark:border-blue-700">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <strong className="text-blue-600 dark:text-blue-400">✓</strong> Check your dashboard regularly to track referral status
+                  </p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-blue-200 dark:border-blue-700">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <strong className="text-blue-600 dark:text-blue-400">✓</strong> Keep your payment information updated for faster payouts
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Support Section */}
+            <div className="mt-6 pt-6 border-t border-blue-200 dark:border-blue-700">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <MessageCircle className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
+                Have Questions?
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                If you have any questions about the referral program, need assistance, or want to learn more, 
+                feel free to reach out to us through any of the following channels:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <a
+                  href="https://www.facebook.com/sunterrasolarenergy/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-blue-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md group"
+                >
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="bg-blue-600 dark:bg-blue-500 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm">Facebook Page</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Visit our page</p>
+                    </div>
+                  </div>
+                </a>
+
+                <a
+                  href="tel:+639606921760"
+                  className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-blue-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md group"
+                >
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="bg-green-600 dark:bg-green-500 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <Phone className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm">Contact Number</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">+63 960 692 1760</p>
+                    </div>
+                  </div>
+                </a>
+
+                <a
+                  href="mailto:info@sunterrasolarenergy.com"
+                  className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-200 dark:border-blue-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all hover:shadow-md group"
+                >
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="bg-amber-600 dark:bg-amber-500 p-2 rounded-lg group-hover:scale-110 transition-transform">
+                      <Mail className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm">Email Us</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">info@sunterrasolarenergy.com</p>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
           </Card>
         </div>
       </section>

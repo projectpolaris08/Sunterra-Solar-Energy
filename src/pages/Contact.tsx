@@ -742,7 +742,8 @@ export default function Contact({ onNavigate }: ContactProps) {
                       </div>
                     </div>
 
-                    <div>
+                    {/* Contract Price field hidden from clients - Admin control only */}
+                    <div className="hidden">
                       <label
                         htmlFor="contractPrice"
                         className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"

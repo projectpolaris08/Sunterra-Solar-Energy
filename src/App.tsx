@@ -103,6 +103,8 @@ function App() {
     const handlePopState = () => {
       const page = getPageFromPath();
       setCurrentPage(page);
+      // Scroll to top on browser back/forward
+      window.scrollTo({ top: 0, behavior: "smooth" });
       // Track page view on browser back/forward
       trackPageView(window.location.pathname);
     };
@@ -111,13 +113,23 @@ function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // Track initial page view
+  // Track initial page view and scroll to top on load
   useEffect(() => {
     trackPageView(window.location.pathname);
+    // Scroll to top on initial page load
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
+
+  // Scroll to top when page changes (handles direct URL navigation)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
 
   const handleNavigate = (page: string) => {
     if (page === currentPage) return;
+    
+    // Scroll to top immediately when navigating (instant feedback)
+    window.scrollTo({ top: 0, behavior: "instant" });
     
     setIsTransitioning(true);
     

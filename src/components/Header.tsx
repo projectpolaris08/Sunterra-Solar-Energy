@@ -77,13 +77,10 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
     setIsMobileMenuOpen(false);
     setIsServicesDropdownOpen(false);
     // Navigate immediately - menus will close as state updates
+    // Scroll to top is handled by App.tsx handleNavigate
     if (onNavigate) {
       onNavigate(path);
     }
-    // Scroll to top after a brief moment to ensure page has rendered
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 50);
   };
 
   return (
@@ -302,15 +299,10 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                         const path = item.path;
                         setIsServicesDropdownOpen(false);
                         setIsMobileMenuOpen(false);
-                        // Use requestAnimationFrame to ensure state updates before navigation
-                        requestAnimationFrame(() => {
-                          if (onNavigate) {
-                            onNavigate(path);
-                          }
-                          setTimeout(() => {
-                            window.scrollTo({ top: 0, behavior: "smooth" });
-                          }, 100);
-                        });
+                        // Navigate - scroll to top is handled by App.tsx handleNavigate
+                        if (onNavigate) {
+                          onNavigate(path);
+                        }
                       }}
                       className={`block w-full text-left py-3 px-4 rounded-lg font-medium transition-colors relative group ${
                         currentPage === item.path
