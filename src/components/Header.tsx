@@ -13,6 +13,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLElement>(null);
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
@@ -23,23 +24,29 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside (desktop only)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      // Only handle desktop dropdown - ignore mobile menu clicks
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(target) &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(target)
       ) {
         setIsServicesDropdownOpen(false);
       }
     };
 
-    if (isServicesDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+    // Only add listener for desktop dropdown, not mobile
+    if (isServicesDropdownOpen && window.innerWidth >= 768) {
+      // Use click instead of mousedown to avoid interfering with button clicks
+      document.addEventListener("click", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, [isServicesDropdownOpen]);
 
@@ -52,6 +59,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
   ];
 
   const servicesSubmenu = [
+    { name: "Services", path: "services" },
     { name: "Projects", path: "projects" },
     { name: "Calculator", path: "calculator" },
     { name: "Earn with Us", path: "referral" },
@@ -59,14 +67,23 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
 
   // Check if current page is in services submenu
   const isServicesPage =
+    currentPage === "services" ||
     currentPage === "projects" ||
     currentPage === "calculator" ||
     currentPage === "referral";
 
   const handleNavClick = (path: string) => {
-    onNavigate(path);
+    // Close all menus immediately
     setIsMobileMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setIsServicesDropdownOpen(false);
+    // Navigate immediately - menus will close as state updates
+    if (onNavigate) {
+      onNavigate(path);
+    }
+    // Scroll to top after a brief moment to ensure page has rendered
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 50);
   };
 
   return (
@@ -125,7 +142,9 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
             {/* Services Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => setIsServicesDropdownOpen(!isServicesDropdownOpen)}
+                onClick={() =>
+                  setIsServicesDropdownOpen(!isServicesDropdownOpen)
+                }
                 className={`font-medium transition-colors duration-300 relative group flex items-center space-x-1 ${
                   isServicesPage
                     ? "text-blue-600 dark:text-blue-400"
@@ -136,9 +155,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                   Services
                   <span
                     className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] bg-blue-600 dark:bg-blue-400 transition-all duration-300 ${
-                      isServicesPage
-                        ? "w-full"
-                        : "w-0 group-hover:w-full"
+                      isServicesPage ? "w-full" : "w-0 group-hover:w-full"
                     }`}
                   />
                 </span>
@@ -155,23 +172,25 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                   {servicesSubmenu.map((item) => (
                     <button
                       key={item.path}
-                      onClick={() => {
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         handleNavClick(item.path);
-                        setIsServicesDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors relative group ${
+                      className={`w-full text-left px-4 py-2 font-medium transition-colors relative group ${
                         currentPage === item.path
-                          ? "bg-blue-600 dark:bg-blue-600 text-white dark:text-white font-medium"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                       }`}
                     >
                       <span className="relative inline-block">
                         {item.name}
                         <span
-                          className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] transition-all duration-300 ${
+                          className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] transition-all duration-300 bg-blue-600 dark:bg-blue-400 ${
                             currentPage === item.path
-                              ? "w-full bg-white dark:bg-white"
-                              : "w-0 group-hover:w-full bg-blue-600 dark:bg-blue-400"
+                              ? "w-full"
+                              : "w-0 group-hover:w-full"
                           }`}
                         />
                       </span>
@@ -228,7 +247,10 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
         </div>
 
         {isMobileMenuOpen && (
-          <nav className="md:hidden mt-4 pb-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+          <nav
+            ref={mobileMenuRef}
+            className="md:hidden mt-4 pb-4 border-t border-gray-200 dark:border-gray-700 pt-4"
+          >
             {navItems.map((item) => (
               <button
                 key={item.path}
@@ -246,9 +268,11 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
             {/* Services Dropdown for Mobile */}
             <div className="mt-2">
               <button
-                onClick={() =>
-                  setIsServicesDropdownOpen(!isServicesDropdownOpen)
-                }
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsServicesDropdownOpen(!isServicesDropdownOpen);
+                }}
                 className={`w-full flex items-center justify-between py-3 px-4 rounded-lg font-medium transition-colors ${
                   isServicesPage
                     ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
@@ -268,23 +292,37 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                   {servicesSubmenu.map((item) => (
                     <button
                       key={item.path}
-                      onClick={() => {
-                        handleNavClick(item.path);
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Force immediate navigation for mobile
+                        const path = item.path;
                         setIsServicesDropdownOpen(false);
+                        setIsMobileMenuOpen(false);
+                        // Use requestAnimationFrame to ensure state updates before navigation
+                        requestAnimationFrame(() => {
+                          if (onNavigate) {
+                            onNavigate(path);
+                          }
+                          setTimeout(() => {
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }, 100);
+                        });
                       }}
-                      className={`block w-full text-left py-2 px-4 rounded-lg text-sm transition-colors relative group ${
+                      className={`block w-full text-left py-3 px-4 rounded-lg font-medium transition-colors relative group ${
                         currentPage === item.path
-                          ? "bg-blue-600 dark:bg-blue-600 text-white dark:text-white font-medium"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                       }`}
                     >
                       <span className="relative inline-block">
                         {item.name}
                         <span
-                          className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] transition-all duration-300 ${
+                          className={`absolute -bottom-1 left-0 right-0 h-0.5 min-h-[2px] transition-all duration-300 bg-blue-600 dark:bg-blue-400 ${
                             currentPage === item.path
-                              ? "w-full bg-white dark:bg-white"
-                              : "w-0 group-hover:w-full bg-blue-600 dark:bg-blue-400"
+                              ? "w-full"
+                              : "w-0 group-hover:w-full"
                           }`}
                         />
                       </span>
