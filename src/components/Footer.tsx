@@ -99,9 +99,14 @@ export default function Footer({ onNavigate }: FooterProps) {
             <ul className="space-y-3">
               <li className="flex items-start space-x-2 text-sm group">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-400 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
-                <span className="group-hover:text-white transition-colors duration-300">
+                <a
+                  href="https://maps.app.goo.gl/B95KxRayjmhhbSN16"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group-hover:text-white transition-colors duration-300 hover:text-amber-400 cursor-pointer"
+                >
                   Unit A, B1 L4 Linsburn Drive, Brgy. Kaypian, SJDM, Bulacan 3023
-                </span>
+                </a>
               </li>
               <li className="flex items-center space-x-2 text-sm group">
                 <Phone className="w-4 h-4 flex-shrink-0 text-amber-400 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
