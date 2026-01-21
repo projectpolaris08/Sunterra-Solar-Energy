@@ -271,7 +271,7 @@ export default function Contact({ onNavigate }: ContactProps) {
     {
       icon: MapPin,
       title: "Location",
-      detail: "San Jose del Monte, Bulacan",
+      detail: "Unit A, B1 L4 Linsburn Drive, Brgy. Kaypian, SJDM, Bulacan 3023",
       color: "from-green-500 to-green-600",
     },
     {
@@ -881,8 +881,7 @@ export default function Contact({ onNavigate }: ContactProps) {
               Visit Our Office
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300">
-              We serve clients from San Jose Del Monte, Bulacan, the Rising City
-              shaping tomorrow.
+              Unit A, B1 L4 Linsburn Drive, Brgy. Kaypian, SJDM, Bulacan 3023
             </p>
           </div>
 
@@ -913,10 +912,10 @@ export default function Contact({ onNavigate }: ContactProps) {
                       Sunterra Solar Energy
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      San Jose del Monte, Bulacan, Philippines
+                      Unit A, B1 L4 Linsburn Drive, Brgy. Kaypian, SJDM, Bulacan 3023
                     </p>
                     <a
-                      href="https://maps.app.goo.gl/xDhxzYJPqjCxVVV7A"
+                      href="https://maps.app.goo.gl/B95KxRayjmhhbSN16"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"

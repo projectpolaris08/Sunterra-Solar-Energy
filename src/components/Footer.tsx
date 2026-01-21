@@ -100,7 +100,7 @@ export default function Footer({ onNavigate }: FooterProps) {
               <li className="flex items-start space-x-2 text-sm group">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-400 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
                 <span className="group-hover:text-white transition-colors duration-300">
-                  San Jose del Monte, Bulacan
+                  Unit A, B1 L4 Linsburn Drive, Brgy. Kaypian, SJDM, Bulacan 3023
                 </span>
               </li>
               <li className="flex items-center space-x-2 text-sm group">
@@ -170,7 +170,7 @@ export default function Footer({ onNavigate }: FooterProps) {
           address: {
             "@type": "PostalAddress",
             addressCountry: "PH",
-            addressLocality: "San Jose del Monte, Bulacan",
+            addressLocality: "UNIT A, B1 L4 Linsburn Drive, Brgy. Kaypian, SJDM, Bulacan 3023",
           },
           telephone: "+63-960-692-1760",
           email: "info@sunterrasolarenergy.com",
