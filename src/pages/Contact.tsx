@@ -259,7 +259,7 @@ export default function Contact({ onNavigate }: ContactProps) {
     {
       icon: Phone,
       title: "Phone",
-      detail: "+63 960 692 1760",
+      detail: "+63 960 692 1760\n(044) 792-5124",
       color: "from-blue-500 to-blue-600",
     },
     {
@@ -359,7 +359,7 @@ export default function Contact({ onNavigate }: ContactProps) {
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
                     {info.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                  <p className="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line">
                     {info.detail}
                   </p>
                 </Card>

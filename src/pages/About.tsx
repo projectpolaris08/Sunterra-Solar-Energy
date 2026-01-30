@@ -392,102 +392,57 @@ export default function About({ onNavigate }: AboutProps) {
             </p>
           </div>
 
-          <div className="space-y-8 max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                { name: "Jayar", image: "/images/Jayar.jpg" },
-                { name: "Mhy", image: "/images/Mhy.jpg" },
-                { name: "Aira", image: "/images/Aira.jpg" },
-                { name: "Reynald", image: "/images/Reynald.jpg" },
-              ].map((member, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            {[
+              { name: "Jayar", image: "/images/Jayar.jpg" },
+              { name: "Mhy", image: "/images/Mhy.jpg" },
+              { name: "Aira", image: "/images/Aira.jpg" },
+              { name: "Reynald", image: "/images/Reynald.jpg" },
+              { name: "Joshua", image: "/images/Joshua.jpg" },
+              { name: "Diane", image: "/images/Diane.jpg" },
+              { name: "David", image: "/images/David.jpg" },
+              { name: "Engr. Florence", image: "/images/Engr. Florence.jpg" },
+            ].map((member, index) => (
+              <div
+                key={index}
+                className={`transition-all duration-700 ease-out flex justify-center ${
+                  visibleSections.has("team-section")
+                    ? "opacity-100 translate-y-0 scale-100"
+                    : "opacity-0 translate-y-12 scale-95"
+                }`}
+                style={{
+                  transitionDelay: `${index * 100}ms`,
+                }}
+              >
                 <div
-                  key={index}
-                  className={`transition-all duration-700 ease-out ${
-                    visibleSections.has("team-section")
-                      ? "opacity-100 translate-y-0 scale-100"
-                      : "opacity-0 translate-y-12 scale-95"
-                  }`}
+                  className="card relative w-[190px] h-[254px] transition-all duration-300 ease-in-out rounded-[30px] drop-shadow-[0_0_30px_rgba(59,130,246,0.5)] hover:drop-shadow-[0_0_50px_rgba(59,130,246,1)] hover:scale-105 card-3d immersive-hover"
                   style={{
-                    transitionDelay: `${index * 100}ms`,
+                    background:
+                      "linear-gradient(137deg, rgb(37, 99, 235) 0%, rgba(59,130,246,1) 100%)",
+                    transform: `perspective(1000px) rotateY(${
+                      mousePosition.x * 2
+                    }deg) rotateX(${mousePosition.y * -2}deg)`,
                   }}
                 >
-                  <div
-                    className="card relative w-[190px] h-[254px] transition-all duration-300 ease-in-out rounded-[30px] drop-shadow-[0_0_30px_rgba(59,130,246,0.5)] hover:drop-shadow-[0_0_50px_rgba(59,130,246,1)] hover:scale-105 mx-auto card-3d immersive-hover"
-                    style={{
-                      background:
-                        "linear-gradient(137deg, rgb(37, 99, 235) 0%, rgba(59,130,246,1) 100%)",
-                      transform: `perspective(1000px) rotateY(${
-                        mousePosition.x * 2
-                      }deg) rotateX(${mousePosition.y * -2}deg)`,
-                    }}
-                  >
-                    <div className="absolute z-[1] bg-[#181818] h-[98%] w-[98%] top-[1%] left-[1%] rounded-[28px] transition-all duration-300 ease-in-out flex flex-col items-center justify-center overflow-hidden">
-                      <div className="relative w-full h-full flex flex-col items-center justify-center">
-                        <div className="relative w-full flex-1 overflow-hidden">
-                          <img
-                            src={member.image}
-                            alt={member.name}
-                            className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
-                          />
-                        </div>
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#181818] via-[#181818]/80 to-transparent p-4 text-center">
-                          <h3 className="text-xl font-bold text-white">
-                            {member.name}
-                          </h3>
-                        </div>
+                  <div className="absolute z-[1] bg-[#181818] h-[98%] w-[98%] top-[1%] left-[1%] rounded-[28px] transition-all duration-300 ease-in-out flex flex-col items-center justify-center overflow-hidden">
+                    <div className="relative w-full h-full flex flex-col items-center justify-center">
+                      <div className="relative w-full flex-1 overflow-hidden">
+                        <img
+                          src={member.image}
+                          alt={member.name}
+                          className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#181818] via-[#181818]/80 to-transparent p-4 text-center">
+                        <h3 className="text-xl font-bold text-white">
+                          {member.name}
+                        </h3>
                       </div>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 lg:max-w-4xl lg:mx-auto">
-              {[
-                { name: "Joshua", image: "/images/Joshua.jpg" },
-                { name: "Diane", image: "/images/Diane.jpg" },
-                { name: "David", image: "/images/David.jpg" },
-              ].map((member, index) => (
-                <div
-                  key={index}
-                  className={`transition-all duration-700 ease-out ${
-                    visibleSections.has("team-section")
-                      ? "opacity-100 translate-y-0 scale-100"
-                      : "opacity-0 translate-y-12 scale-95"
-                  }`}
-                  style={{
-                    transitionDelay: `${400 + index * 100}ms`,
-                  }}
-                >
-                  <div
-                    className="card relative w-[190px] h-[254px] transition-all duration-300 ease-in-out rounded-[30px] drop-shadow-[0_0_30px_rgba(59,130,246,0.5)] hover:drop-shadow-[0_0_50px_rgba(59,130,246,1)] hover:scale-105 mx-auto card-3d immersive-hover"
-                    style={{
-                      background:
-                        "linear-gradient(137deg, rgb(37, 99, 235) 0%, rgba(59,130,246,1) 100%)",
-                      transform: `perspective(1000px) rotateY(${
-                        mousePosition.x * 2
-                      }deg) rotateX(${mousePosition.y * -2}deg)`,
-                    }}
-                  >
-                    <div className="absolute z-[1] bg-[#181818] h-[98%] w-[98%] top-[1%] left-[1%] rounded-[28px] transition-all duration-300 ease-in-out flex flex-col items-center justify-center overflow-hidden">
-                      <div className="relative w-full h-full flex flex-col items-center justify-center">
-                        <div className="relative w-full flex-1 overflow-hidden">
-                          <img
-                            src={member.image}
-                            alt={member.name}
-                            className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
-                          />
-                        </div>
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#181818] via-[#181818]/80 to-transparent p-4 text-center">
-                          <h3 className="text-xl font-bold text-white">
-                            {member.name}
-                          </h3>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
