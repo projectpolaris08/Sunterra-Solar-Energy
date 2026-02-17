@@ -13,6 +13,19 @@ const getCurrentDate = () => {
   return new Date().toISOString().split('T')[0];
 };
 
+// Read and parse project slugs from Projects.tsx
+const getProjectSlugs = () => {
+  try {
+    const projectsPath = join(__dirname, '../src/pages/Projects.tsx');
+    const content = readFileSync(projectsPath, 'utf8');
+    const slugMatches = [...content.matchAll(/slug:\s*["']([^"']+)["']/g)];
+    return slugMatches.map((m) => m[1]);
+  } catch (error) {
+    console.error('Error parsing project slugs:', error);
+    return [];
+  }
+};
+
 // Read and parse blog posts from the TypeScript file
 const getBlogPosts = () => {
   try {
@@ -93,7 +106,8 @@ const getBlogPosts = () => {
 const generateSitemap = () => {
   const currentDate = getCurrentDate();
   const blogPosts = getBlogPosts();
-  
+  const projectSlugs = getProjectSlugs();
+
   // Static pages
   const staticPages = [
     { loc: '/', priority: '1.0', changefreq: 'weekly' },
@@ -118,6 +132,20 @@ const generateSitemap = () => {
     <lastmod>${currentDate}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
+  </url>`;
+  });
+
+  // Add project detail pages
+  sitemap += `
+  
+  <!-- Project detail pages -->`;
+  projectSlugs.forEach((slug) => {
+    sitemap += `
+  <url>
+    <loc>${BASE_URL}/projects/${slug}</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>`;
   });
 
@@ -155,7 +183,9 @@ const sitemapPath = join(__dirname, '../public/sitemap.xml');
 try {
   writeFileSync(sitemapPath, sitemapContent, 'utf8');
   const blogPosts = getBlogPosts();
+  const projectSlugs = getProjectSlugs();
   console.log('✅ Sitemap generated successfully at:', sitemapPath);
+  console.log(`📄 Generated ${projectSlugs.length} project page(s)`);
   console.log(`📝 Generated ${blogPosts.length} blog post entries`);
 } catch (error) {
   console.error('❌ Error generating sitemap:', error);
