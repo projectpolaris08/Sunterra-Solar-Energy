@@ -200,10 +200,17 @@ export default function Home({ onNavigate }: HomeProps) {
   const testimonials = [
     {
       name: "Curt Uy",
-      location: "",
+      location: "Sampaloc, Manila",
       text: "After acquiring my second unit, I realized that my existing grid-tie system was not giving the results I expected. That's when I decided to upgrade to a hybrid system and contacted Sunterra Solar Energy. The hybrid system has been a game-changer. We no longer worry about power outages, and the savings have been incredible. Sunterra's service, from consultation to installation, was excellent.",
       rating: 5,
       image: "/images/commisioned.jpg",
+    },
+    {
+      name: "Arch. Rommel Sotto",
+      location: "Greenwoods, Dasmariñas, Cavite",
+      text: "Satisfied client here. Clean installation, great work, and excellent effort from the team. Thank you!",
+      rating: 5,
+      image: "/images/turnover.jpg",
     },
   ];
 
