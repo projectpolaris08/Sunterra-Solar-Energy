@@ -96,6 +96,45 @@ const allProjectsData = [
       paybackPeriod: "3-4 years",
     },
   },
+  {
+    id: 3,
+    slug: "greenwoods-dasmarinas-cavite-6kw-hybrid-solar",
+    title: "Residential Hybrid Solar Installation",
+    location: "Greenwoods, Dasmariñas, Cavite",
+    systemType: "Hybrid Solar",
+    capacity: "6kW",
+    installDate: "Completed",
+    description:
+      "Completed installation in Greenwoods, Dasmariñas, Cavite - 6kW hybrid system with 16kWh battery backup. From consultation to site inspection, contract signing, and commissioning, this project was carefully designed based on the client's actual consumption. The system is now running and ready to deliver backup power, higher efficiency, and long-term savings. Another satisfied Sunterra Solar Energy client.",
+    color: "from-emerald-400 to-emerald-600",
+    savings: "₱5,500/month",
+    category: "Residential",
+    image: "/images/ocular.jpg",
+    additionalImages: [
+      "/images/contract-signing.jpg",
+      "/images/contract-signing2.jpg",
+      "/images/electricalpanel.jpg",
+      "/images/electricalwiring.jpg",
+      "/images/6kW Inverter.jpg",
+      "/images/electricalpiping.jpg",
+      "/images/doneinstalling.jpg",
+      "/images/turnover.jpg",
+      "/images/panelinstallation.jpg",
+    ],
+    status: "completed",
+    progress: 100,
+    details: {
+      panels: "13pcs 620W Canadian bifacial Solar Panels (~8kWp)",
+      inverter: "6kW Deye Hybrid Inverter",
+      battery: "51.2V 314Ah (16kWh) LiFePO4 Battery",
+      roofArea: "—",
+      installationTime: "—",
+      warranty:
+        "12 years on panels, 5 years on inverter and 10 years on LiFePO4 Battery",
+      environmentalImpact: "Reduces CO₂ by ~5 tons annually",
+      paybackPeriod: "3-4 years",
+    },
+  },
 ];
 
 export default function ProjectDetail({
@@ -321,9 +360,11 @@ export default function ProjectDetail({
                 )}
 
                 <div className="prose dark:prose-invert max-w-none mb-8">
-                  <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {project.description}
-                  </p>
+                  <div className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed space-y-4">
+                    {project.description.split(/\n\n+/).map((paragraph, i) => (
+                      <p key={i}>{paragraph}</p>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

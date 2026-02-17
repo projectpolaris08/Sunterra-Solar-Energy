@@ -76,6 +76,22 @@ export default function Projects({ onNavigate }: ProjectsProps) {
       image: "/images/before.jpg",
       progress: 100,
     },
+    {
+      id: 3,
+      slug: "greenwoods-dasmarinas-cavite-6kw-hybrid-solar",
+      title: "Residential Hybrid Solar Installation",
+      location: "Greenwoods, Dasmariñas, Cavite",
+      systemType: "Hybrid Solar",
+      capacity: "6kW",
+      installDate: "February 16, 2026",
+      description:
+        "Completed installation in Greenwoods, Dasmariñas, Cavite — 6kW hybrid system with 16kWh battery backup. From consultation to site inspection, contract signing, and commissioning, this project was carefully designed based on the client's actual consumption. The system is now running and ready to deliver backup power, higher efficiency, and long-term savings. Another satisfied Sunterra Solar Energy client.",
+      color: "from-emerald-400 to-emerald-600",
+      savings: "₱5,500/month",
+      category: "Residential",
+      image: "/images/ocular.jpg",
+      progress: 100,
+    },
   ];
   const [visibleSections, setVisibleSections] = useState<Set<string>>(
     new Set()
