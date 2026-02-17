@@ -138,25 +138,30 @@ export default function AdminUsers({
         throw new Error("Supabase not configured");
       }
 
+      const joinDate = new Date().toISOString().split("T")[0];
+      const payload: Record<string, unknown> = {
+        client_name: formData.clientName || null,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        location: formData.location || null,
+        project_amount: formData.projectAmount ?? 0,
+        inverter: formData.inverter || null,
+        solar_panels_pcs: formData.solarPanelsPcs ?? 0,
+        solar_panels_wattage: formData.solarPanelsWattage || null,
+        battery_type: formData.batteryType || null,
+        battery_pcs: formData.batteryPcs ?? 0,
+        facebook_name: formData.facebookName || null,
+        notes: formData.notes || null,
+        join_date: joinDate,
+        visitation_date: formData.visitationDate?.trim() || null,
+      };
+      // Only include project_date if your clients table has this column (optional)
+      const projectDate = formData.date?.trim() || joinDate;
+      payload.project_date = projectDate;
+
       const { data, error } = await supabase
         .from("clients")
-        .insert({
-          client_name: formData.clientName,
-          email: formData.email,
-          phone: formData.phone,
-          location: formData.location,
-          project_amount: formData.projectAmount,
-          project_date: formData.date,
-          inverter: formData.inverter,
-          solar_panels_pcs: formData.solarPanelsPcs,
-          solar_panels_wattage: formData.solarPanelsWattage,
-          battery_type: formData.batteryType,
-          battery_pcs: formData.batteryPcs,
-          facebook_name: formData.facebookName,
-          visitation_date: formData.visitationDate,
-          notes: formData.notes,
-          join_date: new Date().toISOString().split("T")[0],
-        })
+        .insert(payload)
         .select()
         .single();
 
@@ -183,9 +188,15 @@ export default function AdminUsers({
       };
 
       setUsers([...users, newClient]);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errMessage =
+        (error && typeof error === "object" && "message" in error)
+          ? String((error as { message: string }).message)
+          : error instanceof Error
+            ? error.message
+            : "Unknown error";
       console.error("Failed to add client:", error);
-      alert(`Failed to save to database: ${error instanceof Error ? error.message : "Unknown error"}. Saving locally as backup.`);
+      alert(`Failed to save to database: ${errMessage}. Saving locally as backup.`);
       
       // Fallback: add to local state
       const newClient: User = {
